@@ -33,10 +33,10 @@ test04NumerosMayoresaUnoRestanBien
 	Assert that: IIII - II isEqualTo: II.
 ! !
 
-!PeanoTest class methodsFor: 'as yet unclassified' stamp: 'ARM 3/26/2018 12:51:02'!
+!PeanoTest class methodsFor: 'as yet unclassified' stamp: 'JR 3/31/2019 18:48:05'!
 test05RestaNoSoportaNumerosNegativos
 
-	Assert should: [ I - II ] signal: Error withDescription: I descripcionDeErrorDeNumerosNegativosNoSoportados.
+	Assert should: [ I - II ] signal: Error withDescription: 'No se puede restar al I'.
 ! !
 
 !PeanoTest class methodsFor: 'as yet unclassified' stamp: 'ARM 3/26/2018 13:15:53'!
@@ -71,10 +71,10 @@ test11UnoDivididoUnoEsIgualAUno
 
 	Assert that: I / I isEqualTo: I.! !
 
-!PeanoTest class methodsFor: 'as yet unclassified' stamp: 'ARM 3/26/2018 13:17:59'!
+!PeanoTest class methodsFor: 'as yet unclassified' stamp: 'JR 3/31/2019 18:47:38'!
 test12DivisionNoSoportaDividirPorUnNumeroMayor
 
-	Assert should: [ III /  IIII ] signal: Error withDescription: II descripcionDeErrorDeNoSePuedeDividirPorUnNumeroMayor.
+	Assert should: [ III /  IIII ] signal: Error withDescription: 'No se puede dividir por un numero mayor'.
 	
-	Assert should: [ I /  II] signal: Error withDescription: I descripcionDeErrorDeNoSePuedeDividirPorUnNumeroMayor
+	Assert should: [ I /  II] signal: Error withDescription: 'No se puede dividir por un numero mayor'.
 ! !
