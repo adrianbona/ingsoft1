@@ -1,4 +1,3 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3281] on 26 March 2018 at 1:21:05 pm'!
 !classDefinition: #PeanoTest category: #PeanoTest!
 DenotativeObject subclass: #PeanoTest
 	instanceVariableNames: ''
