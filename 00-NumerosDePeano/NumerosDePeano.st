@@ -1,13 +1,13 @@
-!classDefinition: #I category: #'Numeros De Peano'!
+!classDefinition: #I category: #NumerosDePeano!
 DenotativeObject subclass: #I
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'Numeros De Peano'!
+	category: 'NumerosDePeano'!
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-!classDefinition: 'I class' category: #'Numeros De Peano'!
+!classDefinition: 'I class' category: #NumerosDePeano!
 I class
 	instanceVariableNames: 'next'!
 
@@ -48,7 +48,7 @@ descripcionDeErrorDeNoSePuedeDividirPorUnNumeroMayor
 descripcionDeErrorDeNumerosNegativosNoSoportados
 	^ 'Error numero negativo'.! !
 
-!I class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:20:04'!
+!I class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:03:11'!
 initializeCollaboratorsFromFile
 	"Auto generated method for loading purposes - Do not modify it"
 
@@ -60,16 +60,16 @@ next
 	^next! !
 
 
-!classDefinition: #II category: #'Numeros De Peano'!
+!classDefinition: #II category: #NumerosDePeano!
 DenotativeObject subclass: #II
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'Numeros De Peano'!
+	category: 'NumerosDePeano'!
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-!classDefinition: 'II class' category: #'Numeros De Peano'!
+!classDefinition: 'II class' category: #NumerosDePeano!
 II class
 	instanceVariableNames: 'next previous'!
 
@@ -87,15 +87,21 @@ II class
 
 	^self previous + unNumeroDePeano next! !
 
-!II class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:19:21'!
+!II class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:00:04'!
 - unNumeroDePeano
 
-	| condicion |
-
-	condicion := Dictionary new.
-	condicion at: I put: self previous.
+	| minuendo sustraendo |
 	
-	^ condicion at: unNumeroDePeano ifAbsent: [self previous - unNumeroDePeano previous]! !
+	minuendo := self previous.
+	sustraendo := unNumeroDePeano.
+	
+	[sustraendo ~= I] whileTrue: [
+		minuendo := minuendo previous.
+		sustraendo := unNumeroDePeano previous.
+	].
+
+	^ minuendo.
+! !
 
 !II class methodsFor: 'as yet unclassified' stamp: 'JR 3/31/2019 19:22:39'!
 / unNumeroDePeano
@@ -116,7 +122,7 @@ descripcionDeErrorDeNoSePuedeDividirPorUnNumeroMayor
 
 	^ 'No se puede dividir un numero por otro mayor'.! !
 
-!II class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:20:04'!
+!II class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:03:11'!
 initializeCollaboratorsFromFile
 	"Auto generated method for loading purposes - Do not modify it"
 
@@ -152,20 +158,20 @@ removeAllNext
 	]! !
 
 
-!classDefinition: #III category: #'Numeros De Peano'!
+!classDefinition: #III category: #NumerosDePeano!
 DenotativeObject subclass: #III
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'Numeros De Peano'!
+	category: 'NumerosDePeano'!
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-!classDefinition: 'III class' category: #'Numeros De Peano'!
+!classDefinition: 'III class' category: #NumerosDePeano!
 III class
 	instanceVariableNames: 'next previous'!
 
-!III class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:19:47'!
+!III class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:02:04'!
 * unNumeroDePeano
 
 	| previo |
@@ -174,28 +180,34 @@ III class
 	
 	^ previo at: unNumeroDePeano ifAbsent: [self * unNumeroDePeano previous + self]! !
 
-!III class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:19:47'!
+!III class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:02:04'!
 + unNumeroDePeano
 
 	^self previous + unNumeroDePeano next! !
 
-!III class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:19:47'!
+!III class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:02:04'!
 - unNumeroDePeano
 
-	| condicion |
-
-	condicion := Dictionary new.
-	condicion at: I put: self previous.
+	| minuendo sustraendo |
 	
-	^ condicion at: unNumeroDePeano ifAbsent: [self previous - unNumeroDePeano previous]! !
+	minuendo := self previous.
+	sustraendo := unNumeroDePeano.
+	
+	[sustraendo ~= I] whileTrue: [
+		minuendo := minuendo previous.
+		sustraendo := unNumeroDePeano previous.
+	].
 
-!III class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:19:47'!
+	^ minuendo.
+! !
+
+!III class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:02:04'!
 / unNumeroDePeano
 	self < unNumeroDePeano ifTrue: [self error: self descripcionDeErrorDeNoSePuedeDividirPorUnNumeroMayor].
 	self = unNumeroDePeano ifTrue: [^I].
 	^ self - unNumeroDePeano / unNumeroDePeano + I! !
 
-!III class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:19:47'!
+!III class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:02:04'!
 < unNumeroDePeano
 	| numeroAnterior |
 	unNumeroDePeano = I ifTrue: [^false].
@@ -203,19 +215,19 @@ III class
 	self = numeroAnterior ifTrue: [^true].
 	^self < numeroAnterior .! !
 
-!III class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:19:48'!
+!III class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:02:04'!
 descripcionDeErrorDeNoSePuedeDividirPorUnNumeroMayor
 
 	^ 'No se puede dividir un numero por otro mayor'.! !
 
-!III class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:20:04'!
+!III class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:03:11'!
 initializeCollaboratorsFromFile
 	"Auto generated method for loading purposes - Do not modify it"
 
 	next := IIII.
 	previous := II.! !
 
-!III class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:19:48'!
+!III class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:02:04'!
 next
 
 	next ifNil:
@@ -225,15 +237,15 @@ next
 	].
 	^next! !
 
-!III class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:19:48'!
+!III class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:02:04'!
 previous
 	^previous! !
 
-!III class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:19:48'!
+!III class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:02:04'!
 previous: unNumeroDePeano
 	previous := unNumeroDePeano! !
 
-!III class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:19:48'!
+!III class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:02:05'!
 removeAllNext
 
 	next ifNotNil:
@@ -244,20 +256,20 @@ removeAllNext
 	]! !
 
 
-!classDefinition: #IIII category: #'Numeros De Peano'!
+!classDefinition: #IIII category: #NumerosDePeano!
 DenotativeObject subclass: #IIII
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'Numeros De Peano'!
+	category: 'NumerosDePeano'!
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-!classDefinition: 'IIII class' category: #'Numeros De Peano'!
+!classDefinition: 'IIII class' category: #NumerosDePeano!
 IIII class
 	instanceVariableNames: 'next previous'!
 
-!IIII class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:19:48'!
+!IIII class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:02:05'!
 * unNumeroDePeano
 
 	| previo |
@@ -266,28 +278,34 @@ IIII class
 	
 	^ previo at: unNumeroDePeano ifAbsent: [self * unNumeroDePeano previous + self]! !
 
-!IIII class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:19:48'!
+!IIII class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:02:05'!
 + unNumeroDePeano
 
 	^self previous + unNumeroDePeano next! !
 
-!IIII class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:19:48'!
+!IIII class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:02:05'!
 - unNumeroDePeano
 
-	| condicion |
-
-	condicion := Dictionary new.
-	condicion at: I put: self previous.
+	| minuendo sustraendo |
 	
-	^ condicion at: unNumeroDePeano ifAbsent: [self previous - unNumeroDePeano previous]! !
+	minuendo := self previous.
+	sustraendo := unNumeroDePeano.
+	
+	[sustraendo ~= I] whileTrue: [
+		minuendo := minuendo previous.
+		sustraendo := unNumeroDePeano previous.
+	].
 
-!IIII class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:19:48'!
+	^ minuendo.
+! !
+
+!IIII class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:02:05'!
 / unNumeroDePeano
 	self < unNumeroDePeano ifTrue: [self error: self descripcionDeErrorDeNoSePuedeDividirPorUnNumeroMayor].
 	self = unNumeroDePeano ifTrue: [^I].
 	^ self - unNumeroDePeano / unNumeroDePeano + I! !
 
-!IIII class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:19:48'!
+!IIII class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:02:05'!
 < unNumeroDePeano
 	| numeroAnterior |
 	unNumeroDePeano = I ifTrue: [^false].
@@ -295,19 +313,19 @@ IIII class
 	self = numeroAnterior ifTrue: [^true].
 	^self < numeroAnterior .! !
 
-!IIII class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:19:48'!
+!IIII class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:02:05'!
 descripcionDeErrorDeNoSePuedeDividirPorUnNumeroMayor
 
 	^ 'No se puede dividir un numero por otro mayor'.! !
 
-!IIII class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:20:04'!
+!IIII class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:03:11'!
 initializeCollaboratorsFromFile
 	"Auto generated method for loading purposes - Do not modify it"
 
 	next := nil.
 	previous := III.! !
 
-!IIII class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:19:48'!
+!IIII class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:02:05'!
 next
 
 	next ifNil:
@@ -317,15 +335,15 @@ next
 	].
 	^next! !
 
-!IIII class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:19:48'!
+!IIII class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:02:05'!
 previous
 	^previous! !
 
-!IIII class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:19:48'!
+!IIII class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:02:05'!
 previous: unNumeroDePeano
 	previous := unNumeroDePeano! !
 
-!IIII class methodsFor: 'as yet unclassified' stamp: 'AB 4/1/2019 18:19:48'!
+!IIII class methodsFor: 'as yet unclassified' stamp: 'AB 4/3/2019 13:02:05'!
 removeAllNext
 
 	next ifNotNil:
