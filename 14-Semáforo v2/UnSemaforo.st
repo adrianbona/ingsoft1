@@ -1,3 +1,23 @@
+!classDefinition: #LucesDeSemaforo category: #Semaforo!
+DenotativeObjectMorph subclass: #LucesDeSemaforo
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Semaforo'!
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'LucesDeSemaforo class' category: #Semaforo!
+LucesDeSemaforo class
+	instanceVariableNames: ''!
+
+!LucesDeSemaforo class methodsFor: 'as yet unclassified' stamp: 'JR 3/31/2019 14:53:49'!
+initializeCollaboratorsFromFile
+	"Auto generated method for loading purposes - Do not modify it"
+
+	morph := nil.! !
+
+
 !classDefinition: #LuzAmarilla category: #Semaforo!
 DenotativeObjectMorph subclass: #LuzAmarilla
 	instanceVariableNames: ''
@@ -18,21 +38,12 @@ createMorph
 		color: Color black;
 		yourself! !
 
-!LuzAmarilla class methodsFor: 'morph' stamp: 'JR 3/25/2019 21:05:14'!
-titilar: veces
-	veces timesRepeat: 
-	[self prender.
-	(Delay for: 1*second) wait.
-	self apagar.
-	(Delay for: 1*second) wait.]
-! !
-
 
 !LuzAmarilla class methodsFor: 'as yet unclassified' stamp: 'JR 3/25/2019 20:57:19'!
 apagar
 	self color: Color black.! !
 
-!LuzAmarilla class methodsFor: 'as yet unclassified' stamp: 'JR 3/25/2019 21:06:29'!
+!LuzAmarilla class methodsFor: 'as yet unclassified' stamp: 'JR 3/31/2019 14:53:49'!
 initializeCollaboratorsFromFile
 	"Auto generated method for loading purposes - Do not modify it"
 
@@ -68,7 +79,7 @@ createMorph
 apagar
 	self color: Color black.! !
 
-!LuzRoja class methodsFor: 'as yet unclassified' stamp: 'JR 3/25/2019 21:06:29'!
+!LuzRoja class methodsFor: 'as yet unclassified' stamp: 'JR 3/31/2019 14:53:49'!
 initializeCollaboratorsFromFile
 	"Auto generated method for loading purposes - Do not modify it"
 
@@ -104,7 +115,7 @@ createMorph
 apagar
 	self color: Color black.! !
 
-!LuzVerde class methodsFor: 'as yet unclassified' stamp: 'JR 3/25/2019 21:06:29'!
+!LuzVerde class methodsFor: 'as yet unclassified' stamp: 'JR 3/31/2019 14:53:49'!
 initializeCollaboratorsFromFile
 	"Auto generated method for loading purposes - Do not modify it"
 
@@ -115,8 +126,8 @@ prender
 	self color: Color green.! !
 
 
-!classDefinition: #Semaforo category: #Semaforo!
-DenotativeObjectMorph subclass: #Semaforo
+!classDefinition: #UnSemaforo category: #Semaforo!
+DenotativeObjectMorph subclass: #UnSemaforo
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -124,17 +135,17 @@ DenotativeObjectMorph subclass: #Semaforo
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-!classDefinition: 'Semaforo class' category: #Semaforo!
-Semaforo class
+!classDefinition: 'UnSemaforo class' category: #Semaforo!
+UnSemaforo class
 	instanceVariableNames: ''!
 
-!Semaforo class methodsFor: 'morph' stamp: 'JR 3/25/2019 20:58:46'!
+!UnSemaforo class methodsFor: 'morph' stamp: 'JR 3/25/2019 20:58:46'!
 apagar
 	LuzRoja apagar.
 	LuzAmarilla apagar.
 	LuzVerde apagar.! !
 
-!Semaforo class methodsFor: 'morph' stamp: 'HAW 9/17/2018 15:31:40'!
+!UnSemaforo class methodsFor: 'morph' stamp: 'HAW 9/17/2018 15:31:40'!
 createMorph
 
 	^LayoutMorph newColumn
@@ -142,18 +153,32 @@ createMorph
 		yourself
 ! !
 
-!Semaforo class methodsFor: 'morph' stamp: 'JR 3/25/2019 21:05:29'!
+!UnSemaforo class methodsFor: 'morph' stamp: 'JR 3/25/2019 21:24:01'!
 prender
-	LuzAmarilla titilar: 5.! !
+	self avisarPrecaucionPorAviso.! !
 
 
-!Semaforo class methodsFor: 'as yet unclassified' stamp: 'JR 3/25/2019 21:06:29'!
+!UnSemaforo class methodsFor: 'as yet unclassified' stamp: 'JR 3/25/2019 21:45:59'!
+avisarPrecaucionPorAviso
+
+	5 timesRepeat: [self titilarLuzAmarilla].! !
+
+!UnSemaforo class methodsFor: 'as yet unclassified' stamp: 'JR 3/31/2019 14:53:49'!
 initializeCollaboratorsFromFile
 	"Auto generated method for loading purposes - Do not modify it"
 
 	morph := nil.! !
 
+!UnSemaforo class methodsFor: 'as yet unclassified' stamp: 'JR 3/25/2019 21:44:21'!
+titilarLuzAmarilla
+
+	LuzAmarilla prender.
+	(Delay for: 0.5*second) wait.
+	LuzAmarilla apagar.
+	(Delay for: 0.5*second) wait.! !
+
+LucesDeSemaforo initializeAfterFileIn!
 LuzAmarilla initializeAfterFileIn!
 LuzRoja initializeAfterFileIn!
 LuzVerde initializeAfterFileIn!
-Semaforo initializeAfterFileIn!
+UnSemaforo initializeAfterFileIn!
