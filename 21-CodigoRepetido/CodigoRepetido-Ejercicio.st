@@ -194,11 +194,11 @@ initialize
 	suspended:= OrderedCollection new.! !
 
 
-!CustomerBook methodsFor: 'customer management' stamp: 'NR 4/3/2019 10:14:26'!
+!CustomerBook methodsFor: 'customer management' stamp: 'JR 4/6/2019 15:34:50'!
 addCustomerNamed: aName
 
 	aName isEmpty ifTrue: [ self signalCustomerNameCannotBeEmpty ].
-	((active includes: aName) or: [suspended includes: aName]) ifTrue: [ self signalCustomerAlreadyExists ].
+	(self includesCustomerNamed: aName) ifTrue: [ self signalCustomerAlreadyExists ].
 	
 	active add: aName ! !
 
@@ -207,39 +207,36 @@ numberOfActiveCustomers
 	
 	^active size! !
 
-!CustomerBook methodsFor: 'customer management' stamp: 'NR 4/3/2019 10:14:26'!
+!CustomerBook methodsFor: 'customer management' stamp: 'JR 4/6/2019 15:37:29'!
 numberOfCustomers
 	
-	^active size + suspended size! !
+	^ self numberOfActiveCustomers + self numberOfSuspendedCustomers .! !
 
 !CustomerBook methodsFor: 'customer management' stamp: 'NR 9/19/2018 17:36:09'!
 numberOfSuspendedCustomers
 	
 	^suspended size! !
 
-!CustomerBook methodsFor: 'customer management' stamp: 'NR 4/3/2019 10:14:26'!
+!CustomerBook methodsFor: 'customer management' stamp: 'JR 4/6/2019 15:57:03'!
 removeCustomerNamed: aName 
  
-	1 to: active size do: 
-	[ :index |
-		aName = (active at: index)
-			ifTrue: [
-				active removeAt: index.
-				^ aName 
-			] 
-	].
-
-	1 to: suspended size do: 	
-	[ :index |
-		aName = (suspended at: index)
-			ifTrue: [
-				suspended removeAt: index.
-				^ aName 
-			] 
-	].
-	
+	(self removeCustomerNamed: aName from: active ofSize: self numberOfActiveCustomers) ifTrue: [^ aName ].
+	(self removeCustomerNamed: aName from: suspended ofSize: self numberOfSuspendedCustomers) ifTrue: [^ aName].
 	^ NotFound signal.
 ! !
+
+!CustomerBook methodsFor: 'customer management' stamp: 'JR 4/6/2019 15:56:46'!
+removeCustomerNamed: aName from: aCollectionOfCustomers ofSize: collectionsSize
+ 
+	1 to: collectionsSize do:
+	[ :index |
+		aName = (aCollectionOfCustomers at: index)
+			ifTrue: [
+				aCollectionOfCustomers removeAt: index.
+				^ true.
+			] 
+	].
+	^ false.! !
 
 !CustomerBook methodsFor: 'customer management' stamp: 'HernanWilkinson 7/6/2011 17:52'!
 signalCustomerAlreadyExists 
@@ -251,13 +248,11 @@ signalCustomerNameCannotBeEmpty
 
 	self error: self class customerCanNotBeEmptyErrorMessage ! !
 
-!CustomerBook methodsFor: 'customer management' stamp: 'NR 4/3/2019 10:14:26'!
+!CustomerBook methodsFor: 'customer management' stamp: 'JR 4/6/2019 15:57:42'!
 suspendCustomerNamed: aName 
 	
-	(active includes: aName) ifFalse: [^CantSuspend signal].
-	
+	(active includes: aName) ifFalse: [^CantSuspend signal].	
 	active remove: aName.
-	
 	suspended add: aName
 ! !
 
