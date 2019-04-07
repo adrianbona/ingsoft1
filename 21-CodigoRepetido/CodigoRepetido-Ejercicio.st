@@ -38,21 +38,22 @@ test02RemovingCustomerShouldNotTakeMoreThan100Milliseconds
 	customerBook := self initializeCustomerBookWith: paulMcCartney.
 	self assertThatExecutionOf: [customerBook removeCustomerNamed: paulMcCartney] inMillisecondsIsLessThan: 100.! !
 
-!CustomerBookTest methodsFor: 'testing' stamp: 'AB 4/5/2019 19:02:07'!
+!CustomerBookTest methodsFor: 'testing' stamp: 'AB 4/7/2019 15:10:26'!
 test03CanNotAddACustomerWithEmptyName
 	| customerBook |
 	customerBook := CustomerBook new.
-	self try:
-		[ customerBook addCustomerNamed: '']
-	failWith: Error
-	assertThat:
-		[ :anError | 
+	
+	self 
+		should: [ 
+			customerBook addCustomerNamed: '' 
+		]
+		raise: Error
+		withExceptionDo: [ :anError | 
 			self assert: anError messageText = CustomerBook customerCanNotBeEmptyErrorMessage.
 			self assert: customerBook isEmpty
-		]
-! !
+		]! !
 
-!CustomerBookTest methodsFor: 'testing' stamp: 'AB 4/5/2019 19:01:35'!
+!CustomerBookTest methodsFor: 'testing' stamp: 'AB 4/7/2019 15:22:36'!
 test04CanNotRemoveAnInvalidCustomer
 
 	| customerBook johnLennon |
@@ -60,17 +61,15 @@ test04CanNotRemoveAnInvalidCustomer
 	johnLennon := 'John Lennon'.
 	customerBook := self initializeCustomerBookWith: johnLennon.
 
-	self try:  
-	[
-		customerBook removeCustomerNamed: 'Paul McCartney'.
-		self fail.
-	]
-	failWith: NotFound
-	assertThat: 
-	[
-		self assert: (customerBook includesCustomerNamed: johnLennon).
-		self assert: customerBook numberOfCustomers = 1
-	]! !
+	self 
+		should: [ 
+			customerBook removeCustomerNamed: 'Paul McCartney'
+		]
+		raise: NotFound
+		withExceptionDo: [ :anException |
+			self assert: (customerBook includesCustomerNamed: johnLennon).
+			self assert: customerBook numberOfCustomers = 1
+		]! !
 
 !CustomerBookTest methodsFor: 'testing' stamp: 'AB 4/5/2019 19:03:03'!
 test05SuspendingACustomerShouldNotRemoveItFromCustomerBook
@@ -122,18 +121,19 @@ test08CanNotSuspendAnAlreadySuspendedCustomer
 	self assertThatCantSuspend: johnLennon in: customerBook whenSuspending: johnLennon.! !
 
 
-!CustomerBookTest methodsFor: 'auxiliares' stamp: 'AB 4/5/2019 19:05:16'!
+!CustomerBookTest methodsFor: 'auxiliares' stamp: 'AB 4/7/2019 15:24:22'!
 assertThatCantSuspend: aCustomer in: aCustomerBook whenSuspending: anotherCustomer
 
-	self try:  
-	[ aCustomerBook suspendCustomerNamed: anotherCustomer ]
-	failWith: CantSuspend
-	assertThat:
+	self should: [ 
+		aCustomerBook suspendCustomerNamed: anotherCustomer
+	]
+	raise: CantSuspend
+	withExceptionDo:
 	[ :anError | 
 		self assert: aCustomerBook numberOfCustomers = 1.
 		self assert: (aCustomerBook includesCustomerNamed: aCustomer) ]! !
 
-!CustomerBookTest methodsFor: 'auxiliares' stamp: 'AB 4/5/2019 19:05:28'!
+!CustomerBookTest methodsFor: 'auxiliares' stamp: 'AB 4/7/2019 15:24:42'!
 assertThatExecutionOf: aBlock inMillisecondsIsLessThan: aQuantityOfMilliseconds
 
 	| millisecondsBeforeRunning millisecondsAfterRunning |
@@ -141,6 +141,7 @@ assertThatExecutionOf: aBlock inMillisecondsIsLessThan: aQuantityOfMilliseconds
 	millisecondsBeforeRunning := Time millisecondClockValue * millisecond.
 	aBlock value.
 	millisecondsAfterRunning := Time millisecondClockValue * millisecond.
+	
 	self assert: (millisecondsAfterRunning - millisecondsBeforeRunning) < (aQuantityOfMilliseconds * millisecond)! !
 
 !CustomerBookTest methodsFor: 'auxiliares' stamp: 'AB 4/5/2019 19:05:37'!
@@ -158,14 +159,6 @@ initializeCustomerBookWith: aCustomer
 	customerBook := CustomerBook new.
 	customerBook addCustomerNamed: aCustomer.
 	^ customerBook.! !
-
-!CustomerBookTest methodsFor: 'auxiliares' stamp: 'AB 4/5/2019 18:59:04'!
-try: aBlock failWith: aSignal  assertThat: anotherBlock
-	
-	[ aBlock value.
-	self fail ]
-		on: aSignal 
-		do: anotherBlock.! !
 
 
 !classDefinition: #CustomerBook category: #'CodigoRepetido-Ejercicio'!
@@ -225,18 +218,21 @@ removeCustomerNamed: aName
 	^ NotFound signal.
 ! !
 
-!CustomerBook methodsFor: 'customer management' stamp: 'JR 4/6/2019 15:56:46'!
+!CustomerBook methodsFor: 'customer management' stamp: 'AB 4/7/2019 15:40:35'!
 removeCustomerNamed: aName from: aCollectionOfCustomers ofSize: collectionsSize
  
-	1 to: collectionsSize do:
-	[ :index |
-		aName = (aCollectionOfCustomers at: index)
-			ifTrue: [
-				aCollectionOfCustomers removeAt: index.
-				^ true.
-			] 
-	].
-	^ false.! !
+	aCollectionOfCustomers 
+		detect: [ :element | 
+			element  = aName 
+		]
+		ifFound: [ :element |
+			aCollectionOfCustomers remove: element.
+			^ true
+		]
+		ifNone: [
+			^ false
+		]
+! !
 
 !CustomerBook methodsFor: 'customer management' stamp: 'HernanWilkinson 7/6/2011 17:52'!
 signalCustomerAlreadyExists 
