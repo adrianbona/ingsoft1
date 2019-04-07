@@ -160,6 +160,14 @@ initializeCustomerBookWith: aCustomer
 	customerBook addCustomerNamed: aCustomer.
 	^ customerBook.! !
 
+!CustomerBookTest methodsFor: 'auxiliares' stamp: 'AB 4/5/2019 18:59:04'!
+try: aBlock failWith: aSignal  assertThat: anotherBlock
+	
+	[ aBlock value.
+	self fail ]
+		on: aSignal 
+		do: anotherBlock.! !
+
 
 !classDefinition: #CustomerBook category: #'CodigoRepetido-Ejercicio'!
 Object subclass: #CustomerBook
@@ -210,16 +218,16 @@ numberOfSuspendedCustomers
 	
 	^suspended size! !
 
-!CustomerBook methodsFor: 'customer management' stamp: 'JR 4/6/2019 15:57:03'!
+!CustomerBook methodsFor: 'customer management' stamp: 'JR 4/7/2019 20:55:42'!
 removeCustomerNamed: aName 
  
-	(self removeCustomerNamed: aName from: active ofSize: self numberOfActiveCustomers) ifTrue: [^ aName ].
-	(self removeCustomerNamed: aName from: suspended ofSize: self numberOfSuspendedCustomers) ifTrue: [^ aName].
+	(self removeCustomerNamed: aName from: active) ifTrue: [^ aName ].
+	(self removeCustomerNamed: aName from: suspended) ifTrue: [^ aName].
 	^ NotFound signal.
 ! !
 
-!CustomerBook methodsFor: 'customer management' stamp: 'AB 4/7/2019 15:40:35'!
-removeCustomerNamed: aName from: aCollectionOfCustomers ofSize: collectionsSize
+!CustomerBook methodsFor: 'customer management' stamp: 'JR 4/7/2019 20:55:23'!
+removeCustomerNamed: aName from: aCollectionOfCustomers
  
 	aCollectionOfCustomers 
 		detect: [ :element | 
