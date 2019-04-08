@@ -160,14 +160,6 @@ initializeCustomerBookWith: aCustomer
 	customerBook addCustomerNamed: aCustomer.
 	^ customerBook.! !
 
-!CustomerBookTest methodsFor: 'auxiliares' stamp: 'AB 4/5/2019 18:59:04'!
-try: aBlock failWith: aSignal  assertThat: anotherBlock
-	
-	[ aBlock value.
-	self fail ]
-		on: aSignal 
-		do: anotherBlock.! !
-
 
 !classDefinition: #CustomerBook category: #'CodigoRepetido-Ejercicio'!
 Object subclass: #CustomerBook
