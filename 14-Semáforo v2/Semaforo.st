@@ -43,7 +43,7 @@ habilitarTrafico
 	self señalDeDetencion apagar.
 	self señalDeAvance prender.! !
 
-!CajaDeSeñalesEnDireccionACorrientes class methodsFor: 'as yet unclassified' stamp: 'AB 4/6/2019 20:28:57'!
+!CajaDeSeñalesEnDireccionACorrientes class methodsFor: 'as yet unclassified' stamp: 'AB 4/7/2019 21:46:05'!
 initializeCollaboratorsFromFile
 	"Auto generated method for loading purposes - Do not modify it"
 
@@ -89,7 +89,7 @@ CajaDeSeñalesEnDireccionACorrientes subclass: #CajaDeSeñalesEnDireccionAMedrano
 CajaDeSeñalesEnDireccionAMedrano class
 	instanceVariableNames: ''!
 
-!CajaDeSeñalesEnDireccionAMedrano class methodsFor: 'as yet unclassified' stamp: 'AB 4/6/2019 20:28:57'!
+!CajaDeSeñalesEnDireccionAMedrano class methodsFor: 'as yet unclassified' stamp: 'AB 4/7/2019 21:46:06'!
 initializeCollaboratorsFromFile
 	"Auto generated method for loading purposes - Do not modify it"
 
@@ -127,38 +127,38 @@ apagar
 	CajaDeSeñalesEnDireccionACorrientes apagar.
 	CajaDeSeñalesEnDireccionAMedrano apagar.! !
 
-!SemaforoDeCorrientesYMedrano class methodsFor: 'as yet unclassified' stamp: 'AB 4/6/2019 20:20:13'!
-detenerCorrientesAvanzarMedrano
-
-	CajaDeSeñalesEnDireccionACorrientes detenerTrafico.
-	CajaDeSeñalesEnDireccionAMedrano habilitarTrafico.
-	Temporizador interrumpimeEn: 3*second con: [ self detenerMedranoAvanzarCorrientes].! !
-
-!SemaforoDeCorrientesYMedrano class methodsFor: 'as yet unclassified' stamp: 'AB 4/6/2019 20:20:19'!
-detenerMedranoAvanzarCorrientes
-
-	CajaDeSeñalesEnDireccionAMedrano detenerTrafico.
-	CajaDeSeñalesEnDireccionACorrientes habilitarTrafico.
-	Temporizador interrumpimeEn: 3*second con: [ self detenerCorrientesAvanzarMedrano].! !
-
-!SemaforoDeCorrientesYMedrano class methodsFor: 'as yet unclassified' stamp: 'AB 4/6/2019 20:28:57'!
+!SemaforoDeCorrientesYMedrano class methodsFor: 'as yet unclassified' stamp: 'AB 4/7/2019 21:46:06'!
 initializeCollaboratorsFromFile
 	"Auto generated method for loading purposes - Do not modify it"
 
 	morph := nil.! !
 
-!SemaforoDeCorrientesYMedrano class methodsFor: 'as yet unclassified' stamp: 'AB 4/6/2019 20:19:21'!
+!SemaforoDeCorrientesYMedrano class methodsFor: 'as yet unclassified' stamp: 'AB 4/7/2019 21:41:32'!
 prender
 
 	CajaDeSeñalesEnDireccionACorrientes prender. 
 	CajaDeSeñalesEnDireccionAMedrano prender.
 	
 	SeñalDeAvanceEnDireccionACorrientes prender.
-	SeñalDeDetencionEnDireccionAMedrano prender .
+	SeñalDeDetencionEnDireccionAMedrano prender.
 	
-	Temporizador interrumpimeEn: 2*second con: [ self detenerCorrientesAvanzarMedrano ].
+	Temporizador interrumpimeEn: 2*second con: [ self señalDeAvanceEnDireccionAMedranoYSeñalDeDetencionEnDireccionACorrientes ].
 	
 	! !
+
+!SemaforoDeCorrientesYMedrano class methodsFor: 'as yet unclassified' stamp: 'AB 4/7/2019 21:43:27'!
+señalDeAvanceEnDireccionACorrientesYSeñalDeDetencionEnDireccionAMedrano
+
+	CajaDeSeñalesEnDireccionAMedrano detenerTrafico .
+	CajaDeSeñalesEnDireccionACorrientes habilitarTrafico .
+	Temporizador interrumpimeEn: 3*second con: [ self señalDeAvanceEnDireccionAMedranoYSeñalDeDetencionEnDireccionACorrientes].! !
+
+!SemaforoDeCorrientesYMedrano class methodsFor: 'as yet unclassified' stamp: 'AB 4/7/2019 21:43:05'!
+señalDeAvanceEnDireccionAMedranoYSeñalDeDetencionEnDireccionACorrientes
+
+	CajaDeSeñalesEnDireccionACorrientes detenerTrafico .
+	CajaDeSeñalesEnDireccionAMedrano habilitarTrafico .
+	Temporizador interrumpimeEn: 3*second con: [ self señalDeAvanceEnDireccionACorrientesYSeñalDeDetencionEnDireccionAMedrano ].! !
 
 
 !classDefinition: #SeñalDeAdvertenciaEnDireccionACorrientes category: #Semaforo!
@@ -185,7 +185,7 @@ createMorph
 		color: Color black;
 		yourself! !
 
-!SeñalDeAdvertenciaEnDireccionACorrientes class methodsFor: 'as yet unclassified' stamp: 'AB 4/6/2019 20:28:57'!
+!SeñalDeAdvertenciaEnDireccionACorrientes class methodsFor: 'as yet unclassified' stamp: 'AB 4/7/2019 21:46:06'!
 initializeCollaboratorsFromFile
 	"Auto generated method for loading purposes - Do not modify it"
 
@@ -209,7 +209,7 @@ SeñalDeAdvertenciaEnDireccionACorrientes subclass: #SeñalDeAdvertenciaEnDireccio
 SeñalDeAdvertenciaEnDireccionAMedrano class
 	instanceVariableNames: ''!
 
-!SeñalDeAdvertenciaEnDireccionAMedrano class methodsFor: 'as yet unclassified' stamp: 'AB 4/6/2019 20:28:57'!
+!SeñalDeAdvertenciaEnDireccionAMedrano class methodsFor: 'as yet unclassified' stamp: 'AB 4/7/2019 21:46:06'!
 initializeCollaboratorsFromFile
 	"Auto generated method for loading purposes - Do not modify it"
 
@@ -240,7 +240,7 @@ createMorph
 		color: Color black;
 		yourself! !
 
-!SeñalDeAvanceEnDireccionACorrientes class methodsFor: 'as yet unclassified' stamp: 'AB 4/6/2019 20:28:57'!
+!SeñalDeAvanceEnDireccionACorrientes class methodsFor: 'as yet unclassified' stamp: 'AB 4/7/2019 21:46:06'!
 initializeCollaboratorsFromFile
 	"Auto generated method for loading purposes - Do not modify it"
 
@@ -264,7 +264,7 @@ SeñalDeAvanceEnDireccionACorrientes subclass: #SeñalDeAvanceEnDireccionAMedrano
 SeñalDeAvanceEnDireccionAMedrano class
 	instanceVariableNames: ''!
 
-!SeñalDeAvanceEnDireccionAMedrano class methodsFor: 'as yet unclassified' stamp: 'AB 4/6/2019 20:28:57'!
+!SeñalDeAvanceEnDireccionAMedrano class methodsFor: 'as yet unclassified' stamp: 'AB 4/7/2019 21:46:06'!
 initializeCollaboratorsFromFile
 	"Auto generated method for loading purposes - Do not modify it"
 
@@ -295,7 +295,7 @@ createMorph
 		color: Color black;
 		yourself! !
 
-!SeñalDeDetencionEnDireccionACorrientes class methodsFor: 'as yet unclassified' stamp: 'AB 4/6/2019 20:28:57'!
+!SeñalDeDetencionEnDireccionACorrientes class methodsFor: 'as yet unclassified' stamp: 'AB 4/7/2019 21:46:06'!
 initializeCollaboratorsFromFile
 	"Auto generated method for loading purposes - Do not modify it"
 
@@ -319,7 +319,7 @@ SeñalDeDetencionEnDireccionACorrientes subclass: #SeñalDeDetencionEnDireccionAMe
 SeñalDeDetencionEnDireccionAMedrano class
 	instanceVariableNames: ''!
 
-!SeñalDeDetencionEnDireccionAMedrano class methodsFor: 'as yet unclassified' stamp: 'AB 4/6/2019 20:28:57'!
+!SeñalDeDetencionEnDireccionAMedrano class methodsFor: 'as yet unclassified' stamp: 'AB 4/7/2019 21:46:06'!
 initializeCollaboratorsFromFile
 	"Auto generated method for loading purposes - Do not modify it"
 
