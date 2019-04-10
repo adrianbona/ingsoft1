@@ -363,7 +363,7 @@ Numero subclass: #Entero
 	poolDictionaries: ''
 	category: 'Numero-Exercise'!
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 12:20:42'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 14:36:40'!
 * aMultiplier 
 	
 	|  newNumerator newDenominator |
@@ -375,13 +375,13 @@ Numero subclass: #Entero
 
 	(aMultiplier isKindOf: Fraccion)
 	ifTrue: [
-		newNumerator := (self integerValue * aMultiplier numerator integerValue).
-		newDenominator := aMultiplier denominator integerValue.
+		newNumerator := self * aMultiplier numerator.
+		newDenominator := aMultiplier denominator.
 		
-		^newNumerator / newDenominator
+		^ Fraccion with: newNumerator over: newDenominator 
 	].	! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 12:20:58'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 14:35:07'!
 + anAdder 
 
 	|  newNumerator newDenominator |
@@ -393,13 +393,13 @@ Numero subclass: #Entero
 
 	(anAdder isKindOf: Fraccion)
 	ifTrue: [
-		newNumerator := (self integerValue * anAdder denominator integerValue) + (anAdder numerator integerValue).
-		newDenominator := anAdder denominator integerValue.
+		newNumerator := (self * anAdder denominator) + (anAdder numerator).
+		newDenominator := anAdder denominator.
 		
-		^newNumerator / newDenominator
+		^ Fraccion with: newNumerator over: newDenominator 
 	].! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 12:55:52'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 14:39:25'!
 - aSubtrahend 
 	
 	|  newNumerator newDenominator |
@@ -411,14 +411,16 @@ Numero subclass: #Entero
 
 	(aSubtrahend isKindOf: Fraccion)
 	ifTrue: [
-		newNumerator := (self integerValue * aSubtrahend denominator integerValue) - (aSubtrahend numerator integerValue).
-		newDenominator := aSubtrahend denominator integerValue.
+		newNumerator := self * aSubtrahend denominator - aSubtrahend numerator.
+		newDenominator := aSubtrahend denominator.
 		
-		^newNumerator / newDenominator
+		^ Fraccion with: newNumerator over: newDenominator  
 	].! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 12:44:45'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 14:49:12'!
 / aDivisor 
+
+	| newNumerator newDenominator |
 
 	(aDivisor isKindOf: self class)
 	ifTrue: [
@@ -427,7 +429,10 @@ Numero subclass: #Entero
 
 	(aDivisor isKindOf: Fraccion)
 	ifTrue: [
-		^(self * aDivisor denominator ) / (aDivisor denominator)
+		newNumerator := self * aDivisor denominator.
+		newDenominator := aDivisor numerator.
+		
+		^ Fraccion with: newNumerator over: newDenominator 
 	].! !
 
 !Entero methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 21:55'!
@@ -527,25 +532,28 @@ Numero subclass: #Fraccion
 	poolDictionaries: ''
 	category: 'Numero-Exercise'!
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 12:22:03'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 14:37:07'!
 * aMultiplier 
 	
 	|  newNumerator newDenominator |
 	
 	(aMultiplier isKindOf: self class)
 	ifTrue: [
-		^(numerator * aMultiplier numerator) / (denominator * aMultiplier denominator)
+		newNumerator := numerator * aMultiplier numerator.
+		newDenominator := denominator * aMultiplier denominator.
+		
+		^ Fraccion with: newNumerator over: newDenominator
 	].
 
 	(aMultiplier isKindOf: Entero)
 	ifTrue: [
-		newNumerator := (aMultiplier integerValue * self numerator integerValue).
-		newDenominator := self denominator integerValue.
+		newNumerator := aMultiplier * numerator.
+		newDenominator := denominator.
 		
-		^newNumerator / newDenominator
+		^ Fraccion with: newNumerator over: newDenominator
 	].	! !
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 12:21:16'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 14:35:53'!
 + anAdder 
 	
 	| newNumerator newDenominator |
@@ -555,40 +563,60 @@ Numero subclass: #Fraccion
 		newNumerator := (numerator * anAdder denominator) + (denominator * anAdder numerator).
 		newDenominator := denominator * anAdder denominator.
 		
-		^newNumerator / newDenominator
+		^ Fraccion with: newNumerator over: newDenominator
 	].
 	
 	(anAdder isKindOf: Entero)
 	ifTrue: [
-		newNumerator := (anAdder integerValue * self denominator integerValue) + (self numerator integerValue).
-		newDenominator := self denominator integerValue.
+		newNumerator := anAdder * denominator + numerator.
+		newDenominator := denominator.
 		
-		^newNumerator / newDenominator
+		^ Fraccion with: newNumerator over: newDenominator
 	].
 ! !
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'NR 9/23/2018 23:43:50'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 14:38:37'!
 - aSubtrahend 
 	
 	| newNumerator newDenominator |
-	
-	newNumerator := (numerator * aSubtrahend denominator) - (denominator * aSubtrahend numerator).
-	newDenominator := denominator * aSubtrahend denominator.
-	
-	^newNumerator / newDenominator 
+
+	(aSubtrahend isKindOf: self class)
+	ifTrue: [
+		newNumerator := (numerator * aSubtrahend denominator) - (denominator * aSubtrahend numerator).
+		newDenominator := denominator * aSubtrahend denominator.
+		
+		^ Fraccion with: newNumerator over: newDenominator
+	].
+
+	(aSubtrahend isKindOf: Entero)
+	ifTrue: [
+		newNumerator := numerator - (denominator * aSubtrahend).
+		newDenominator := denominator.
+		
+		^ Fraccion with: newNumerator over: newDenominator
+	].
+
 ! !
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 12:43:03'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 14:48:23'!
 / aDivisor 
+
+	| newNumerator newDenominator |
 	
 	(aDivisor isKindOf: self class)
 	ifTrue: [
-		^(numerator * aDivisor denominator) / (denominator * aDivisor numerator)
+		newNumerator := (numerator * aDivisor denominator).
+		newDenominator := (denominator * aDivisor numerator).
+		
+		^ Fraccion with: newNumerator over: newDenominator
 	].
 
-	(aDivisor isKindOf: Fraccion)
+	(aDivisor isKindOf: Entero)
 	ifTrue: [
-		^(numerator) / (denominator * aDivisor numerator)
+		newNumerator := numerator.
+		newDenominator := (denominator * aDivisor).
+		
+		^ Fraccion with: newNumerator over: newDenominator
 	].	! !
 
 
