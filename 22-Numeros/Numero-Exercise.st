@@ -369,7 +369,7 @@ Numero subclass: #Entero
 	^self class with: value * aMultiplier integerValue
 	! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 11:44:51'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 12:08:35'!
 + anAdder 
 
 	|  newNumerator newDenominator |
@@ -500,15 +500,27 @@ Numero subclass: #Fraccion
 	^(numerator * aMultiplier numerator) / (denominator * aMultiplier denominator)
 	! !
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 23:14'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 12:14:29'!
 + anAdder 
 	
 	| newNumerator newDenominator |
+
+	(anAdder isKindOf: self class)
+	ifTrue:[
+		newNumerator := (numerator * anAdder denominator) + (denominator * anAdder numerator).
+		newDenominator := denominator * anAdder denominator.
+		
+		^newNumerator / newDenominator
+	].
 	
-	newNumerator := (numerator * anAdder denominator) + (denominator * anAdder numerator).
-	newDenominator := denominator * anAdder denominator.
-	
-	^newNumerator / newDenominator ! !
+	(anAdder isKindOf: Entero)
+	ifTrue:[
+		newNumerator := (anAdder integerValue * self denominator integerValue) + (self numerator integerValue).
+		newDenominator := self denominator integerValue.
+		
+		^newNumerator / newDenominator
+	].
+! !
 
 !Fraccion methodsFor: 'arithmetic operations' stamp: 'NR 9/23/2018 23:43:50'!
 - aSubtrahend 
