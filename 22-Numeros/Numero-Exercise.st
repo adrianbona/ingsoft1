@@ -399,10 +399,23 @@ Numero subclass: #Entero
 		^newNumerator / newDenominator
 	].! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'NR 9/23/2018 23:40:37'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 12:55:52'!
 - aSubtrahend 
 	
-	^ self class with: value - aSubtrahend integerValue.! !
+	|  newNumerator newDenominator |
+	
+	(aSubtrahend isKindOf: self class)
+	ifTrue: [
+		^ self class with: value - aSubtrahend integerValue.
+	].
+
+	(aSubtrahend isKindOf: Fraccion)
+	ifTrue: [
+		newNumerator := (self integerValue * aSubtrahend denominator integerValue) - (aSubtrahend numerator integerValue).
+		newDenominator := aSubtrahend denominator integerValue.
+		
+		^newNumerator / newDenominator
+	].! !
 
 !Entero methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 12:44:45'!
 / aDivisor 
