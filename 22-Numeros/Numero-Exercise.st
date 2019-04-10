@@ -404,10 +404,18 @@ Numero subclass: #Entero
 	
 	^ self class with: value - aSubtrahend integerValue.! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 23:14'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 12:44:45'!
 / aDivisor 
-	
-	^Fraccion with: self over: aDivisor! !
+
+	(aDivisor isKindOf: self class)
+	ifTrue: [
+		^Fraccion with: self over: aDivisor
+	].
+
+	(aDivisor isKindOf: Fraccion)
+	ifTrue: [
+		^(self * aDivisor denominator ) / (aDivisor denominator)
+	].! !
 
 !Entero methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 21:55'!
 // aDivisor 
@@ -557,10 +565,18 @@ Numero subclass: #Fraccion
 	^newNumerator / newDenominator 
 ! !
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 23:14'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 12:43:03'!
 / aDivisor 
 	
-	^(numerator * aDivisor denominator) / (denominator * aDivisor numerator)! !
+	(aDivisor isKindOf: self class)
+	ifTrue: [
+		^(numerator * aDivisor denominator) / (denominator * aDivisor numerator)
+	].
+
+	(aDivisor isKindOf: Fraccion)
+	ifTrue: [
+		^(numerator) / (denominator * aDivisor numerator)
+	].	! !
 
 
 !Fraccion methodsFor: 'comparing' stamp: 'HernanWilkinson 5/7/2016 20:42'!
