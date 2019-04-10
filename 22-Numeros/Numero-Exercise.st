@@ -381,7 +381,7 @@ Numero subclass: #Entero
 		^ Fraccion with: newNumerator over: newDenominator 
 	].	! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 14:35:07'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 14:52:40'!
 + anAdder 
 
 	|  newNumerator newDenominator |
@@ -393,7 +393,7 @@ Numero subclass: #Entero
 
 	(anAdder isKindOf: Fraccion)
 	ifTrue: [
-		newNumerator := (self * anAdder denominator) + (anAdder numerator).
+		newNumerator := self * anAdder denominator + anAdder numerator.
 		newDenominator := anAdder denominator.
 		
 		^ Fraccion with: newNumerator over: newDenominator 
@@ -417,13 +417,16 @@ Numero subclass: #Entero
 		^ Fraccion with: newNumerator over: newDenominator  
 	].! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 14:49:12'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 14:51:38'!
 / aDivisor 
 
 	| newNumerator newDenominator |
 
 	(aDivisor isKindOf: self class)
 	ifTrue: [
+		newNumerator := self.
+		newDenominator := aDivisor.
+		
 		^Fraccion with: self over: aDivisor
 	].
 
@@ -532,10 +535,10 @@ Numero subclass: #Fraccion
 	poolDictionaries: ''
 	category: 'Numero-Exercise'!
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 14:37:07'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 14:54:10'!
 * aMultiplier 
 	
-	|  newNumerator newDenominator |
+	| newNumerator newDenominator |
 	
 	(aMultiplier isKindOf: self class)
 	ifTrue: [
@@ -598,15 +601,15 @@ Numero subclass: #Fraccion
 
 ! !
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 14:48:23'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 14:53:25'!
 / aDivisor 
 
 	| newNumerator newDenominator |
 	
 	(aDivisor isKindOf: self class)
 	ifTrue: [
-		newNumerator := (numerator * aDivisor denominator).
-		newDenominator := (denominator * aDivisor numerator).
+		newNumerator := numerator * aDivisor denominator.
+		newDenominator := denominator * aDivisor numerator.
 		
 		^ Fraccion with: newNumerator over: newDenominator
 	].
@@ -614,7 +617,7 @@ Numero subclass: #Fraccion
 	(aDivisor isKindOf: Entero)
 	ifTrue: [
 		newNumerator := numerator.
-		newDenominator := (denominator * aDivisor).
+		newDenominator := denominator * aDivisor.
 		
 		^ Fraccion with: newNumerator over: newDenominator
 	].	! !
