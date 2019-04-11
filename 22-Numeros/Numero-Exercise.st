@@ -428,15 +428,10 @@ Numero subclass: #Entero
 	
 	^ self class with: value // aDivisor integerValue! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'AB 4/11/2019 20:42:26'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'AB 4/11/2019 20:54:43'!
 addWithFraction: aFraction 
 
-	|  newNumerator newDenominator |
-	
-	newNumerator := aFraction numerator + (self * aFraction denominator).
-	newDenominator := aFraction denominator.
-	
-	^ Fraccion with: newNumerator over: newDenominator 
+	^ aFraction addWithInteger: self
 ! !
 
 !Entero methodsFor: 'arithmetic operations' stamp: 'AB 4/11/2019 20:42:45'!
@@ -481,15 +476,10 @@ greatestCommonDivisorWith: anEntero
 	
 	^ self class with: (value gcd: anEntero integerValue)! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 17:54:36'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'AB 4/11/2019 20:56:43'!
 multiplyWithFraction: aFraction
 	
-	|  newNumerator newDenominator |
-	
-	newNumerator := aFraction numerator * self.
-	newDenominator := aFraction denominator.
-	
-	^ Fraccion with: newNumerator over: newDenominator 
+	^ aFraction multiplyWithInteger: self
 ! !
 
 !Entero methodsFor: 'arithmetic operations' stamp: 'AB 4/10/2019 17:54:20'!
