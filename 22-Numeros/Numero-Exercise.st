@@ -457,8 +457,10 @@ divideWithInteger: anInteger
 	^ Fraccion with: anInteger over: self
 ! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'HAW 9/24/2018 08:47:50'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'AB 4/11/2019 21:03:24'!
 fibonacci
+
+	"sacar los IFs para puntos extra"
 
 	| one two |
 	
@@ -750,9 +752,11 @@ printOn: aStream
 Fraccion class
 	instanceVariableNames: ''!
 
-!Fraccion class methodsFor: 'intance creation' stamp: 'NR 9/23/2018 23:45:19'!
+!Fraccion class methodsFor: 'intance creation' stamp: 'AB 4/11/2019 21:03:56'!
 with: aDividend over: aDivisor
 
+	"sacar los IFs para puntos extra"
+	
 	| greatestCommonDivisor numerator denominator |
 	
 	aDivisor isZero ifTrue: [ self error: self canNotDivideByZeroErrorDescription ].
