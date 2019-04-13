@@ -549,16 +549,6 @@ isZero
 	^value = 0! !
 
 
-!Entero methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 17:45:24'!
-armarFraccionConDenominador: unDenominador
-
-	^ Fraccion new initializeWith: self over: unDenominador.! !
-
-!Entero methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 17:37:46'!
-armarFraccionConNumerador: unNumerador
-
-	^ unNumerador armarFraccionConDenominador: self.! !
-
 !Entero methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 16:44:26'!
 divides: aDividend
 
@@ -935,7 +925,7 @@ printOn: aStream
 Fraccion class
 	instanceVariableNames: ''!
 
-!Fraccion class methodsFor: 'intance creation' stamp: 'JR 4/13/2019 17:50:57'!
+!Fraccion class methodsFor: 'intance creation' stamp: 'AB 4/13/2019 18:28:18'!
 with: aDividend over: aDivisor
 
 	| greatestCommonDivisor numerator denominator |
@@ -943,5 +933,80 @@ with: aDividend over: aDivisor
 	greatestCommonDivisor := aDividend greatestCommonDivisorWith: aDivisor. 
 	numerator := aDividend // greatestCommonDivisor.
 	denominator := aDivisor integerDivisionForDenominatorWith: greatestCommonDivisor.
-	^ denominator armarFraccionConNumerador: numerator.
-	! !
+	
+	^ (self subclasses
+		detect: [ :fraccionSubClass |
+			fraccionSubClass matchesByNumerator: numerator andDenominator: denominator ]
+		ifNone: [^ self new initializeWith: numerator over: denominator]) with: numerator over: denominator.! !
+
+
+!classDefinition: #FraccionConDenominadorNegativo category: #'Numero-Exercise'!
+Fraccion subclass: #FraccionConDenominadorNegativo
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Numero-Exercise'!
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'FraccionConDenominadorNegativo class' category: #'Numero-Exercise'!
+FraccionConDenominadorNegativo class
+	instanceVariableNames: ''!
+
+!FraccionConDenominadorNegativo class methodsFor: 'as yet unclassified' stamp: 'AB 4/13/2019 18:26:46'!
+matchesByNumerator: aNumerator andDenominator: aDenominator
+
+	^ aDenominator integerValue < 0.! !
+
+!FraccionConDenominadorNegativo class methodsFor: 'as yet unclassified' stamp: 'AB 4/13/2019 18:23:52'!
+with: aDividend over: aDivisor
+
+	^ Fraccion with: aDividend negated over: aDivisor negated.! !
+
+
+!classDefinition: #FraccionConDenominadorUno category: #'Numero-Exercise'!
+Fraccion subclass: #FraccionConDenominadorUno
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Numero-Exercise'!
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'FraccionConDenominadorUno class' category: #'Numero-Exercise'!
+FraccionConDenominadorUno class
+	instanceVariableNames: ''!
+
+!FraccionConDenominadorUno class methodsFor: 'as yet unclassified' stamp: 'AB 4/13/2019 18:26:36'!
+matchesByNumerator: aNumerator andDenominator: aDenominator
+
+	^ aDenominator integerValue = 1.! !
+
+!FraccionConDenominadorUno class methodsFor: 'as yet unclassified' stamp: 'AB 4/13/2019 18:23:13'!
+with: aDividend over: aDivisor
+
+	^ aDividend.! !
+
+
+!classDefinition: #FraccionConNumeradorCero category: #'Numero-Exercise'!
+Fraccion subclass: #FraccionConNumeradorCero
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Numero-Exercise'!
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'FraccionConNumeradorCero class' category: #'Numero-Exercise'!
+FraccionConNumeradorCero class
+	instanceVariableNames: ''!
+
+!FraccionConNumeradorCero class methodsFor: 'as yet unclassified' stamp: 'AB 4/13/2019 18:26:26'!
+matchesByNumerator: aNumerator andDenominator: aDenominator
+
+	^ aNumerator integerValue = 0.! !
+
+!FraccionConNumeradorCero class methodsFor: 'as yet unclassified' stamp: 'AB 4/13/2019 18:22:28'!
+with: aDividend over: aDivisor
+
+	^ Entero with: 0.! !
