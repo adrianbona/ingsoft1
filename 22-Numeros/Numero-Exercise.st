@@ -549,6 +549,16 @@ isZero
 	^value = 0! !
 
 
+!Entero methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 17:45:24'!
+armarFraccionConDenominador: unDenominador
+
+	^ Fraccion new initializeWith: self over: unDenominador.! !
+
+!Entero methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 17:37:46'!
+armarFraccionConNumerador: unNumerador
+
+	^ unNumerador armarFraccionConDenominador: self.! !
+
 !Entero methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 16:44:26'!
 divides: aDividend
 
@@ -592,6 +602,11 @@ Entero subclass: #Cero
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Numero-Exercise'!
+
+!Cero methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 17:48:19'!
+armarFraccionConDenominador: unDenominador
+
+	^ self.! !
 
 !Cero methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 16:34:04'!
 divides: aDividend
@@ -651,6 +666,11 @@ Entero subclass: #Negativo
 	poolDictionaries: ''
 	category: 'Numero-Exercise'!
 
+!Negativo methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 17:49:41'!
+armarFraccionConNumerador: unNumerador
+
+	^ unNumerador negated armarFraccionConDenominador: self negated.! !
+
 !Negativo methodsFor: 'as yet unclassified' stamp: 'AB 4/12/2019 13:55:46'!
 fibonacci
 
@@ -689,6 +709,11 @@ Entero subclass: #Uno
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Numero-Exercise'!
+
+!Uno methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 17:46:43'!
+armarFraccionConNumerador: unNumerador
+
+	^ unNumerador.! !
 
 !Uno methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 16:35:39'!
 divides: aDividend
@@ -910,22 +935,13 @@ printOn: aStream
 Fraccion class
 	instanceVariableNames: ''!
 
-!Fraccion class methodsFor: 'intance creation' stamp: 'JR 4/13/2019 17:14:32'!
+!Fraccion class methodsFor: 'intance creation' stamp: 'JR 4/13/2019 17:50:57'!
 with: aDividend over: aDivisor
 
-	"sacar los IFs para puntos extra"
-	
 	| greatestCommonDivisor numerator denominator |
-	
-	aDividend isZero ifTrue: [ ^aDividend ].
-	
-	aDivisor isNegative ifTrue:[ ^aDividend negated / aDivisor negated].
 	
 	greatestCommonDivisor := aDividend greatestCommonDivisorWith: aDivisor. 
 	numerator := aDividend // greatestCommonDivisor.
 	denominator := aDivisor integerDivisionForDenominatorWith: greatestCommonDivisor.
-	
-	denominator isOne ifTrue: [ ^numerator ].
-
-	^self new initializeWith: numerator over: denominator
+	^ denominator armarFraccionConNumerador: numerator.
 	! !
