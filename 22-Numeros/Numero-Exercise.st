@@ -548,6 +548,22 @@ isZero
 	
 	^value = 0! !
 
+
+!Entero methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 16:44:26'!
+divides: aDividend
+
+	^ aDividend // self.! !
+
+!Entero methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 17:06:51'!
+integerDivisionForDenominatorWith: anInteger
+
+	^ self // anInteger.! !
+
+!Entero methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 16:44:08'!
+over: aDivisor
+
+	^ self // aDivisor.! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'Entero class' category: #'Numero-Exercise'!
@@ -577,10 +593,20 @@ Entero subclass: #Cero
 	poolDictionaries: ''
 	category: 'Numero-Exercise'!
 
+!Cero methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 16:34:04'!
+divides: aDividend
+
+	^ self error: self canNotDivideByZeroErrorDescription.! !
+
 !Cero methodsFor: 'as yet unclassified' stamp: 'AB 4/12/2019 13:42:29'!
 fibonacci
 
 	^ Entero with: 1.! !
+
+!Cero methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 17:14:05'!
+integerDivisionForDenominatorWith: anInteger
+
+	^ self error: Numero canNotDivideByZeroErrorDescription.! !
 
 !Cero methodsFor: 'as yet unclassified' stamp: 'AB 4/12/2019 14:00:16'!
 integerValue
@@ -591,6 +617,11 @@ integerValue
 isZero
 
 	^ true.! !
+
+!Cero methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 16:35:08'!
+over: aDivisor
+	
+	^ self.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -658,6 +689,11 @@ Entero subclass: #Uno
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Numero-Exercise'!
+
+!Uno methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 16:35:39'!
+divides: aDividend
+
+	^ aDividend.! !
 
 !Uno methodsFor: 'as yet unclassified' stamp: 'AB 4/12/2019 13:56:05'!
 fibonacci
@@ -874,21 +910,20 @@ printOn: aStream
 Fraccion class
 	instanceVariableNames: ''!
 
-!Fraccion class methodsFor: 'intance creation' stamp: 'AB 4/11/2019 21:03:56'!
+!Fraccion class methodsFor: 'intance creation' stamp: 'JR 4/13/2019 17:14:32'!
 with: aDividend over: aDivisor
 
 	"sacar los IFs para puntos extra"
 	
 	| greatestCommonDivisor numerator denominator |
 	
-	aDivisor isZero ifTrue: [ self error: self canNotDivideByZeroErrorDescription ].
 	aDividend isZero ifTrue: [ ^aDividend ].
 	
 	aDivisor isNegative ifTrue:[ ^aDividend negated / aDivisor negated].
 	
 	greatestCommonDivisor := aDividend greatestCommonDivisorWith: aDivisor. 
 	numerator := aDividend // greatestCommonDivisor.
-	denominator := aDivisor // greatestCommonDivisor.
+	denominator := aDivisor integerDivisionForDenominatorWith: greatestCommonDivisor.
 	
 	denominator isOne ifTrue: [ ^numerator ].
 
