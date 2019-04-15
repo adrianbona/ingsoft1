@@ -391,8 +391,9 @@ canNotDivideByZeroErrorDescription
 
 	^'No se puede dividir por cero'! !
 
-!Numero class methodsFor: 'error descriptions' stamp: 'NR 4/8/2019 02:58:13'!
+!Numero class methodsFor: 'error descriptions' stamp: 'AB 4/15/2019 00:04:09'!
 invalidNumberTypeErrorDescription
+
 	^ 'Tipo de número inválido'! !
 
 
@@ -549,20 +550,10 @@ isZero
 	^value = 0! !
 
 
-!Entero methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 16:44:26'!
-divides: aDividend
-
-	^ aDividend // self.! !
-
-!Entero methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 17:06:51'!
+!Entero methodsFor: 'as yet unclassified' stamp: 'AB 4/15/2019 00:14:54'!
 integerDivisionForDenominatorWith: anInteger
 
-	^ self // anInteger.! !
-
-!Entero methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 16:44:08'!
-over: aDivisor
-
-	^ self // aDivisor.! !
+	^ self // anInteger! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -570,19 +561,20 @@ over: aDivisor
 Entero class
 	instanceVariableNames: ''!
 
-!Entero class methodsFor: 'instance creation' stamp: 'NR 4/8/2019 02:57:57'!
+!Entero class methodsFor: 'instance creation' stamp: 'AB 4/15/2019 00:06:25'!
 negativeFibonacciErrorDescription
+
 	^ ' Fibonacci no está definido aquí para Enteros Negativos'! !
 
-!Entero class methodsFor: 'instance creation' stamp: 'AB 4/12/2019 20:47:20'!
-with: aValue 
-	
+!Entero class methodsFor: 'instance creation' stamp: 'AB 4/15/2019 00:06:39'!
+with: aValue
+
 	"Esta verificacion esta puesta por si se equivocan y quieren crear un Entero pasando otra cosa que un Integer - Hernan"
 	aValue isInteger ifFalse: [  self error: 'aValue debe ser anInteger' ].
-		
+
 	^ (self subclasses
 		detect: [ :enteroSubClass |
-			enteroSubClass matchesInteger: aValue ]
+			enteroSubClass matchesValue: aValue ]
 		ifNone: [^self new initalizeWith: aValue]) new initalizeWith: aValue.! !
 
 
@@ -593,40 +585,30 @@ Entero subclass: #Cero
 	poolDictionaries: ''
 	category: 'Numero-Exercise'!
 
-!Cero methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 17:48:19'!
+!Cero methodsFor: 'as yet unclassified' stamp: 'AB 4/15/2019 00:14:38'!
 armarFraccionConDenominador: unDenominador
 
-	^ self.! !
+	^ self! !
 
-!Cero methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 16:34:04'!
-divides: aDividend
-
-	^ self error: self canNotDivideByZeroErrorDescription.! !
-
-!Cero methodsFor: 'as yet unclassified' stamp: 'AB 4/12/2019 13:42:29'!
+!Cero methodsFor: 'as yet unclassified' stamp: 'AB 4/15/2019 00:14:35'!
 fibonacci
 
-	^ Entero with: 1.! !
+	^ Entero with: 1! !
 
-!Cero methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 17:14:05'!
+!Cero methodsFor: 'as yet unclassified' stamp: 'AB 4/15/2019 00:14:31'!
 integerDivisionForDenominatorWith: anInteger
 
-	^ self error: Numero canNotDivideByZeroErrorDescription.! !
+	^ self error: Numero canNotDivideByZeroErrorDescription! !
 
-!Cero methodsFor: 'as yet unclassified' stamp: 'AB 4/12/2019 14:00:16'!
+!Cero methodsFor: 'as yet unclassified' stamp: 'AB 4/15/2019 00:14:27'!
 integerValue
 
-	^ 0.! !
+	^ 0! !
 
-!Cero methodsFor: 'as yet unclassified' stamp: 'AB 4/12/2019 13:41:32'!
+!Cero methodsFor: 'as yet unclassified' stamp: 'AB 4/15/2019 00:14:24'!
 isZero
 
-	^ true.! !
-
-!Cero methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 16:35:08'!
-over: aDivisor
-	
-	^ self.! !
+	^ true! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -634,18 +616,18 @@ over: aDivisor
 Cero class
 	instanceVariableNames: ''!
 
-!Cero class methodsFor: 'as yet unclassified' stamp: 'AB 4/12/2019 15:15:59'!
-matchesInteger: anInteger
+!Cero class methodsFor: 'as yet unclassified' stamp: 'AB 4/15/2019 00:05:08'!
+matchesValue: anInteger
 
 	^ anInteger = 0.! !
 
-!Cero class methodsFor: 'as yet unclassified' stamp: 'AB 4/12/2019 20:57:10'!
+!Cero class methodsFor: 'as yet unclassified' stamp: 'AB 4/15/2019 00:05:08'!
 with: aValue 
 	
 	"Esta verificacion esta puesta por si se equivocan y quieren crear un Entero pasando otra cosa que un Integer - Hernan"
 	aValue isInteger ifFalse: [  self error: 'aValue debe ser anInteger' ].
 	
-	(self matchesInteger: aValue) ifTrue: [^ self new initalizeWith: aValue].
+	(self matchesValue: aValue) ifTrue: [^ self new initalizeWith: aValue].
 	^ Entero with: aValue.! !
 
 
@@ -656,21 +638,15 @@ Entero subclass: #Negativo
 	poolDictionaries: ''
 	category: 'Numero-Exercise'!
 
-!Negativo methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 17:49:41'!
-armarFraccionConNumerador: unNumerador
-
-	^ unNumerador negated armarFraccionConDenominador: self negated.! !
-
-!Negativo methodsFor: 'as yet unclassified' stamp: 'AB 4/12/2019 13:55:46'!
+!Negativo methodsFor: 'as yet unclassified' stamp: 'AB 4/15/2019 00:13:47'!
 fibonacci
 
-	self error: Entero negativeFibonacciErrorDescription.
-! !
+	self error: Entero negativeFibonacciErrorDescription! !
 
-!Negativo methodsFor: 'as yet unclassified' stamp: 'AB 4/12/2019 13:40:54'!
+!Negativo methodsFor: 'as yet unclassified' stamp: 'AB 4/15/2019 00:13:42'!
 isNegative
 
-	^ true.! !
+	^ true! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -678,18 +654,18 @@ isNegative
 Negativo class
 	instanceVariableNames: ''!
 
-!Negativo class methodsFor: 'as yet unclassified' stamp: 'AB 4/12/2019 15:16:14'!
-matchesInteger: anInteger
+!Negativo class methodsFor: 'as yet unclassified' stamp: 'AB 4/15/2019 00:05:08'!
+matchesValue: anInteger
 
 	^ anInteger < 0.! !
 
-!Negativo class methodsFor: 'as yet unclassified' stamp: 'AB 4/12/2019 20:58:15'!
+!Negativo class methodsFor: 'as yet unclassified' stamp: 'AB 4/15/2019 00:05:08'!
 with: aValue 
 	
 	"Esta verificacion esta puesta por si se equivocan y quieren crear un Entero pasando otra cosa que un Integer - Hernan"
 	aValue isInteger ifFalse: [  self error: 'aValue debe ser anInteger' ].
 	
-	(self matchesInteger: aValue) ifTrue: [^ self new initalizeWith: aValue].
+	(self matchesValue: aValue) ifTrue: [^ self new initalizeWith: aValue].
 	^ Entero with: aValue.! !
 
 
@@ -700,30 +676,20 @@ Entero subclass: #Uno
 	poolDictionaries: ''
 	category: 'Numero-Exercise'!
 
-!Uno methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 17:46:43'!
-armarFraccionConNumerador: unNumerador
-
-	^ unNumerador.! !
-
-!Uno methodsFor: 'as yet unclassified' stamp: 'JR 4/13/2019 16:35:39'!
-divides: aDividend
-
-	^ aDividend.! !
-
-!Uno methodsFor: 'as yet unclassified' stamp: 'AB 4/12/2019 13:56:05'!
+!Uno methodsFor: 'as yet unclassified' stamp: 'AB 4/15/2019 00:13:07'!
 fibonacci
 
-	^ self.! !
+	^ self! !
 
-!Uno methodsFor: 'as yet unclassified' stamp: 'AB 4/12/2019 14:00:11'!
+!Uno methodsFor: 'as yet unclassified' stamp: 'AB 4/15/2019 00:13:03'!
 integerValue
 
-	^ 1.! !
+	^ 1! !
 
-!Uno methodsFor: 'as yet unclassified' stamp: 'AB 4/12/2019 13:41:11'!
+!Uno methodsFor: 'as yet unclassified' stamp: 'AB 4/15/2019 00:12:59'!
 isOne
 
-	^ true.! !
+	^ true! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -731,18 +697,18 @@ isOne
 Uno class
 	instanceVariableNames: ''!
 
-!Uno class methodsFor: 'as yet unclassified' stamp: 'AB 4/12/2019 15:16:36'!
-matchesInteger: anInteger
+!Uno class methodsFor: 'as yet unclassified' stamp: 'AB 4/15/2019 00:05:08'!
+matchesValue: anInteger
 
 	^ anInteger = 1.! !
 
-!Uno class methodsFor: 'as yet unclassified' stamp: 'AB 4/12/2019 20:58:09'!
+!Uno class methodsFor: 'as yet unclassified' stamp: 'AB 4/15/2019 00:05:08'!
 with: aValue 
 	
 	"Esta verificacion esta puesta por si se equivocan y quieren crear un Entero pasando otra cosa que un Integer - Hernan"
 	aValue isInteger ifFalse: [  self error: 'aValue debe ser anInteger' ].
 	
-	(self matchesInteger: aValue) ifTrue: [^ self new initalizeWith: aValue].
+	(self matchesValue: aValue) ifTrue: [^ self new initalizeWith: aValue].
 	^ Entero with: aValue.! !
 
 
