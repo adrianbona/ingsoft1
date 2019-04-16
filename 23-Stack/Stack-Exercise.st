@@ -220,10 +220,11 @@ test07returnsEmptyCollectionWhenSearchingForNonMatchingStringInTwoElementStack
 
 	self assert: (SentenceFinderByPrefix find: nonMatchingString in: twoElementsStack) size = 0! !
 
-!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/16/2019 18:40:43'!
-test08catadraExampleWorks
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/16/2019 18:45:03'!
+test08catedraExampleWorks
 
-	self assert: (SentenceFinderByPrefix find: catedraPrefix in: catedraStack) size = 1! !
+	self assert: (SentenceFinderByPrefix find: catedraPrefix in: catedraStack) size = 1.
+	self assert: (SentenceFinderByPrefix find: catedraPrefix in: catedraStack) first = 'Winter is here'! !
 
 
 !classDefinition: #OOStack category: #'Stack-Exercise'!
