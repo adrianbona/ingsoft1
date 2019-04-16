@@ -139,12 +139,12 @@ test10CanNotTopWhenThereAreNoObjectsInTheStack
 
 !classDefinition: #SentenceFinderByPrefixTest category: #'Stack-Exercise'!
 TestCase subclass: #SentenceFinderByPrefixTest
-	instanceVariableNames: 'emptyString whiteSpaceString emptyStack oneElementStack oneString twoString twoElementsStack nonMatchingString'
+	instanceVariableNames: 'emptyString whiteSpaceString emptyStack oneElementStack oneString twoString twoElementsStack nonMatchingString catedraPrefix catedraStack'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
-!SentenceFinderByPrefixTest methodsFor: 'setup' stamp: 'AB 4/16/2019 18:31:21'!
+!SentenceFinderByPrefixTest methodsFor: 'setup' stamp: 'AB 4/16/2019 18:40:07'!
 setUp
 
 	emptyString := ''.
@@ -157,7 +157,9 @@ setUp
 	emptyStack := OOStack new.
 	oneElementStack := OOStack new push: oneString.
 	twoElementsStack := (OOStack new push: oneString) push: twoString.
-! !
+
+	catedraPrefix := 'Wint'.
+	catedraStack := (((OOStack new push: 'winter is coming') push: 'winning is everything') push: 'The winds of Winter') push: 'Winter is here'.! !
 
 
 !SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/16/2019 18:33:49'!
@@ -217,6 +219,11 @@ test06returnsAnErrorWhenSearchingForEmptyStringInTwoElementStack
 test07returnsEmptyCollectionWhenSearchingForNonMatchingStringInTwoElementStack
 
 	self assert: (SentenceFinderByPrefix find: nonMatchingString in: twoElementsStack) size = 0! !
+
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/16/2019 18:40:43'!
+test08catadraExampleWorks
+
+	self assert: (SentenceFinderByPrefix find: catedraPrefix in: catedraStack) size = 1! !
 
 
 !classDefinition: #OOStack category: #'Stack-Exercise'!
