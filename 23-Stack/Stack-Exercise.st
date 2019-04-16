@@ -139,10 +139,27 @@ test10CanNotTopWhenThereAreNoObjectsInTheStack
 
 !classDefinition: #SentenceFinderByPrefixTest category: #'Stack-Exercise'!
 TestCase subclass: #SentenceFinderByPrefixTest
-	instanceVariableNames: ''
+	instanceVariableNames: 'emptyStack'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
+
+!SentenceFinderByPrefixTest methodsFor: 'setup' stamp: 'AB 4/16/2019 13:23:20'!
+setUp
+
+	emptyStack := OOStack new.
+! !
+
+
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/16/2019 13:23:10'!
+test01emptyStackReturnsNoResults
+
+	self assert: emptyStack size = 0! !
+
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/16/2019 13:23:33'!
+test01emptyStackReturnsNoResultsWhenFiltering
+
+	self assert: emptyStack size = 0! !
 
 
 !classDefinition: #OOStack category: #'Stack-Exercise'!
