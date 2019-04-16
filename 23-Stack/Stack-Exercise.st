@@ -139,22 +139,84 @@ test10CanNotTopWhenThereAreNoObjectsInTheStack
 
 !classDefinition: #SentenceFinderByPrefixTest category: #'Stack-Exercise'!
 TestCase subclass: #SentenceFinderByPrefixTest
-	instanceVariableNames: 'emptyStack'
+	instanceVariableNames: 'emptyString whiteSpaceString emptyStack oneElementStack oneString twoString twoElementsStack nonMatchingString'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
-!SentenceFinderByPrefixTest methodsFor: 'setup' stamp: 'AB 4/16/2019 13:23:20'!
+!SentenceFinderByPrefixTest methodsFor: 'setup' stamp: 'AB 4/16/2019 18:31:21'!
 setUp
 
+	emptyString := ''.
+	whiteSpaceString := ' '.
+	nonMatchingString := 'XXX'.
+	
+	oneString := '111'.
+	twoString := '222'.
+
 	emptyStack := OOStack new.
+	oneElementStack := OOStack new push: oneString.
+	twoElementsStack := (OOStack new push: oneString) push: twoString.
 ! !
 
 
-!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/16/2019 13:23:33'!
-test01emptyStackReturnsNoResultsWhenFiltering
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/16/2019 18:33:49'!
+test01returnsNoResultsWhenSearchingInEmptyStack
 
-	self assert: emptyStack size = 0! !
+	self assert: (SentenceFinderByPrefix find: oneString in: emptyStack) size = 0! !
+
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/16/2019 18:23:07'!
+test02returnsAnErrorWhenSearchingForEmptyStringInEmptyStack
+
+	self should: [
+		SentenceFinderByPrefix find: emptyString in: emptyStack.
+	]
+	raise: Error
+	withExceptionDo: [ :anError | 
+		self assert: anError messageText = SentenceFinderByPrefix prefixEmptyErrorDescription.
+	]! !
+
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/16/2019 18:23:45'!
+test03returnsAnErrorWhenSearchingForEmptyStringInOneElementStack
+
+	self should: [
+		SentenceFinderByPrefix find: emptyString in: oneElementStack.
+	]
+	raise: Error
+	withExceptionDo: [ :anError | 
+		self assert: anError messageText = SentenceFinderByPrefix prefixEmptyErrorDescription.
+	]! !
+
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/16/2019 18:34:17'!
+test04returnsEmptyCollectionWhenSearchingForNonMatchingStringInOneElementStack
+
+	self assert: (SentenceFinderByPrefix find: nonMatchingString in: oneElementStack) size = 0! !
+
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/16/2019 18:34:29'!
+test05returnsACollectionWithMatchingElementWhenSearchingForAMatchingStringInOneElementStack
+
+	| aCollection |
+	
+	aCollection := SentenceFinderByPrefix find: oneString in: oneElementStack.
+
+	self assert: aCollection size = 1.
+	self assert: aCollection first = oneElementStack pop.! !
+
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/16/2019 18:30:17'!
+test06returnsAnErrorWhenSearchingForEmptyStringInTwoElementStack
+
+	self should: [
+		SentenceFinderByPrefix find: emptyString in: twoElementsStack.
+	]
+	raise: Error
+	withExceptionDo: [ :anError | 
+		self assert: anError messageText = SentenceFinderByPrefix prefixEmptyErrorDescription.
+	]! !
+
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/16/2019 18:34:48'!
+test07returnsEmptyCollectionWhenSearchingForNonMatchingStringInTwoElementStack
+
+	self assert: (SentenceFinderByPrefix find: nonMatchingString in: twoElementsStack) size = 0! !
 
 
 !classDefinition: #OOStack category: #'Stack-Exercise'!
@@ -223,6 +285,49 @@ Object subclass: #SentenceFinderByPrefix
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'SentenceFinderByPrefix class' category: #'Stack-Exercise'!
+SentenceFinderByPrefix class
+	instanceVariableNames: ''!
+
+!SentenceFinderByPrefix class methodsFor: 'as yet unclassified' stamp: 'AB 4/16/2019 18:07:27'!
+find: aPrefix in: aStack
+
+	| aCollection backUpStack |
+
+	aPrefix size = 0 ifTrue: [ ^ self error: self prefixEmptyErrorDescription]. 
+
+	aCollection := OrderedCollection new.
+	backUpStack := OOStack new.
+
+	[aStack isEmpty] whileFalse: [
+		| anElement |
+		anElement := aStack pop.
+
+		(anElement indexOfSubCollection: aPrefix startingAt: 1 ifAbsent: []) = 1 ifTrue: [
+			aCollection add: anElement.
+		].
+
+		backUpStack push: anElement.
+	].
+
+	[backUpStack isEmpty] whileFalse: [
+		| anElement |
+		anElement := backUpStack pop.
+		aStack push: anElement.
+	].
+
+	^ aCollection ! !
+
+!SentenceFinderByPrefix class methodsFor: 'as yet unclassified' stamp: 'AB 4/16/2019 17:59:30'!
+prefixCantContainWhiteSpacesErrorDescription
+	^ 'Prefix can not contain white spaces'.! !
+
+!SentenceFinderByPrefix class methodsFor: 'as yet unclassified' stamp: 'AB 4/16/2019 17:59:04'!
+prefixEmptyErrorDescription
+	^ 'Prefix can not be an empty string'.! !
 
 
 !classDefinition: #StackBottom category: #'Stack-Exercise'!
