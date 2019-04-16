@@ -147,10 +147,52 @@ TestCase subclass: #SentenceFinderByPrefixTest
 
 !classDefinition: #OOStack category: #'Stack-Exercise'!
 Object subclass: #OOStack
-	instanceVariableNames: ''
+	instanceVariableNames: 'size top'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
+
+!OOStack methodsFor: 'handling' stamp: 'AB 4/16/2019 11:48:51'!
+isEmpty
+
+	^ top isEmpty! !
+
+!OOStack methodsFor: 'handling' stamp: 'AB 4/16/2019 11:49:35'!
+pop
+
+	| topElement |
+	
+	topElement _ top value.
+	top _ top previous.
+	size _ size - 1.
+	
+	^ topElement.! !
+
+!OOStack methodsFor: 'handling' stamp: 'AB 4/16/2019 11:52:05'!
+push: anElement
+
+	| newElementOnTop |
+
+	newElementOnTop _ StackElement new.
+	newElementOnTop withElement: anElement andPrevious: top.
+	size _ size + 1.
+	top _ newElementOnTop.! !
+
+!OOStack methodsFor: 'handling' stamp: 'AB 4/16/2019 11:52:10'!
+size
+
+	^ size! !
+
+!OOStack methodsFor: 'handling' stamp: 'AB 4/16/2019 11:52:14'!
+top
+
+	^ top value! !
+
+
+!OOStack methodsFor: 'initialization'!
+initialize
+	size _ 0.
+	top _ StackBottom new.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -158,10 +200,9 @@ Object subclass: #OOStack
 OOStack class
 	instanceVariableNames: ''!
 
-!OOStack class methodsFor: 'error descriptions' stamp: 'HernanWilkinson 5/7/2012 11:51'!
+!OOStack class methodsFor: 'error descriptions'!
 stackEmptyErrorDescription
-	
-	^ 'Stack is empty'! !
+	^ 'Stack is empty'.! !
 
 
 !classDefinition: #SentenceFinderByPrefix category: #'Stack-Exercise'!
@@ -170,3 +211,56 @@ Object subclass: #SentenceFinderByPrefix
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
+
+
+!classDefinition: #StackBottom category: #'Stack-Exercise'!
+Object subclass: #StackBottom
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Stack-Exercise'!
+
+!StackBottom methodsFor: 'handling' stamp: 'AB 4/16/2019 11:44:56'!
+isEmpty
+
+	^ true! !
+
+!StackBottom methodsFor: 'handling' stamp: 'AB 4/16/2019 11:45:00'!
+previous
+
+	self error: OOStack stackEmptyErrorDescription! !
+
+!StackBottom methodsFor: 'handling' stamp: 'AB 4/16/2019 11:45:05'!
+value
+
+	self error: OOStack stackEmptyErrorDescription! !
+
+
+!classDefinition: #StackElement category: #'Stack-Exercise'!
+Object subclass: #StackElement
+	instanceVariableNames: 'value previous'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Stack-Exercise'!
+
+!StackElement methodsFor: 'handling' stamp: 'AB 4/16/2019 11:45:52'!
+isEmpty
+
+	^ false! !
+
+!StackElement methodsFor: 'handling' stamp: 'AB 4/16/2019 11:45:57'!
+previous
+
+	^ previous! !
+
+!StackElement methodsFor: 'handling' stamp: 'AB 4/16/2019 11:46:04'!
+value
+
+	^ value! !
+
+
+!StackElement methodsFor: 'initialization' stamp: 'AB 4/16/2019 11:46:36'!
+withElement: anElement andPrevious: aStackElement
+
+	value _ anElement.
+	previous _ aStackElement.! !
