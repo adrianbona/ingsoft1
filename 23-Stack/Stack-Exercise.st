@@ -162,83 +162,83 @@ setUp
 	catedraStack := (((OOStack new push: 'winter is coming') push: 'winning is everything') push: 'The winds of Winter') push: 'Winter is here'.! !
 
 
-!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/16/2019 18:33:49'!
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/21/2019 17:02:38'!
 test01returnsNoResultsWhenSearchingInEmptyStack
 
-	self assert: (SentenceFinderByPrefix find: oneString in: emptyStack) size = 0! !
+	self assert: ((SentenceFinderByPrefix searchIn: emptyStack) find: oneString) size = 0! !
 
-!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/16/2019 18:23:07'!
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/21/2019 16:53:07'!
 test02returnsAnErrorWhenSearchingForEmptyStringInEmptyStack
 
 	self should: [
-		SentenceFinderByPrefix find: emptyString in: emptyStack.
+		(SentenceFinderByPrefix searchIn: emptyStack) find: emptyString.
 	]
 	raise: Error
 	withExceptionDo: [ :anError | 
 		self assert: anError messageText = SentenceFinderByPrefix prefixEmptyErrorDescription.
 	]! !
 
-!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/16/2019 18:23:45'!
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/21/2019 17:03:06'!
 test03returnsAnErrorWhenSearchingForEmptyStringInOneElementStack
 
 	self should: [
-		SentenceFinderByPrefix find: emptyString in: oneElementStack.
+		(SentenceFinderByPrefix searchIn: oneElementStack) find: emptyString.
 	]
 	raise: Error
 	withExceptionDo: [ :anError | 
 		self assert: anError messageText = SentenceFinderByPrefix prefixEmptyErrorDescription.
 	]! !
 
-!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/16/2019 18:34:17'!
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/21/2019 17:03:52'!
 test04returnsEmptyCollectionWhenSearchingForNonMatchingStringInOneElementStack
 
-	self assert: (SentenceFinderByPrefix find: nonMatchingString in: oneElementStack) size = 0! !
+	self assert: ((SentenceFinderByPrefix searchIn: oneElementStack) find: nonMatchingString) size = 0! !
 
-!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/16/2019 18:34:29'!
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/21/2019 17:04:18'!
 test05returnsACollectionWithMatchingElementWhenSearchingForAMatchingStringInOneElementStack
 
 	| aCollection |
 	
-	aCollection := SentenceFinderByPrefix find: oneString in: oneElementStack.
+	aCollection := (SentenceFinderByPrefix searchIn: oneElementStack) find: oneString.
 
 	self assert: aCollection size = 1.
 	self assert: aCollection first = oneElementStack pop.! !
 
-!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/16/2019 18:30:17'!
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/21/2019 17:04:35'!
 test06returnsAnErrorWhenSearchingForEmptyStringInTwoElementStack
 
 	self should: [
-		SentenceFinderByPrefix find: emptyString in: twoElementsStack.
+		(SentenceFinderByPrefix searchIn: twoElementsStack) find: emptyString.
 	]
 	raise: Error
 	withExceptionDo: [ :anError | 
 		self assert: anError messageText = SentenceFinderByPrefix prefixEmptyErrorDescription.
 	]! !
 
-!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/16/2019 18:34:48'!
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/21/2019 17:05:06'!
 test07returnsEmptyCollectionWhenSearchingForNonMatchingStringInTwoElementStack
 
-	self assert: (SentenceFinderByPrefix find: nonMatchingString in: twoElementsStack) size = 0! !
+	self assert: ((SentenceFinderByPrefix searchIn: twoElementsStack) find: nonMatchingString) size = 0! !
 
-!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/16/2019 18:45:03'!
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/21/2019 17:05:56'!
 test08catedraExampleWorks
 
-	self assert: (SentenceFinderByPrefix find: catedraPrefix in: catedraStack) size = 1.
-	self assert: (SentenceFinderByPrefix find: catedraPrefix in: catedraStack) first = 'Winter is here'! !
+	self assert: ((SentenceFinderByPrefix searchIn: catedraStack) find: catedraPrefix) size = 1.
+	self assert: ((SentenceFinderByPrefix searchIn: catedraStack) find: catedraPrefix) first = 'Winter is here'! !
 
-!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'jr 4/16/2019 19:00:20'!
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/21/2019 17:06:30'!
 test09returnsEmptyCollectionWhenSearchingForMatchingStringWithDifferentCasing
 
-	self assert: (SentenceFinderByPrefix find: 'foo' in: twoElementsStack ) size = 0! !
+	self assert: ((SentenceFinderByPrefix searchIn: twoElementsStack) find: 'foo') size = 0! !
 
-!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'jr 4/16/2019 19:07:35'!
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/21/2019 17:06:52'!
 test10stackDoesntMutateAfterSentenceFinder
 
 	| comparingStack |
 	
 	comparingStack := (OOStack new push: oneString ) push: twoString .
 	
-	SentenceFinderByPrefix find: nonMatchingString in: twoElementsStack.
+	(SentenceFinderByPrefix searchIn: twoElementsStack) find: nonMatchingString.
 	
 	self assert: comparingStack pop equals: twoElementsStack pop.
 	
@@ -248,33 +248,33 @@ test10stackDoesntMutateAfterSentenceFinder
 	
 	self assert: twoElementsStack isEmpty.! !
 
-!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'jr 4/16/2019 19:13:37'!
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/21/2019 17:07:42'!
 test11returnsAnErrorWhenSearchingForStringWithWhitespaceInOneElementStack
 
 	self should: [
-		SentenceFinderByPrefix find: whiteSpaceString in: oneElementStack.
+		(SentenceFinderByPrefix searchIn: oneElementStack) find: whiteSpaceString.
 	]
 	raise: Error
 	withExceptionDo: [ :anError | 
 		self assert: anError messageText = SentenceFinderByPrefix prefixCantContainWhiteSpacesErrorDescription.
 	]! !
 
-!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'jr 4/16/2019 19:32:31'!
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/21/2019 17:08:22'!
 test12returnsAnErrorWhenSearchingForStringWithWhitespaceInEmptyStack
 
 	self should: [
-		SentenceFinderByPrefix find: whiteSpaceString in: emptyStack.
+		(SentenceFinderByPrefix searchIn: emptyStack) find: whiteSpaceString.
 	]
 	raise: Error
 	withExceptionDo: [ :anError | 
 		self assert: anError messageText = SentenceFinderByPrefix prefixCantContainWhiteSpacesErrorDescription.
 	]! !
 
-!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'jr 4/16/2019 19:32:53'!
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'AB 4/21/2019 17:08:01'!
 test13returnsAnErrorWhenSearchingForStringWithWhitespaceInTwoElementStack
 
 	self should: [
-		SentenceFinderByPrefix find: whiteSpaceString in: twoElementsStack .
+		(SentenceFinderByPrefix searchIn: twoElementsStack) find: whiteSpaceString.
 	]
 	raise: Error
 	withExceptionDo: [ :anError | 
@@ -344,30 +344,29 @@ stackEmptyErrorDescription
 
 !classDefinition: #SentenceFinderByPrefix category: #'Stack-Exercise'!
 Object subclass: #SentenceFinderByPrefix
-	instanceVariableNames: ''
+	instanceVariableNames: 'stack'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+!SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'AB 4/21/2019 17:17:21'!
+find: aPrefix
 
-!classDefinition: 'SentenceFinderByPrefix class' category: #'Stack-Exercise'!
-SentenceFinderByPrefix class
-	instanceVariableNames: ''!
+	aPrefix size = 0 ifTrue: [self error: SentenceFinderByPrefix prefixEmptyErrorDescription]. 
 
-!SentenceFinderByPrefix class methodsFor: 'as yet unclassified' stamp: 'jr 4/16/2019 19:43:29'!
-find: aPrefix in: aStack
+	(aPrefix indexOfSubCollection: ' ' startingAt: 1) > 0 ifTrue: [self error: SentenceFinderByPrefix prefixCantContainWhiteSpacesErrorDescription].
+
+	^ self findWhileKeepingTheStackInOrder: aPrefix ! !
+
+!SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'AB 4/21/2019 17:16:59'!
+findWhileKeepingTheStackInOrder: aPrefix
 
 	| aCollection backUpStack |
 
-	aPrefix size = 0 ifTrue: [ ^ self error: self prefixEmptyErrorDescription]. 
-
-	(aPrefix indexOfSubCollection: ' ' startingAt: 1) > 0 ifTrue: [^ self error: self prefixCantContainWhiteSpacesErrorDescription.].
-	
 	aCollection := OrderedCollection new.
 	backUpStack := OOStack new.
 
-	self moveFrom: aStack to: backUpStack whileDoing:
+	SentenceFinderByPrefix moveFrom: stack to: backUpStack whileDoing:
 	[
 		:anElement | (anElement indexOfSubCollection: aPrefix startingAt: 1) = 1 ifTrue:
 		[
@@ -375,10 +374,26 @@ find: aPrefix in: aStack
 		].
 	].
 
-	self moveFrom: backUpStack to: aStack.
+	SentenceFinderByPrefix moveFrom: backUpStack to: stack.
 
+	^ aCollection! !
 
-	^ aCollection ! !
+!SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'AB 4/21/2019 16:37:12'!
+initializeWith: aStack
+
+	stack _ aStack.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'SentenceFinderByPrefix class' category: #'Stack-Exercise'!
+SentenceFinderByPrefix class
+	instanceVariableNames: ''!
+
+!SentenceFinderByPrefix class methodsFor: 'instance initialization' stamp: 'AB 4/21/2019 16:51:38'!
+searchIn: aStack
+
+	^ self new initializeWith: aStack! !
+
 
 !SentenceFinderByPrefix class methodsFor: 'as yet unclassified' stamp: 'jr 4/16/2019 19:42:36'!
 moveFrom: originStack to: destinationStack
@@ -397,12 +412,15 @@ moveFrom: originStack to: destinationStack whileDoing: aBlock
 		destinationStack push: anElement.
 	].! !
 
-!SentenceFinderByPrefix class methodsFor: 'as yet unclassified' stamp: 'AB 4/16/2019 17:59:30'!
+
+!SentenceFinderByPrefix class methodsFor: 'exception' stamp: 'jr 4/16/2019 19:57:51'!
 prefixCantContainWhiteSpacesErrorDescription
+
 	^ 'Prefix can not contain white spaces'.! !
 
-!SentenceFinderByPrefix class methodsFor: 'as yet unclassified' stamp: 'AB 4/16/2019 17:59:04'!
+!SentenceFinderByPrefix class methodsFor: 'exception' stamp: 'jr 4/16/2019 19:57:54'!
 prefixEmptyErrorDescription
+
 	^ 'Prefix can not be an empty string'.! !
 
 
