@@ -1,4 +1,4 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3690] on 3 May 2019 at 10:16:34 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3725] on 5 May 2019 at 9:47:56 pm'!
 !classDefinition: #Integer category: #'Kernel-Numbers'!
 Number subclass: #Integer
 	instanceVariableNames: ''
@@ -1898,7 +1898,24 @@ slidingLeftRightRaisedTo: n modulo: m
 	^pow normalize! !
 
 
-!Integer methodsFor: 'Romanos' stamp: 'AB 5/3/2019 10:08:40'!
+!Integer methodsFor: 'romanos' stamp: 'AB 5/5/2019 21:44:24'!
+appendAsRomanStringTen: aStream
+	
+	(self between: 1 and: 3) ifTrue: [
+		self timesRepeat: [ aStream nextPut: $X ]
+	].
+
+	(self = 4)  ifTrue: [ aStream nextPutAll: 'XL' ].
+
+	(self between: 5 and: 8) ifTrue: [ 
+		aStream nextPut: $L. 
+		(self - 5) timesRepeat: [ aStream nextPut: $X ]
+	].
+
+	(self = 9)  ifTrue: [ aStream nextPutAll: 'XC' ].
+! !
+
+!Integer methodsFor: 'romanos' stamp: 'AB 5/3/2019 10:08:40'!
 appendAsRomanStringUnit: aStream
 	
 	(self between: 1 and: 3) ifTrue: [
@@ -1915,30 +1932,14 @@ appendAsRomanStringUnit: aStream
 	(self = 9)  ifTrue: [ aStream nextPutAll: 'IX' ].
 	! !
 
-!Integer methodsFor: 'Romanos' stamp: 'AB 5/3/2019 10:12:33'!
+!Integer methodsFor: 'romanos' stamp: 'AB 5/5/2019 21:45:19'!
 asRomanString
 
 	self = 0 ifTrue: [ self error ].
 	
 	^String streamContents: [: stream |
-
-		self appendAsRomanStringUnit: stream.
-		
-		(self between: 10 and:39) ifTrue: [
-			(self // 10 ) timesRepeat: [ stream nextPut: $X].
-			(self \\ 10 ) appendAsRomanStringUnit: stream.
-		].
-
-		(self between: 50 and:89) ifTrue: [
-			stream nextPut: $L.
-			((self-50) // 10 ) timesRepeat: [ stream nextPut: $X].
-			((self-50) \\ 10 ) appendAsRomanStringUnit: stream.
-		].
-	
-		(self between: 40 and: 49) ifTrue: [
-			stream nextPutAll: 'XL'.
-			(self - 40) appendAsRomanStringUnit: stream.
-		].
+		(self // 10 mod: 10)  appendAsRomanStringTen: stream.
+		(self mod: 10) appendAsRomanStringUnit: stream.
 	].! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
