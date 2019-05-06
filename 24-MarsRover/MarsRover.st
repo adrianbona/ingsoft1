@@ -65,7 +65,7 @@ test04RobotAtX1Y2MovesToX1Y1WhenMovingBackwards
 	self assert: robot position = (1@1).
 	self assert: robot orientation pointsNorth.! !
 
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 20:48:17'!
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 20:56:35'!
 test05RobotAtX1Y2RotatesToRightAndKeepsPosition
 
 	| position orientation robot |
@@ -78,7 +78,22 @@ test05RobotAtX1Y2RotatesToRightAndKeepsPosition
 	robot followCommands: 'r'.
 	
 	self assert: robot position = (1@2).
-	self assert: robot orientation pointsEast.! !
+	self assert: robot orientation pointsEast .! !
+
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 20:56:24'!
+test06RobotAtX1Y2IgnoresWrongCommandsAndRotateRightTwice
+
+	| position orientation robot |
+	
+	position _ 1@2.
+	orientation _ North new.
+	
+	robot _ MarsRover at: position pointingTo: orientation.
+	
+	robot followCommands: 'rxxr'.
+	
+	self assert: robot position = (1@2).
+	self assert: robot orientation pointsSouth.! !
 
 
 !classDefinition: #Cardinal category: #MarsRover!
@@ -95,6 +110,11 @@ pointsEast
 
 !Cardinal methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 19:58:13'!
 pointsNorth
+
+	^ false! !
+
+!Cardinal methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 20:54:52'!
+pointsSouth
 
 	^ false! !
 
@@ -120,6 +140,11 @@ pointsEast
 rotateLeft
 
 	^ North new! !
+
+!East methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 20:55:19'!
+rotateRight
+
+	^ South new! !
 
 
 !classDefinition: #North category: #MarsRover!
@@ -161,6 +186,11 @@ Cardinal subclass: #South
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'MarsRover'!
+
+!South methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 20:54:45'!
+pointsSouth
+
+	^ true! !
 
 !South methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 20:27:12'!
 rotateLeft
