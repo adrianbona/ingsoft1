@@ -95,6 +95,21 @@ test06RobotAtX1Y2IgnoresWrongCommandsAndRotateRightTwice
 	self assert: robot position = (1@2).
 	self assert: robot orientation pointsSouth.! !
 
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 20:59:27'!
+test07RobotAtX1Y2IgnoresWrongCommandsAndMovesForwardTwice
+
+	| position orientation robot |
+	
+	position _ 1@2.
+	orientation _ North new.
+	
+	robot _ MarsRover at: position pointingTo: orientation.
+	
+	robot followCommands: 'xfxf'.
+	
+	self assert: robot position = (1@4).
+	self assert: robot orientation pointsNorth .! !
+
 
 !classDefinition: #Cardinal category: #MarsRover!
 Object subclass: #Cardinal
