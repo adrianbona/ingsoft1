@@ -5,7 +5,7 @@ TestCase subclass: #MarsRoverTest
 	poolDictionaries: ''
 	category: 'MarsRover'!
 
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 19:54:36'!
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 20:53:29'!
 test01RobotAtX1Y2DoesNotMoveWhenCommandIsEmpty
 
 	| position orientation robot |
@@ -17,7 +17,8 @@ test01RobotAtX1Y2DoesNotMoveWhenCommandIsEmpty
 	
 	robot followCommands: ''.
 	
-	self assert: robot position = position.! !
+	self assert: robot position = position.
+	self assert: robot orientation pointsNorth.! !
 
 !MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 20:28:44'!
 test02RobotAtX1Y2MovesToX1Y3WhenMovingForward
