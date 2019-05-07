@@ -80,8 +80,8 @@ test05RobotAtX1Y2RotatesToRightAndKeepsPosition
 	self assert: robot position = (1@2).
 	self assert: robot orientation pointsEast .! !
 
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 20:56:24'!
-test06RobotAtX1Y2IgnoresWrongCommandsAndRotateRightTwice
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 21:15:00'!
+test06RobotAtX1Y2GivesErrorWhenReceivingUnknownCommand
 
 	| position orientation robot |
 	
@@ -90,13 +90,73 @@ test06RobotAtX1Y2IgnoresWrongCommandsAndRotateRightTwice
 	
 	robot _ MarsRover at: position pointingTo: orientation.
 	
-	robot followCommands: 'rxxr'.
+	self
+		should: [robot followCommands: 'x']  
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: robot position = (1@2).
+			self assert: robot orientation pointsNorth.
+		]
+	
+! !
+
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 21:15:48'!
+test06RobotAtX1Y2RotatesAndGetsError
+
+	| position orientation robot |
+	
+	position _ 1@2.
+	orientation _ North new.
+	
+	robot _ MarsRover at: position pointingTo: orientation.
+	
+	self
+		should: [robot followCommands: 'rx']
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: robot position = (1@2).
+			self assert: robot orientation pointsEast.
+		]
+	
+! !
+
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 21:16:13'!
+test07RobotAtX1Y2MovesForwardAndGetsError
+
+	| position orientation robot |
+	
+	position _ 1@2.
+	orientation _ North new.
+	
+	robot _ MarsRover at: position pointingTo: orientation.
+	
+	self
+		should: [robot followCommands: 'fx']
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: robot position = (1@3).
+			self assert: robot orientation pointsNorth.
+		]
+	
+! !
+
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 21:13:36'!
+test08RobotAtX1Y2RotatesLeftAndRightAndKeepsRotation
+
+	| position orientation robot |
+	
+	position _ 1@2.
+	orientation _ North new.
+	
+	robot _ MarsRover at: position pointingTo: orientation.
+	
+	robot followCommands: 'rl'.
 	
 	self assert: robot position = (1@2).
-	self assert: robot orientation pointsSouth.! !
+	self assert: robot orientation pointsNorth.! !
 
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 20:59:27'!
-test07RobotAtX1Y2IgnoresWrongCommandsAndMovesForwardTwice
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 21:25:04'!
+test09RobotAtX1Y2MovesForwardsAndBackwardsAndKeepsPosition
 
 	| position orientation robot |
 	
@@ -105,10 +165,60 @@ test07RobotAtX1Y2IgnoresWrongCommandsAndMovesForwardTwice
 	
 	robot _ MarsRover at: position pointingTo: orientation.
 	
-	robot followCommands: 'xfxf'.
+	robot followCommands: 'fb'.
 	
-	self assert: robot position = (1@4).
-	self assert: robot orientation pointsNorth .! !
+	self assert: robot position = (1@2).
+	self assert: robot orientation pointsNorth.! !
+
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 21:24:52'!
+test10RobotAtX1Y2DoesWholeSpin
+
+	| position orientation robot |
+	
+	position _ 1@2.
+	orientation _ North new.
+	
+	robot _ MarsRover at: position pointingTo: orientation.
+	
+	robot followCommands: 'rrrr'.
+	
+	self assert: robot position = (1@2).
+	self assert: robot orientation pointsNorth.
+	
+	robot followCommands: 'llll'.
+	
+	self assert: robot position = (1@2).
+	self assert: robot orientation pointsNorth.! !
+
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 21:25:56'!
+test11RobotAtX1Y2RotatesLeftAndMovesForwards
+
+	| position orientation robot |
+	
+	position _ 1@2.
+	orientation _ North new.
+	
+	robot _ MarsRover at: position pointingTo: orientation.
+	
+	robot followCommands: 'lf'.
+	
+	self assert: robot position = (0@2).
+	self assert: robot orientation pointsWest.! !
+
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 21:27:43'!
+test12RobotAtX1Y2RotatesRightAndMovesForwards
+
+	| position orientation robot |
+	
+	position _ 1@2.
+	orientation _ North new.
+	
+	robot _ MarsRover at: position pointingTo: orientation.
+	
+	robot followCommands: 'rf'.
+	
+	self assert: robot position = (2@2).
+	self assert: robot orientation pointsEast .! !
 
 
 !classDefinition: #Cardinal category: #MarsRover!
@@ -145,6 +255,16 @@ Cardinal subclass: #East
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'MarsRover'!
+
+!East methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 21:23:47'!
+moveBackwards: aRobotFacingEast
+
+	aRobotFacingEast position: (aRobotFacingEast position x - 1)@(aRobotFacingEast position y).! !
+
+!East methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 21:28:10'!
+moveForward: aRobotFacingEast
+
+	aRobotFacingEast position: (aRobotFacingEast position x + 1)@(aRobotFacingEast position y).! !
 
 !East methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 20:48:51'!
 pointsEast
@@ -212,6 +332,11 @@ rotateLeft
 
 	^ East new! !
 
+!South methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 21:05:28'!
+rotateRight
+
+	^ West new! !
+
 
 !classDefinition: #West category: #MarsRover!
 Cardinal subclass: #West
@@ -219,6 +344,11 @@ Cardinal subclass: #West
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'MarsRover'!
+
+!West methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 21:26:39'!
+moveForward: aRobotFacingWest
+
+	aRobotFacingWest position: (aRobotFacingWest position x - 1)@(aRobotFacingWest position y).! !
 
 !West methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 19:57:10'!
 pointsWest
@@ -230,6 +360,11 @@ rotateLeft
 
 	^ South new! !
 
+!West methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 21:06:10'!
+rotateRight
+
+	^ North new! !
+
 
 !classDefinition: #MarsRover category: #MarsRover!
 Object subclass: #MarsRover
@@ -238,14 +373,19 @@ Object subclass: #MarsRover
 	poolDictionaries: ''
 	category: 'MarsRover'!
 
-!MarsRover methodsFor: 'moving' stamp: 'AB 5/6/2019 20:44:16'!
+!MarsRover methodsFor: 'moving' stamp: 'AB 5/6/2019 21:09:22'!
 followCommands: commands
 
 	commands do: [ :aCommand | 
-		aCommand = $l ifTrue: [self rotateLeft].
-		aCommand = $r ifTrue: [self rotateRight].
-		aCommand = $f ifTrue: [self moveForward].
-		aCommand = $b ifTrue: [self moveBackwards].
+		aCommand = $l ifTrue: [self rotateLeft] ifFalse: [
+			aCommand = $r ifTrue: [self rotateRight] ifFalse: [
+				aCommand = $f ifTrue: [self moveForward] ifFalse: [
+					aCommand = $b ifTrue: [self moveBackwards] ifFalse: [
+						self error: 'Invalid command'.
+					]
+				]
+			]
+		]
 	]! !
 
 !MarsRover methodsFor: 'moving' stamp: 'AB 5/6/2019 20:37:47'!
