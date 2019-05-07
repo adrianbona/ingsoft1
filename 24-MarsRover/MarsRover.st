@@ -230,8 +230,38 @@ test14RobotAtX1Y2FacingSouthRotatesRightAndMovesForwards
 	self assert: robot position = (0@2).
 	self assert: robot orientation pointsWest.! !
 
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/7/2019 00:31:32'!
-test15RobotAtX1Y2DoesWholeSpin
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/7/2019 00:37:58'!
+test15RobotAtX1Y2FacingWestRotatesLeftAndMovesForwards
+
+	| position orientation robot |
+	
+	position _ 1@2.
+	orientation _ West new.
+	
+	robot _ MarsRover at: position pointingTo: orientation.
+	
+	robot followCommands: 'lf'.
+	
+	self assert: robot position = (1@1).
+	self assert: robot orientation pointsSouth.! !
+
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/7/2019 00:40:14'!
+test16RobotAtX1Y2FacingWestRotatesRightAndMovesForwards
+
+	| position orientation robot |
+	
+	position _ 1@2.
+	orientation _ West new.
+	
+	robot _ MarsRover at: position pointingTo: orientation.
+	
+	robot followCommands: 'rf'.
+	
+	self assert: robot position = (1@3).
+	self assert: robot orientation pointsNorth.! !
+
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/7/2019 00:38:09'!
+test17RobotAtX1Y2DoesWholeSpin
 
 	| position orientation robot |
 	
@@ -351,6 +381,11 @@ CardinalPoint subclass: #South
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'MarsRover'!
+
+!South methodsFor: 'as yet unclassified' stamp: 'AB 5/7/2019 00:38:39'!
+moveForward: aRobotFacingWest
+
+	aRobotFacingWest moveVerticallyOnePointBackwards ! !
 
 !South methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 20:54:45'!
 pointsSouth
