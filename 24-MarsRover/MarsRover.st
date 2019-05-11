@@ -5,280 +5,193 @@ TestCase subclass: #MarsRoverTest
 	poolDictionaries: ''
 	category: 'MarsRover'!
 
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/9/2019 14:31:59'!
-test01RobotAtX1Y2DoesNotMoveWhenCommandIsEmpty
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:53:23'!
+test01
+	
+	| marsRover |
+	
+	marsRover _ MarsRover at: 0@0 facing: (CardinalPoint at: $N).
+	marsRover processMovements: 'f'.
+	self assert: marsRover position equals: 0@1.
+	self assert: marsRover facingNorth.! !
 
-	| position orientation robot |
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:39:48'!
+test02
 	
-	position _ 1@2.
-	orientation _ CardinalPoint at: 'N'.
+	| marsRover |
 	
-	robot _ MarsRover at: position pointingTo: orientation.
-	
-	robot followCommands: ''.
-	
-	self assert: robot position = position.
-	self assert: robot orientation pointsNorth.! !
+	marsRover _ MarsRover at: 0@0 facing: (CardinalPoint at: $N).
+	marsRover processMovements: 'b'.
+	self assert: marsRover position equals: 0@-1.
+	self assert: marsRover facingNorth.! !
 
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/9/2019 14:34:47'!
-test02RobotAtX1Y2FacingNorthMovesToX1Y3WhenMovingForward
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:39:53'!
+test03
+	
+	| marsRover |
+	
+	marsRover _ MarsRover at: 0@0 facing: (CardinalPoint at: $N).
+	marsRover processMovements: 'l'.
+	self assert: marsRover position equals: 0@0.
+	self assert: marsRover facingWest.! !
 
-	| position orientation robot |
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:39:57'!
+test04
 	
-	position _ 1@2.
-	orientation _ CardinalPoint at: 'N'.
+	| marsRover |
 	
-	robot _ MarsRover at: position pointingTo: orientation.
-	
-	robot followCommands: 'f'.
-	
-	self assert: robot position = (1@3).
-	self assert: robot orientation pointsNorth.! !
+	marsRover _ MarsRover at: 0@0 facing: (CardinalPoint at: $N).
+	marsRover processMovements: 'r'.
+	self assert: marsRover position equals: 0@0.
+	self assert: marsRover facingEast.! !
 
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/9/2019 14:34:50'!
-test03RobotAtX1Y2FacingNorthRotatesLeftAndKeepsSamePosition
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:40:01'!
+test05
+	
+	| marsRover |
+	
+	marsRover _ MarsRover at: 0@0 facing: (CardinalPoint at: $N).
+	marsRover processMovements: ''.
+	self assert: marsRover position equals: 0@0.
+	self assert: marsRover facingNorth.! !
 
-	| position orientation robot |
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:40:06'!
+test06
 	
-	position _ 1@2.
-	orientation _ CardinalPoint at: 'N'.
+	| marsRover |
 	
-	robot _ MarsRover at: position pointingTo: orientation.
-	
-	robot followCommands: 'l'.
-	
-	self assert: robot position = (1@2).
-	self assert: robot orientation pointsWest.! !
+	marsRover _ MarsRover at: 0@0 facing: (CardinalPoint at: $N).
+	self should:
+	[
+		marsRover processMovements: 'x'.
+	]
+	raise: Error
+	withExceptionDo:
+	[
+		:anError | self assert: marsRover position equals: 0@0. 
+		self assert: marsRover facingNorth.		
+	].
+		
+	! !
 
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/9/2019 14:34:54'!
-test04RobotAtX1Y2FacingNorthMovesToX1Y1WhenMovingBackwards
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:40:10'!
+test07
+	
+	| marsRover |
+	
+	marsRover _ MarsRover at: 0@0 facing: (CardinalPoint at: $N).
+	marsRover processMovements: 'ff'.
+	self assert: marsRover position equals: 0@2.
+	self assert: marsRover facingNorth.! !
 
-	| position orientation robot |
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:40:14'!
+test08
 	
-	position _ 1@2.
-	orientation _ CardinalPoint at: 'N'.
+	| marsRover |
 	
-	robot _ MarsRover at: position pointingTo: orientation.
-	
-	robot followCommands: 'b'.
-	
-	self assert: robot position = (1@1).
-	self assert: robot orientation pointsNorth.! !
+	marsRover _ MarsRover at: 0@0 facing: (CardinalPoint at: $N).
+	marsRover processMovements: 'll'.
+	self assert: marsRover position equals: 0@0.
+	self assert: marsRover facingSouth.! !
 
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/9/2019 14:34:58'!
-test05RobotAtX1Y2FacingNorthRotatesRightAndKeepsSamePosition
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:40:18'!
+test09
+	
+	| marsRover |
+	
+	marsRover _ MarsRover at: 0@0 facing: (CardinalPoint at: $N).
+	marsRover processMovements: 'rr'.
+	self assert: marsRover position equals: 0@0.
+	self assert: marsRover facingSouth.! !
 
-	| position orientation robot |
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:40:22'!
+test10
 	
-	position _ 1@2.
-	orientation _ CardinalPoint at: 'N'.
+	| marsRover |
 	
-	robot _ MarsRover at: position pointingTo: orientation.
-	
-	robot followCommands: 'r'.
-	
-	self assert: robot position = (1@2).
-	self assert: robot orientation pointsEast.! !
+	marsRover _ MarsRover at: 0@0 facing: (CardinalPoint at: $N).
+	marsRover processMovements: 'lf'.
+	self assert: marsRover position equals: -1@0.
+	self assert: marsRover facingWest.! !
 
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/9/2019 14:35:02'!
-test06RobotReturnsErrorWhenReceivingUnknownCommand
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:40:26'!
+test11
+	
+	| marsRover |
+	
+	marsRover _ MarsRover at: 0@0 facing: (CardinalPoint at: $N).
+	marsRover processMovements: 'rf'.
+	self assert: marsRover position equals: 1@0.
+	self assert: marsRover facingEast.! !
 
-	| position orientation robot |
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:40:29'!
+test12
 	
-	position _ 1@2.
-	orientation _ CardinalPoint at: 'N'.
+	| marsRover |
 	
-	robot _ MarsRover at: position pointingTo: orientation.
-	
-	self
-		should: [robot followCommands: 'x']  
-		raise: Error
-		withExceptionDo: [ :anError |
-			self assert: robot position = (1@2).
-			self assert: robot orientation pointsNorth.
-		]
-	
-! !
+	marsRover _ MarsRover at: 0@0 facing: (CardinalPoint at: $O).
+	marsRover processMovements: 'lf'.
+	self assert: marsRover position equals: 0@-1.
+	self assert: marsRover facingSouth.! !
 
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/9/2019 14:35:09'!
-test07RobotAtX1Y2FacingNorthMovesForwardAndGetsError
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:40:48'!
+test13
+	
+	| marsRover |
+	
+	marsRover _ MarsRover at: 0@0 facing: (CardinalPoint at: $N).
+	marsRover processMovements: 'lb'.
+	self assert: marsRover position equals: 1@0.
+	self assert: marsRover facingWest.
+	
+	marsRover processMovements: 'lb'.
+	self assert: marsRover position equals: 1@1.
+	self assert: marsRover facingSouth.
+	
+	marsRover processMovements: 'lb'.
+	self assert: marsRover position equals: 0@1.
+	self assert: marsRover facingEast.
+	
+	marsRover processMovements: 'lb'.
+	self assert: marsRover position equals: 0@0.
+	self assert: marsRover facingNorth.! !
 
-	| position orientation robot |
-	
-	position _ 1@2.
-	orientation _ CardinalPoint at: 'N'.
-	
-	robot _ MarsRover at: position pointingTo: orientation.
-	
-	self
-		should: [robot followCommands: 'fx']
-		raise: Error
-		withExceptionDo: [ :anError |
-			self assert: robot position = (1@3).
-			self assert: robot orientation pointsNorth.
-		]
-	
-! !
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:40:55'!
+test14
 
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/9/2019 14:35:13'!
-test08RobotAtX1Y2FacingNorthRotatesAndGetsError
+	| marsRover |
+	
+	marsRover _ MarsRover at: 0@0 facing: (CardinalPoint at: $N).
+	marsRover processMovements: 'rrrr'.
+	self assert: marsRover position equals: 0@0.
+	self assert: marsRover facingNorth.
+	
+	marsRover processMovements: 'llll'.
+	self assert: marsRover position equals: 0@0.
+	self assert: marsRover facingNorth.! !
 
-	| position orientation robot |
-	
-	position _ 1@2.
-	orientation _ CardinalPoint at: 'N'.
-	
-	robot _ MarsRover at: position pointingTo: orientation.
-	
-	self
-		should: [robot followCommands: 'rx']
-		raise: Error
-		withExceptionDo: [ :anError |
-			self assert: robot position = (1@2).
-			self assert: robot orientation pointsEast.
-		]
-	
-! !
+!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:41:07'!
+test15
 
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/9/2019 14:35:17'!
-test09RobotAtX1Y2FacingNorthRotatesLeftAndRightAndKeepsSameRotation
-
-	| position orientation robot |
+	| marsRover |
 	
-	position _ 1@2.
-	orientation _ CardinalPoint at: 'N'.
+	marsRover _ MarsRover at: 0@0 facing: (CardinalPoint at: $N).
+	marsRover processMovements: 'frfrfrfr'.
+	self assert: marsRover position equals: 0@0.
+	self assert: marsRover facingNorth.
 	
-	robot _ MarsRover at: position pointingTo: orientation.
+	marsRover processMovements: 'flflflfl'.
+	self assert: marsRover position equals: 0@0.
+	self assert: marsRover facingNorth.
 	
-	robot followCommands: 'rl'.
+	marsRover processMovements: 'lblblblb'.
+	self assert: marsRover position equals: 0@0.
+	self assert: marsRover facingNorth.
 	
-	self assert: robot position = (1@2).
-	self assert: robot orientation pointsNorth.! !
-
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/9/2019 14:35:21'!
-test10RobotAtX1Y2FacingNorthMovesForwardAndBackwardsAndKeepsSamePosition
-
-	| position orientation robot |
-	
-	position _ 1@2.
-	orientation _ CardinalPoint at: 'N'.
-	
-	robot _ MarsRover at: position pointingTo: orientation.
-	
-	robot followCommands: 'fb'.
-	
-	self assert: robot position = (1@2).
-	self assert: robot orientation pointsNorth.! !
-
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/9/2019 14:35:25'!
-test11RobotAtX1Y2RotatesLeftAndMovesForwards
-
-	| position orientation robot |
-	
-	position _ 1@2.
-	orientation _ CardinalPoint at: 'N'.
-	
-	robot _ MarsRover at: position pointingTo: orientation.
-	
-	robot followCommands: 'lf'.
-	
-	self assert: robot position = (0@2).
-	self assert: robot orientation pointsWest.! !
-
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/9/2019 14:36:30'!
-test12RobotAtX1Y2RotatesRightAndMovesForwards
-
-	| position orientation robot |
-	
-	position _ 1@2.
-	orientation _ CardinalPoint at: 'N'.
-	
-	robot _ MarsRover at: position pointingTo: orientation.
-	
-	robot followCommands: 'rf'.
-	
-	self assert: robot position = (2@2).
-	self assert: robot orientation pointsEast.! !
-
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/9/2019 14:36:39'!
-test13RobotAtX1Y2FacingSouthRotatesLeftAndMovesForwards
-
-	| position orientation robot |
-	
-	position _ 1@2.
-	orientation _ CardinalPoint at: 'S'.
-	
-	robot _ MarsRover at: position pointingTo: orientation.
-	
-	robot followCommands: 'lf'.
-	
-	self assert: robot position = (2@2).
-	self assert: robot orientation pointsEast.! !
-
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/9/2019 14:36:44'!
-test14RobotAtX1Y2FacingSouthRotatesRightAndMovesForwards
-
-	| position orientation robot |
-	
-	position _ 1@2.
-	orientation _ CardinalPoint at: 'S'.
-	
-	robot _ MarsRover at: position pointingTo: orientation.
-	
-	robot followCommands: 'rf'.
-	
-	self assert: robot position = (0@2).
-	self assert: robot orientation pointsWest.! !
-
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/9/2019 14:36:50'!
-test15RobotAtX1Y2FacingWestRotatesLeftAndMovesForwards
-
-	| position orientation robot |
-	
-	position _ 1@2.
-	orientation _ CardinalPoint at: 'O'.
-	
-	robot _ MarsRover at: position pointingTo: orientation.
-	
-	robot followCommands: 'lf'.
-	
-	self assert: robot position = (1@1).
-	self assert: robot orientation pointsSouth.! !
-
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/9/2019 14:36:56'!
-test16RobotAtX1Y2FacingWestRotatesRightAndMovesForwards
-
-	| position orientation robot |
-	
-	position _ 1@2.
-	orientation _ CardinalPoint at: 'O'.
-	
-	robot _ MarsRover at: position pointingTo: orientation.
-	
-	robot followCommands: 'rf'.
-	
-	self assert: robot position = (1@3).
-	self assert: robot orientation pointsNorth.! !
-
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'AB 5/9/2019 14:37:32'!
-test17RobotAtX1Y2DoesWholeSpin
-
-	| position orientation robot |
-	
-	position _ 1@2.
-	orientation _ CardinalPoint at: 'N'.
-	
-	robot _ MarsRover at: position pointingTo: orientation.
-	
-	robot followCommands: 'rrrr'.
-	
-	self assert: robot position = (1@2).
-	self assert: robot orientation pointsNorth.
-	
-	robot followCommands: 'llll'.
-	
-	self assert: robot position = (1@2).
-	self assert: robot orientation pointsNorth.! !
+	marsRover processMovements: 'rbrbrbrb'.
+	self assert: marsRover position equals: 0@0.
+	self assert: marsRover facingNorth.
+	! !
 
 
 !classDefinition: #CardinalPoint category: #MarsRover!
@@ -288,23 +201,23 @@ Object subclass: #CardinalPoint
 	poolDictionaries: ''
 	category: 'MarsRover'!
 
-!CardinalPoint methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 20:48:38'!
-pointsEast
+!CardinalPoint methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:58:18'!
+isEast
 
 	^ false! !
 
-!CardinalPoint methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 19:58:13'!
-pointsNorth
+!CardinalPoint methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:58:32'!
+isNorth
 
 	^ false! !
 
-!CardinalPoint methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 20:54:52'!
-pointsSouth
+!CardinalPoint methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:58:43'!
+isSouth
 
 	^ false! !
 
-!CardinalPoint methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 19:58:18'!
-pointsWest
+!CardinalPoint methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:58:57'!
+isWest
 
 	^ false! !
 
@@ -330,27 +243,27 @@ CardinalPoint subclass: #East
 	poolDictionaries: ''
 	category: 'MarsRover'!
 
-!East methodsFor: 'as yet unclassified' stamp: 'AB 5/7/2019 00:09:21'!
-moveBackwards: aRobotFacingEast
+!East methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:58:18'!
+isEast
 
-	aRobotFacingEast moveHorizontallyOnePointBackwards! !
+	^ true.! !
 
-!East methodsFor: 'as yet unclassified' stamp: 'AB 5/7/2019 00:09:18'!
-moveForward: aRobotFacingEast
+!East methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:16:57'!
+moveBackwards: aMarsRoverFacingEast
 
-	aRobotFacingEast moveHorizontallyOnePointForward! !
+	aMarsRoverFacingEast moveHorizontallyOnePointBackwards.! !
 
-!East methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 20:48:51'!
-pointsEast
+!East methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:14:52'!
+moveForward: aMarsRoverFacingEast
 
-	^ true! !
+	aMarsRoverFacingEast moveHorizontallyOnePointForward.! !
 
-!East methodsFor: 'as yet unclassified' stamp: 'AB 5/7/2019 00:16:23'!
+!East methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:11:03'!
 rotateNinetyDegreesLeft
 
 	^ North new! !
 
-!East methodsFor: 'as yet unclassified' stamp: 'AB 5/7/2019 00:16:39'!
+!East methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:11:17'!
 rotateNinetyDegreesRight
 
 	^ South new! !
@@ -361,10 +274,10 @@ rotateNinetyDegreesRight
 East class
 	instanceVariableNames: ''!
 
-!East class methodsFor: 'as yet unclassified' stamp: 'AB 5/9/2019 14:33:08'!
+!East class methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 09:57:17'!
 matchesValue: aDirection
 
-	^ aDirection = 'E'! !
+	^ aDirection = $E.! !
 
 
 !classDefinition: #North category: #MarsRover!
@@ -374,27 +287,27 @@ CardinalPoint subclass: #North
 	poolDictionaries: ''
 	category: 'MarsRover'!
 
-!North methodsFor: 'as yet unclassified' stamp: 'AB 5/7/2019 00:09:37'!
-moveBackwards: aRobotFacingNorth
+!North methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:58:32'!
+isNorth
 
-	aRobotFacingNorth moveVerticallyOnePointBackwards! !
+	^ true.! !
 
-!North methodsFor: 'as yet unclassified' stamp: 'AB 5/7/2019 00:09:51'!
-moveForward: aRobotFacingNorth
+!North methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:17:13'!
+moveBackwards: aMarsRoverFacingNorth
 
-	aRobotFacingNorth moveVerticallyOnePointForward! !
+	aMarsRoverFacingNorth moveVerticallyOnePointBackwards.! !
 
-!North methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 19:57:56'!
-pointsNorth
+!North methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:14:04'!
+moveForward: aMarsRoverFacingNorth
 
-	^ true! !
+	aMarsRoverFacingNorth moveVerticallyOnePointForward.! !
 
-!North methodsFor: 'as yet unclassified' stamp: 'AB 5/7/2019 00:16:23'!
+!North methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:10:53'!
 rotateNinetyDegreesLeft
 
 	^ West new! !
 
-!North methodsFor: 'as yet unclassified' stamp: 'AB 5/7/2019 00:16:39'!
+!North methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:11:30'!
 rotateNinetyDegreesRight
 
 	^ East new! !
@@ -405,10 +318,10 @@ rotateNinetyDegreesRight
 North class
 	instanceVariableNames: ''!
 
-!North class methodsFor: 'as yet unclassified' stamp: 'AB 5/9/2019 14:33:14'!
+!North class methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 09:52:49'!
 matchesValue: aDirection
 
-	^ aDirection = 'N'! !
+	^ aDirection = $N.! !
 
 
 !classDefinition: #South category: #MarsRover!
@@ -418,22 +331,27 @@ CardinalPoint subclass: #South
 	poolDictionaries: ''
 	category: 'MarsRover'!
 
-!South methodsFor: 'as yet unclassified' stamp: 'AB 5/7/2019 00:38:39'!
-moveForward: aRobotFacingWest
+!South methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:58:43'!
+isSouth
 
-	aRobotFacingWest moveVerticallyOnePointBackwards ! !
+	^ true.! !
 
-!South methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 20:54:45'!
-pointsSouth
+!South methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:17:30'!
+moveBackwards: aMarsRoverFacingSouth
 
-	^ true! !
+	aMarsRoverFacingSouth moveVerticallyOnePointForward.! !
 
-!South methodsFor: 'as yet unclassified' stamp: 'AB 5/7/2019 00:16:23'!
+!South methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:15:20'!
+moveForward: aMarsRoverFacingSouth
+
+	aMarsRoverFacingSouth moveVerticallyOnePointBackwards.! !
+
+!South methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:10:48'!
 rotateNinetyDegreesLeft
 
 	^ East new! !
 
-!South methodsFor: 'as yet unclassified' stamp: 'AB 5/7/2019 00:16:39'!
+!South methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:11:40'!
 rotateNinetyDegreesRight
 
 	^ West new! !
@@ -444,10 +362,10 @@ rotateNinetyDegreesRight
 South class
 	instanceVariableNames: ''!
 
-!South class methodsFor: 'as yet unclassified' stamp: 'AB 5/9/2019 14:33:21'!
+!South class methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 09:56:33'!
 matchesValue: aDirection
 
-	^ aDirection = 'S'! !
+	^ aDirection = $S! !
 
 
 !classDefinition: #West category: #MarsRover!
@@ -457,22 +375,27 @@ CardinalPoint subclass: #West
 	poolDictionaries: ''
 	category: 'MarsRover'!
 
-!West methodsFor: 'as yet unclassified' stamp: 'AB 5/7/2019 00:10:19'!
-moveForward: aRobotFacingWest
+!West methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:58:57'!
+isWest
 
-	aRobotFacingWest moveHorizontallyOnePointBackwards ! !
+	^ true.! !
 
-!West methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 19:57:10'!
-pointsWest
+!West methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:17:45'!
+moveBackwards: aMarsRoverFacingWest
 
-	^ true! !
+	aMarsRoverFacingWest moveHorizontallyOnePointForward.! !
 
-!West methodsFor: 'as yet unclassified' stamp: 'AB 5/7/2019 00:16:23'!
+!West methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:15:39'!
+moveForward: aMarsRoverFacingWest
+
+	aMarsRoverFacingWest moveHorizontallyOnePointBackwards.! !
+
+!West methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:10:39'!
 rotateNinetyDegreesLeft
 
 	^ South new! !
 
-!West methodsFor: 'as yet unclassified' stamp: 'AB 5/7/2019 00:16:39'!
+!West methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 10:23:10'!
 rotateNinetyDegreesRight
 
 	^ North new! !
@@ -483,27 +406,57 @@ rotateNinetyDegreesRight
 West class
 	instanceVariableNames: ''!
 
-!West class methodsFor: 'as yet unclassified' stamp: 'AB 5/9/2019 14:34:02'!
+!West class methodsFor: 'as yet unclassified' stamp: 'JR 5/11/2019 09:56:55'!
 matchesValue: aDirection
 
-	^ aDirection = 'O'! !
+	^ aDirection = $O.! !
 
 
 !classDefinition: #MarsRover category: #MarsRover!
 Object subclass: #MarsRover
-	instanceVariableNames: 'position orientation'
+	instanceVariableNames: 'position facing'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'MarsRover'!
 
-!MarsRover methodsFor: 'moving' stamp: 'AB 5/7/2019 00:16:39'!
-followCommands: commands
+!MarsRover methodsFor: 'movements' stamp: 'JR 5/11/2019 10:18:01'!
+moveBackward
 
-	commands do: [ :aCommand | 
-		aCommand = $l ifTrue: [self rotateNinetyDegreesLeft] ifFalse: [
-			aCommand = $r ifTrue: [self rotateNinetyDegreesRight] ifFalse: [
-				aCommand = $f ifTrue: [self moveForward] ifFalse: [
-					aCommand = $b ifTrue: [self moveBackwards] ifFalse: [
+	facing moveBackwards: self.! !
+
+!MarsRover methodsFor: 'movements' stamp: 'JR 5/11/2019 10:16:09'!
+moveForward
+
+	facing moveForward: self.! !
+
+!MarsRover methodsFor: 'movements' stamp: 'JR 5/10/2019 16:40:42'!
+moveHorizontallyOnePointBackwards
+
+	position _ (position x - 1) @ (position y)! !
+
+!MarsRover methodsFor: 'movements' stamp: 'JR 5/10/2019 16:40:49'!
+moveHorizontallyOnePointForward
+
+	position _ (position x + 1) @ (position y)! !
+
+!MarsRover methodsFor: 'movements' stamp: 'JR 5/10/2019 16:21:12'!
+moveVerticallyOnePointBackwards
+
+	position _ (position x) @ (position y - 1)! !
+
+!MarsRover methodsFor: 'movements' stamp: 'JR 5/10/2019 16:20:50'!
+moveVerticallyOnePointForward
+
+	position _ (position x) @ (position y + 1)! !
+
+!MarsRover methodsFor: 'movements' stamp: 'JR 5/10/2019 16:54:49'!
+processMovements: movementsSequence
+
+		movementsSequence do: [ :aCommand | 
+		aCommand = $l ifTrue: [self rotateLeft ] ifFalse: [
+			aCommand = $r ifTrue: [self rotateRight ] ifFalse: [
+				aCommand = $f ifTrue: [self moveForward ] ifFalse: [
+					aCommand = $b ifTrue: [self moveBackward ] ifFalse: [
 						self error: 'Invalid command'.
 					]
 				]
@@ -511,68 +464,54 @@ followCommands: commands
 		]
 	]! !
 
-!MarsRover methodsFor: 'moving' stamp: 'AB 5/6/2019 20:37:47'!
-moveBackwards
+!MarsRover methodsFor: 'movements' stamp: 'JR 5/11/2019 10:12:18'!
+rotateLeft
 
-	self orientation moveBackwards: self! !
+	facing _ facing rotateNinetyDegreesLeft.! !
 
-!MarsRover methodsFor: 'moving' stamp: 'AB 5/6/2019 20:36:37'!
-moveForward
+!MarsRover methodsFor: 'movements' stamp: 'JR 5/11/2019 10:12:46'!
+rotateRight
 
-	self orientation moveForward: self! !
-
-!MarsRover methodsFor: 'moving' stamp: 'AB 5/7/2019 00:12:52'!
-moveHorizontallyOnePointBackwards
-
-	position _ (position x - 1) @ position y! !
-
-!MarsRover methodsFor: 'moving' stamp: 'AB 5/7/2019 00:12:45'!
-moveHorizontallyOnePointForward
-
-	position _ (position x + 1) @ position y! !
-
-!MarsRover methodsFor: 'moving' stamp: 'AB 5/7/2019 00:12:38'!
-moveVerticallyOnePointBackwards
-
-	position _ position x @ (position y - 1)! !
-
-!MarsRover methodsFor: 'moving' stamp: 'AB 5/7/2019 00:12:32'!
-moveVerticallyOnePointForward
-
-	position _ position x @ (position y + 1)! !
-
-!MarsRover methodsFor: 'moving' stamp: 'AB 5/7/2019 00:16:23'!
-rotateNinetyDegreesLeft
-
-	orientation _ orientation rotateNinetyDegreesLeft! !
-
-!MarsRover methodsFor: 'moving' stamp: 'AB 5/7/2019 00:16:40'!
-rotateNinetyDegreesRight
-
-	orientation _ orientation rotateNinetyDegreesRight! !
+	facing _ facing rotateNinetyDegreesRight.! !
 
 
-!MarsRover methodsFor: 'initialization' stamp: 'AB 5/6/2019 20:45:35'!
-initializeAt: aPosition pointingTo: anOrientation
+!MarsRover methodsFor: 'initialization' stamp: 'JR 5/10/2019 13:30:08'!
+initializeAt: aPoint facing: aCardinalPoint
+	
+	position _ aPoint.
+	facing _ aCardinalPoint.! !
 
-	position _ aPosition.
-	orientation _ anOrientation.! !
 
+!MarsRover methodsFor: 'accessing' stamp: 'JR 5/10/2019 13:12:25'!
+facing
 
-!MarsRover methodsFor: 'status' stamp: 'AB 5/6/2019 20:10:03'!
-orientation
+	^ facing.! !
 
-	^ orientation ! !
-
-!MarsRover methodsFor: 'status' stamp: 'AB 5/6/2019 20:41:46'!
-orientation: anOrientation
-
-	orientation _ anOrientation ! !
-
-!MarsRover methodsFor: 'status' stamp: 'AB 5/6/2019 20:09:58'!
+!MarsRover methodsFor: 'accessing' stamp: 'JR 5/10/2019 10:55:56'!
 position
 
-	^ position! !
+	^ position.! !
+
+
+!MarsRover methodsFor: 'orientation queries' stamp: 'JR 5/11/2019 10:58:18'!
+facingEast
+
+	^ facing isEast.! !
+
+!MarsRover methodsFor: 'orientation queries' stamp: 'JR 5/11/2019 10:58:32'!
+facingNorth
+
+	^ facing isNorth.! !
+
+!MarsRover methodsFor: 'orientation queries' stamp: 'JR 5/11/2019 10:58:43'!
+facingSouth
+
+	^ facing isSouth.! !
+
+!MarsRover methodsFor: 'orientation queries' stamp: 'JR 5/11/2019 10:58:57'!
+facingWest
+
+	^ facing isWest.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -580,7 +519,7 @@ position
 MarsRover class
 	instanceVariableNames: ''!
 
-!MarsRover class methodsFor: 'as yet unclassified' stamp: 'AB 5/6/2019 20:09:29'!
-at: aPosition pointingTo: anOrientation
+!MarsRover class methodsFor: 'as yet unclassified' stamp: 'JR 5/10/2019 13:29:15'!
+at: point facing: cardinalPoint
 
-	^ (self new) initializeAt: aPosition pointingTo: anOrientation ! !
+	^ self new initializeAt: point facing: cardinalPoint.! !
