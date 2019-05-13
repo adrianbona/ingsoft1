@@ -253,6 +253,27 @@ isWest
 
 	^ false! !
 
+
+!MarsRoverCardinalOrientation methodsFor: 'movements' stamp: 'AB 5/13/2019 17:11:55'!
+moveBackwards: aMarsRover
+
+	self subclassResponsibility ! !
+
+!MarsRoverCardinalOrientation methodsFor: 'movements' stamp: 'AB 5/13/2019 17:12:23'!
+moveForward: aMarsRover
+
+	self subclassResponsibility! !
+
+!MarsRoverCardinalOrientation methodsFor: 'movements' stamp: 'AB 5/13/2019 17:12:44'!
+rotateNinetyDegreesLeft
+
+	self subclassResponsibility ! !
+
+!MarsRoverCardinalOrientation methodsFor: 'movements' stamp: 'AB 5/13/2019 17:12:50'!
+rotateNinetyDegreesRight
+
+	self subclassResponsibility ! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'MarsRoverCardinalOrientation class' category: #MarsRover!
