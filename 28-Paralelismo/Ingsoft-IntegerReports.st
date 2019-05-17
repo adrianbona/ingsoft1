@@ -113,7 +113,7 @@ shouldnt: aClosureToMeasure takeMoreThan: aTimeLimit
 
 !classDefinition: #IntegerReport category: #'Ingsoft-IntegerReports'!
 Object subclass: #IntegerReport
-	instanceVariableNames: 'integerToAnalize storedResults'
+	instanceVariableNames: 'integerToAnalize stream'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Ingsoft-IntegerReports'!
@@ -123,11 +123,21 @@ initializeFor: anIntegerToAnalize
 
 	integerToAnalize := anIntegerToAnalize ! !
 
-!IntegerReport methodsFor: 'initialization' stamp: 'AB 5/17/2019 12:37:53'!
-initializeFor: anIntegerToAnalize with: aCollection
+!IntegerReport methodsFor: 'initialization' stamp: 'AB 5/17/2019 13:12:18'!
+initializeFor: anIntegerToAnalize with: aStream
 
 	integerToAnalize _ anIntegerToAnalize.
-	storedResults _ aCollection.! !
+	stream _ aStream.! !
+
+!IntegerReport methodsFor: 'initialization' stamp: 'AB 5/17/2019 13:15:28'!
+stream
+
+	(stream isNil) ifTrue: [
+		self wait.
+		stream _ OrderedCollection new.
+	].
+	
+	^ stream! !
 
 
 !IntegerReport methodsFor: 'reporting' stamp: 'HAW 5/12/2019 19:12:35'!
@@ -166,22 +176,17 @@ IntegerReport subclass: #CombinedIntegerPropertiesReport
 	poolDictionaries: ''
 	category: 'Ingsoft-IntegerReports'!
 
-!CombinedIntegerPropertiesReport methodsFor: 'reporting' stamp: 'AB 5/17/2019 13:02:01'!
+!CombinedIntegerPropertiesReport methodsFor: 'reporting' stamp: 'AB 5/17/2019 13:22:38'!
 value
 
-	| basicPropertiesLines complexPropertiesLines lines |
+	| lines |
 	
-	(storedResults isNil) ifTrue: [
-		self wait.
-		storedResults _ OrderedCollection new.
-	].
+	lines _ self stream.
 	
-	lines _ storedResults.
-	
-	basicPropertiesLines := (BasicIntegerPropertiesReport for: integerToAnalize with: lines) value.
-	complexPropertiesLines := (ComplexIntegerPropertiesReport for: integerToAnalize with: basicPropertiesLines) value.
+	(BasicIntegerPropertiesReport for: integerToAnalize with: lines) value.
+	(ComplexIntegerPropertiesReport for: integerToAnalize with: lines) value.
 
-	^complexPropertiesLines! !
+	^lines! !
 
 
 !classDefinition: #CompleteIntegerReport category: #'Ingsoft-IntegerReports'!
@@ -191,18 +196,17 @@ IntegerReport subclass: #CompleteIntegerReport
 	poolDictionaries: ''
 	category: 'Ingsoft-IntegerReports'!
 
-!CompleteIntegerReport methodsFor: 'reporting' stamp: 'AB 5/17/2019 13:01:09'!
+!CompleteIntegerReport methodsFor: 'reporting' stamp: 'AB 5/17/2019 13:23:17'!
 value
 
-	| combinedPropertiesLines differentBasesLines lines |
+	| lines |
 	
-	self wait.
-	lines := OrderedCollection new.	
+	lines _ self stream.
 
-	combinedPropertiesLines := (CombinedIntegerPropertiesReport for: integerToAnalize with: lines) value.
-	differentBasesLines := (IntegerOnDifferentBasesReport for: integerToAnalize with: combinedPropertiesLines) value.
+	(CombinedIntegerPropertiesReport for: integerToAnalize with: lines) value.
+	(IntegerOnDifferentBasesReport for: integerToAnalize with: lines) value.
 		
-	^differentBasesLines ! !
+	^ lines ! !
 
 
 !classDefinition: #IntegerOnDifferentBasesReport category: #'Ingsoft-IntegerReports'!
@@ -220,17 +224,12 @@ addNumberInBase: aBase to: lines title: aTitle
 	! !
 
 
-!IntegerOnDifferentBasesReport methodsFor: 'reporting' stamp: 'AB 5/17/2019 12:42:10'!
+!IntegerOnDifferentBasesReport methodsFor: 'reporting' stamp: 'AB 5/17/2019 13:16:58'!
 value
 
 	| lines |
 	
-	(storedResults isNil) ifTrue: [
-		self wait.
-		storedResults _ OrderedCollection new.
-	].
-	
-	lines _ storedResults.
+	lines _ self stream.
 
 	self 
 		addNumberInBase: 2 to: lines title: 'Binary';
@@ -261,17 +260,12 @@ IntegerPropertiesReport subclass: #BasicIntegerPropertiesReport
 	poolDictionaries: ''
 	category: 'Ingsoft-IntegerReports'!
 
-!BasicIntegerPropertiesReport methodsFor: 'reporting' stamp: 'AB 5/17/2019 12:41:37'!
+!BasicIntegerPropertiesReport methodsFor: 'reporting' stamp: 'AB 5/17/2019 13:17:14'!
 value
 
 	| lines |
 
-	(storedResults isNil) ifTrue: [
-		self wait.
-		storedResults _ OrderedCollection new.
-	].
-	
-	lines _ storedResults.
+	lines _ self stream.
 
 	self 
 		addLineTo: lines title: 'Factorial' with: [ integerToAnalize factorial ];
@@ -288,17 +282,12 @@ IntegerPropertiesReport subclass: #ComplexIntegerPropertiesReport
 	poolDictionaries: ''
 	category: 'Ingsoft-IntegerReports'!
 
-!ComplexIntegerPropertiesReport methodsFor: 'reporting' stamp: 'AB 5/17/2019 12:41:56'!
+!ComplexIntegerPropertiesReport methodsFor: 'reporting' stamp: 'AB 5/17/2019 13:17:27'!
 value
 
 	| lines |
 	
-	(storedResults isNil) ifTrue: [
-		self wait.
-		storedResults _ OrderedCollection new.
-	].
-	
-	lines _ storedResults.
+	lines _ self stream.
 
 	self 
 		addLineTo: lines title: 'Prime?' with: [ integerToAnalize isPrime ];
