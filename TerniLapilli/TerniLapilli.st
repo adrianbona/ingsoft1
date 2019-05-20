@@ -258,6 +258,25 @@ test15
 			self assert: anError messageText = 'Game has finished'
 		]! !
 
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:50:26'!
+test16
+
+	| board |
+	board _ TerniLapilli new.
+	board putXat: 1@1.
+	board putYat: 2@1.
+	board putXat: 3@1.
+	board putYat: 1@2.
+	board putXat: 3@3.
+	board putYat: 3@2.
+	
+	self
+		should: [ board putXat: 2@3 ] 
+ 		raise: Error
+		 withExceptionDo: [ :anError |
+			self assert: anError messageText = 'More than three equal marks are not allowed'
+		]! !
+
 
 !classDefinition: #TerniLapilli category: #TerniLapilli!
 Object subclass: #TerniLapilli
@@ -271,10 +290,11 @@ at: aPosition
 
 	^ board at: aPosition ifAbsent: 'empty'! !
 
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:31:27'!
+!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:50:16'!
 at: aPosition put: aMark
 
-	(self xIsWinner or: self yIsWinner) ifTrue: [ ^ self error: 'Game has finished' ]. 
+	(self xIsWinner or: self yIsWinner) ifTrue: [ ^ self error: 'Game has finished' ].
+	(self boardContainsThreeMarksWith: aMark) ifTrue: [ ^ self error: 'More than three equal marks are not allowed' ].
 
 	(aPosition x between: 1 and: 3) 
 		ifTrue: [ (aPosition y between: 1 and: 3) 
@@ -289,16 +309,16 @@ at: aPosition put: aMark
 		]
 		ifFalse: [ ^ self error: 'Out of range']! !
 
+!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:52:39'!
+boardContainsThreeMarksWith: aMark
+
+	^ (board occurrencesOf: aMark) = 3! !
+
 !TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 18:20:57'!
 initialize
 
 	board _ Dictionary new.
 	isXTurn _ true.! !
-
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 18:20:50'!
-isBoardEmpty
-
-	^ board size = 0! !
 
 !TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 18:59:43'!
 putXat: aPosition 
