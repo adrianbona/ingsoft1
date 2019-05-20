@@ -75,6 +75,189 @@ test06
 			self assert: (board at: 2@2) = 'empty'.
 		]! !
 
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 19:55:01'!
+test07
+
+	| board |
+	board _ TerniLapilli new.
+	board putXat: 2@2.
+	
+	self
+		should: [ board putXat: 2@3 ] 
+ 		raise: Error
+		 withExceptionDo: [ :anError |
+			self assert: anError messageText = 'It is not Xs turn'.
+			self assert: (board at: 2@2) = #x.
+			self assert: (board at: 2@3) = 'empty'.
+		]! !
+
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 19:56:49'!
+test08
+
+	| board |
+	board _ TerniLapilli new.
+	board putXat: 2@2.
+	board putYat: 2@3.
+	
+	self
+		should: [ board putYat: 2@1 ] 
+ 		raise: Error
+		 withExceptionDo: [ :anError |
+			self assert: anError messageText = 'It is not Ys turn'.
+			self assert: (board at: 2@2) = #x.
+			self assert: (board at: 2@3) = #y.
+			self assert: (board at: 2@1) = 'empty'.
+		]! !
+
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 19:57:45'!
+test09
+
+	| board |
+	board _ TerniLapilli new.
+
+	self
+		should: [ board putXat: 4@2 ] 
+ 		raise: Error
+		 withExceptionDo: [ :anError |
+			self assert: anError messageText = 'Out of range'
+		]! !
+
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:02:44'!
+test10
+
+	| board |
+	board _ TerniLapilli new.
+	board putXat: 1@1.
+	board putYat: 2@1.
+	
+	board putXat: 1@2.
+	board putYat: 2@2.
+	
+	board putXat: 1@3.
+
+	self assert: board xIsWinner! !
+
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:15:33'!
+test11
+
+	| board |
+	board _ TerniLapilli new.
+	board putXat: 2@1.
+	board putYat: 1@1.
+	
+	board putXat: 2@2.
+	board putYat: 1@2.
+	
+	board putXat: 2@3.
+
+	self assert: board xIsWinner.
+	
+	board _ TerniLapilli new.
+	board putXat: 3@1.
+	board putYat: 1@1.
+	
+	board putXat: 3@2.
+	board putYat: 1@2.
+	
+	board putXat: 3@3.
+
+	self assert: board xIsWinner! !
+
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:20:39'!
+test12
+
+	| board |
+	board _ TerniLapilli new.
+	board putXat: 1@1.
+	board putYat: 1@2.
+	
+	board putXat: 2@1.
+	board putYat: 2@2.
+	
+	board putXat: 3@1.
+
+	self assert: board xIsWinner.
+	
+	board _ TerniLapilli new.
+	board putXat: 1@2.
+	board putYat: 1@1.
+	
+	board putXat: 2@2.
+	board putYat: 2@1.
+	
+	board putXat: 3@2.
+
+	self assert: board xIsWinner.
+	
+	board _ TerniLapilli new.
+	board putXat: 1@3.
+	board putYat: 1@1.
+	
+	board putXat: 2@3.
+	board putYat: 2@1.
+	
+	board putXat: 3@3.
+
+	self assert: board xIsWinner! !
+
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:25:14'!
+test13
+
+	| board |
+	board _ TerniLapilli new.
+	board putXat: 1@1.
+	board putYat: 1@2.
+	board putXat: 2@2.
+	board putYat: 1@3.
+	board putXat: 3@3.
+
+	self assert: board xIsWinner.
+	
+	board _ TerniLapilli new.
+	board putXat: 3@1.
+	board putYat: 1@2.
+	board putXat: 2@2.
+	board putYat: 3@2.
+	board putXat: 1@3.
+
+	self assert: board xIsWinner! !
+
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:28:06'!
+test14
+
+	| board |
+	board _ TerniLapilli new.
+	board putXat: 1@1.
+	board putYat: 3@1.
+	
+	board putXat: 1@2.
+	board putYat: 3@2.
+	
+	board putXat: 2@2.
+	board putYat: 3@3.
+
+	self assert: board yIsWinner! !
+
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:29:33'!
+test15
+
+	| board |
+	board _ TerniLapilli new.
+	board putXat: 1@1.
+	board putYat: 2@1.
+	
+	board putXat: 1@2.
+	board putYat: 2@2.
+	
+	board putXat: 1@3.
+	
+	self
+		should: [ board putYat: 3@2. ] 
+ 		raise: Error
+		 withExceptionDo: [ :anError |
+			self assert: anError messageText = 'Game has finished'
+		]! !
+
 
 !classDefinition: #TerniLapilli category: #TerniLapilli!
 Object subclass: #TerniLapilli
@@ -88,8 +271,10 @@ at: aPosition
 
 	^ board at: aPosition ifAbsent: 'empty'! !
 
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 18:58:30'!
+!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:31:27'!
 at: aPosition put: aMark
+
+	(self xIsWinner or: self yIsWinner) ifTrue: [ ^ self error: 'Game has finished' ]. 
 
 	(aPosition x between: 1 and: 3) 
 		ifTrue: [ (aPosition y between: 1 and: 3) 
@@ -126,3 +311,43 @@ putYat: aPosition
 
 	(isXTurn) ifTrue: [ ^ self error: 'It is not Ys turn' ].
 	self at: aPosition put: #y! !
+
+!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:24:44'!
+threeDiagonallyContinuosWith: aMark
+
+	^ (((self at: 1@1) = aMark) and: ((self at: 2@2) = aMark) and: ((self at: 3@3) = aMark))
+		or: (((self at: 3@1) = aMark) and: ((self at: 2@2) = aMark) and: ((self at: 1@3) = aMark))
+		! !
+
+!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:21:00'!
+threeHorizontallyContinuosWith: aMark
+
+	^ (((self at: 1@1) = aMark) and: ((self at: 2@1) = aMark) and: ((self at: 3@1) = aMark))
+		or: (((self at: 1@2) = aMark) and: ((self at: 2@2) = aMark) and: ((self at: 3@2) = aMark))
+		or: (((self at: 1@3) = aMark) and: ((self at: 2@3) = aMark) and: ((self at: 3@3) = aMark))
+		! !
+
+!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:14:21'!
+threeVerticallyContinuosWith: aMark
+
+	^ (((self at: 1@1) = aMark) and: ((self at: 1@2) = aMark) and: ((self at: 1@3) = aMark))
+		or: (((self at: 2@1) = aMark) and: ((self at: 2@2) = aMark) and: ((self at: 2@3) = aMark))
+		or: (((self at: 3@1) = aMark) and: ((self at: 3@2) = aMark) and: ((self at: 3@3) = aMark))
+		! !
+
+!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:24:14'!
+winnerIs: aMark
+
+	^ (self threeVerticallyContinuosWith: aMark)
+		or: (self threeHorizontallyContinuosWith: aMark)
+		or: (self threeDiagonallyContinuosWith: aMark)! !
+
+!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:03:42'!
+xIsWinner
+
+	^ self winnerIs: #x! !
+
+!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:26:12'!
+yIsWinner
+
+	^ self winnerIs: #y! !
