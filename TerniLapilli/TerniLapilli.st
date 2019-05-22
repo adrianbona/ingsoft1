@@ -5,8 +5,8 @@ TestCase subclass: #TerniLapilliTest
 	poolDictionaries: ''
 	category: 'TerniLapilli'!
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 18:24:47'!
-test01
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 21:05:28'!
+test01PutAnXAndCheckItsPosition
 
 	| board |
 	board _ TerniLapilli new.
@@ -14,8 +14,8 @@ test01
 
 	self assert: (board at: 2@2) = #x! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 18:25:09'!
-test02
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 21:06:48'!
+test02PutXAndPutYInDifferentPositionsAndCheckCorrectness
 
 	| board |
 	board _ TerniLapilli new.
