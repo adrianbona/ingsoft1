@@ -144,7 +144,7 @@ test08GetsTransactionsFromRegisteredAccountsAndPortfolios
 	self assert: (aPortfolio transactions size = 2)
 ! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/24/2019 17:59:26'!
+!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/24/2019 18:42:36'!
 test09CanNotAddSameAccountWhenComingFromAnotherPortfolio
 
 	| aPortfolio anotherPortfolio anAccount aDeposit |
@@ -163,7 +163,9 @@ test09CanNotAddSameAccountWhenComingFromAnotherPortfolio
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = 'Can not add the same financial asset more than once'.
 			self assert: (aPortfolio balance = aDeposit value).
-			self deny: (anotherPortfolio isRegisteredIn: aPortfolio).
+			
+			self assert: (aPortfolio isRegisteredIn: anotherPortfolio).
+			self assert: (anotherPortfolio isRegisteredIn: aPortfolio).
 		].! !
 
 
@@ -394,6 +396,17 @@ transactions
 
 	self subclassResponsibility! !
 
+
+!FinancialAsset methodsFor: 'portfolios' stamp: 'AB 5/24/2019 18:43:28'!
+isRegisteredIn: aPortfolio
+
+	self subclassResponsibility! !
+
+!FinancialAsset methodsFor: 'portfolios' stamp: 'AB 5/24/2019 18:44:25'!
+registerIn: aPortfolio
+
+	self subclassResponsibility! !
+
 
 !classDefinition: #Portfolio category: #'Portfolio-Ejercicio'!
 FinancialAsset subclass: #Portfolio
@@ -405,12 +418,12 @@ FinancialAsset subclass: #Portfolio
 Un portfolio es una agrupación de cuentas o portfolios, y se puede hacer con ellos lo mismo que con una cuenta salvo registrar transacciones.!
 
 
-!Portfolio methodsFor: 'initialization' stamp: 'AB 5/24/2019 17:53:10'!
+!Portfolio methodsFor: 'initialization' stamp: 'AB 5/24/2019 18:29:45'!
 initialize
 
 	super initialize.
-	financialAssets _ Set new.
-	registeredIn _ Set new! !
+	financialAssets _ OrderedCollection new.
+	registeredIn _ OrderedCollection new! !
 
 
 !Portfolio methodsFor: 'transactions' stamp: 'AB 5/24/2019 01:05:58'!
@@ -451,11 +464,11 @@ isRegisteredIn: aPortfolio
 
 	^ (registeredIn includes: aPortfolio) or: (financialAssets inject: false into: [ :isRegistered :aFinancialAsset | isRegistered or: (aFinancialAsset isRegisteredIn: aPortfolio) ])! !
 
-!Portfolio methodsFor: 'portfolios' stamp: 'AB 5/24/2019 17:47:48'!
+!Portfolio methodsFor: 'portfolios' stamp: 'AB 5/24/2019 18:35:41'!
 registerIn: aPortfolio
 
 	registeredIn add: aPortfolio.
-	financialAssets do: [ :anAsset | anAsset registerIn: aPortfolio ].! !
+	financialAssets do: [ :anAsset | anAsset registerIn: aPortfolio ]! !
 
 
 !classDefinition: #ReceptiveAccount category: #'Portfolio-Ejercicio'!
@@ -465,12 +478,12 @@ FinancialAsset subclass: #ReceptiveAccount
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
 
-!ReceptiveAccount methodsFor: 'initialization' stamp: 'AB 5/24/2019 17:53:18'!
+!ReceptiveAccount methodsFor: 'initialization' stamp: 'AB 5/24/2019 18:29:54'!
 initialize
 
 	super initialize.
 	transactions _ OrderedCollection new.
-	registeredIn _ Set new! !
+	registeredIn _ OrderedCollection new! !
 
 
 !ReceptiveAccount methodsFor: 'transactions' stamp: 'HAW 10/11/2018 16:53:54'!
