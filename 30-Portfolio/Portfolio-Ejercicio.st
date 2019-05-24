@@ -144,7 +144,7 @@ test08GetsTransactionsFromRegisteredAccountsAndPortfolios
 	self assert: (aPortfolio transactions size = 2)
 ! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/24/2019 01:44:34'!
+!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/24/2019 17:59:26'!
 test09CanNotAddSameAccountWhenComingFromAnotherPortfolio
 
 	| aPortfolio anotherPortfolio anAccount aDeposit |
@@ -163,6 +163,7 @@ test09CanNotAddSameAccountWhenComingFromAnotherPortfolio
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = 'Can not add the same financial asset more than once'.
 			self assert: (aPortfolio balance = aDeposit value).
+			self deny: (anotherPortfolio isRegisteredIn: aPortfolio).
 		].! !
 
 
@@ -396,7 +397,7 @@ transactions
 
 !classDefinition: #Portfolio category: #'Portfolio-Ejercicio'!
 FinancialAsset subclass: #Portfolio
-	instanceVariableNames: 'financialAssets'
+	instanceVariableNames: 'financialAssets registeredIn'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
@@ -404,11 +405,12 @@ FinancialAsset subclass: #Portfolio
 Un portfolio es una agrupación de cuentas o portfolios, y se puede hacer con ellos lo mismo que con una cuenta salvo registrar transacciones.!
 
 
-!Portfolio methodsFor: 'initialization' stamp: 'AB 5/23/2019 23:39:31'!
+!Portfolio methodsFor: 'initialization' stamp: 'AB 5/24/2019 17:53:10'!
 initialize
 
 	super initialize.
-	financialAssets _ Set new! !
+	financialAssets _ Set new.
+	registeredIn _ Set new! !
 
 
 !Portfolio methodsFor: 'transactions' stamp: 'AB 5/24/2019 01:05:58'!
@@ -434,25 +436,41 @@ balance
 	^ financialAssets sum: [:aFinancialAsset | aFinancialAsset balance] ifEmpty: [0]! !
 
 
-!Portfolio methodsFor: 'assets' stamp: 'AB 5/24/2019 00:01:27'!
+!Portfolio methodsFor: 'assets' stamp: 'AB 5/24/2019 17:48:19'!
 register: aFinancialAsset
 	
 	(financialAssets includes: aFinancialAsset) ifTrue: [^ self error: 'Can not add the same financial asset more than once'].
+	(aFinancialAsset isRegisteredIn: self) ifTrue: [^ self error: 'Can not add the same financial asset more than once'].
+	
+	aFinancialAsset registerIn: self.
 	financialAssets add: aFinancialAsset.! !
+
+
+!Portfolio methodsFor: 'portfolios' stamp: 'AB 5/24/2019 18:04:34'!
+isRegisteredIn: aPortfolio
+
+	^ (registeredIn includes: aPortfolio) or: (financialAssets inject: false into: [ :isRegistered :aFinancialAsset | isRegistered or: (aFinancialAsset isRegisteredIn: aPortfolio) ])! !
+
+!Portfolio methodsFor: 'portfolios' stamp: 'AB 5/24/2019 17:47:48'!
+registerIn: aPortfolio
+
+	registeredIn add: aPortfolio.
+	financialAssets do: [ :anAsset | anAsset registerIn: aPortfolio ].! !
 
 
 !classDefinition: #ReceptiveAccount category: #'Portfolio-Ejercicio'!
 FinancialAsset subclass: #ReceptiveAccount
-	instanceVariableNames: 'transactions'
+	instanceVariableNames: 'transactions registeredIn'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
 
-!ReceptiveAccount methodsFor: 'initialization' stamp: 'AB 5/23/2019 23:31:57'!
+!ReceptiveAccount methodsFor: 'initialization' stamp: 'AB 5/24/2019 17:53:18'!
 initialize
 
 	super initialize.
-	transactions _ OrderedCollection new! !
+	transactions _ OrderedCollection new.
+	registeredIn _ Set new! !
 
 
 !ReceptiveAccount methodsFor: 'transactions' stamp: 'HAW 10/11/2018 16:53:54'!
@@ -477,3 +495,14 @@ transactions
 balance
 
 	^ transactions inject: 0 into: [ :currentBalance :aTransaction | aTransaction affectBalance: currentBalance ]! !
+
+
+!ReceptiveAccount methodsFor: 'portfolios' stamp: 'AB 5/24/2019 17:47:26'!
+isRegisteredIn: aPortfolio
+
+	^ registeredIn includes: aPortfolio! !
+
+!ReceptiveAccount methodsFor: 'portfolios' stamp: 'AB 5/24/2019 18:02:47'!
+registerIn: aPortfolio
+
+	registeredIn add: aPortfolio! !
