@@ -1,3 +1,149 @@
+!classDefinition: #PortfolioTest category: #'Portfolio-Ejercicio'!
+TestCase subclass: #PortfolioTest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Portfolio-Ejercicio'!
+
+!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/23/2019 23:32:57'!
+test01NewPortfolioHasBalanceOfZero
+
+	| portfolio |
+	
+	portfolio _ Portfolio new.
+
+	self assert: (portfolio balance = 0).! !
+
+!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/24/2019 00:00:03'!
+test02PortfolioBalanceChangesWhenAddingAnAccount
+
+	| portfolio account deposit |
+	
+	portfolio _ Portfolio new.
+	account _ ReceptiveAccount new.
+	deposit _ Deposit register: 50 on: account.
+	portfolio register: account.
+	
+	self assert: (portfolio balance = deposit value).! !
+
+!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/24/2019 00:00:03'!
+test03CanNotAddTheSameAccountMoreThanOnce
+
+	| portfolio account deposit |
+	
+	portfolio _ Portfolio new.
+	account _ ReceptiveAccount new.
+	deposit _ Deposit register: 50 on: account.
+	portfolio register: account.
+	
+	self
+		should: [ portfolio register: account ]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText = 'Can not add the same financial asset more than once'.
+			self assert: (portfolio balance = deposit value).
+		].! !
+
+!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/24/2019 00:00:03'!
+test04AddingAPortfolioAddsUpItsBalance
+
+	| aPortfolio anotherPortfolio anAccount anotherAccount |
+	
+	aPortfolio _ Portfolio new.
+	anAccount _ ReceptiveAccount new.
+	Deposit register: 50 on: anAccount.
+	
+	anotherPortfolio _ Portfolio new.
+	anotherAccount _ ReceptiveAccount new.
+	Deposit register: 50 on: anotherAccount.
+
+	aPortfolio register: anAccount.
+	anotherPortfolio register: anotherAccount.
+	aPortfolio register: anotherPortfolio.
+
+	self assert: (aPortfolio balance = (anAccount balance + anotherPortfolio balance))! !
+
+!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/24/2019 00:31:36'!
+test05RegistersATransactionRegisteredInAnAccount
+
+	| aPortfolio anAccount aDeposit |
+	
+	aPortfolio _ Portfolio new.
+	anAccount _ ReceptiveAccount new.
+	aDeposit _ Deposit register: 50 on: anAccount.
+
+	self deny: (aPortfolio hasRegistered: aDeposit).
+	
+	aPortfolio register: anAccount.
+
+	self assert: (aPortfolio hasRegistered: aDeposit)! !
+
+!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/24/2019 00:35:59'!
+test06RegistersATransactionRegisteredInAnAccountInARegisteredPortfolio
+
+	| aPortfolio anotherPortfolio anAccount anotherAccount aDeposit |
+	
+	aPortfolio _ Portfolio new.
+	anAccount _ ReceptiveAccount new.
+	Deposit register: 50 on: anAccount.
+	
+	anotherPortfolio _ Portfolio new.
+	anotherAccount _ ReceptiveAccount new.
+	aDeposit _ Deposit register: 50 on: anotherAccount.
+
+	aPortfolio register: anAccount.
+	anotherPortfolio register: anotherAccount.
+
+	self deny: (aPortfolio hasRegistered: aDeposit).
+	self assert: (anotherPortfolio hasRegistered: aDeposit).
+
+	aPortfolio register: anotherPortfolio.
+
+	self assert: (aPortfolio hasRegistered: aDeposit).
+	self assert: (anotherPortfolio hasRegistered: aDeposit)
+! !
+
+!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/24/2019 01:23:46'!
+test07GetsTransactionsFromRegisteredAccounts
+
+	| aPortfolio anAccount aDeposit anotherDeposit |
+	
+	aPortfolio _ Portfolio new.
+	anAccount _ ReceptiveAccount new.
+	aDeposit _ Deposit register: 50 on: anAccount.
+	anotherDeposit _ Deposit register: 50 on: anAccount.
+	
+	aPortfolio register: anAccount.
+
+	self assert: (aPortfolio transactions includes: aDeposit).
+	self assert: (aPortfolio transactions includes: anotherDeposit).
+	self assert: (aPortfolio transactions size = 2)! !
+
+!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/24/2019 01:23:51'!
+test08GetsTransactionsFromRegisteredAccountsAndPortfolios
+
+	| aPortfolio anotherPortfolio anAccount anotherAccount aDeposit anotherDeposit |
+	
+	aPortfolio _ Portfolio new.
+	anAccount _ ReceptiveAccount new.
+	aDeposit _ Deposit register: 50 on: anAccount.
+	aPortfolio register: anAccount.
+
+	anotherPortfolio _ Portfolio new.
+	anotherAccount _ ReceptiveAccount new.
+	anotherDeposit _ Deposit register: 100 on: anotherAccount.
+	anotherPortfolio register: anotherAccount.
+
+	aPortfolio register: anotherPortfolio.
+
+	self assert: (aPortfolio transactions includes: aDeposit).
+	self assert: (anotherPortfolio transactions includes: anotherDeposit).
+	
+	self assert: (aPortfolio transactions includes: anotherDeposit).
+	self assert: (aPortfolio transactions size = 2)
+! !
+
+
 !classDefinition: #ReceptiveAccountTest category: #'Portfolio-Ejercicio'!
 TestCase subclass: #ReceptiveAccountTest
 	instanceVariableNames: ''
@@ -101,6 +247,12 @@ value
 
 	self subclassResponsibility ! !
 
+
+!AccountTransaction methodsFor: 'balance' stamp: 'AB 5/23/2019 20:53:40'!
+affectBalance: aBalance
+
+	self subclassResponsibility ! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'AccountTransaction class' category: #'Portfolio-Ejercicio'!
@@ -125,16 +277,22 @@ AccountTransaction subclass: #Deposit
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
 
-!Deposit methodsFor: 'initialization' stamp: 'HernanWilkinson 7/13/2011 18:45'!
+!Deposit methodsFor: 'initialization' stamp: 'AB 5/23/2019 23:21:28'!
 initializeFor: aValue
 
-	value := aValue ! !
+	value _ aValue! !
 
 
 !Deposit methodsFor: 'value' stamp: 'HernanWilkinson 7/13/2011 18:38'!
 value
 
 	^ value! !
+
+
+!Deposit methodsFor: 'balance' stamp: 'AB 5/23/2019 20:54:15'!
+affectBalance: aBalance
+
+	^ aBalance + value! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -155,16 +313,22 @@ AccountTransaction subclass: #Withdraw
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
 
-!Withdraw methodsFor: 'initialization' stamp: 'HernanWilkinson 7/13/2011 18:46'!
+!Withdraw methodsFor: 'initialization' stamp: 'AB 5/23/2019 20:18:47'!
 initializeFor: aValue
 
 	value := aValue ! !
 
 
-!Withdraw methodsFor: 'value' stamp: 'HernanWilkinson 7/13/2011 18:33'!
+!Withdraw methodsFor: 'value' stamp: 'AB 5/23/2019 20:15:58'!
 value
 
 	^ value! !
+
+
+!Withdraw methodsFor: 'balance' stamp: 'AB 5/23/2019 20:54:34'!
+affectBalance: aBalance
+
+	^ aBalance - value ! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -178,21 +342,104 @@ for: aValue
 	^ self new initializeFor: aValue ! !
 
 
+!classDefinition: #FinancialAsset category: #'Portfolio-Ejercicio'!
+Object subclass: #FinancialAsset
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Portfolio-Ejercicio'!
+
+!FinancialAsset methodsFor: 'balance' stamp: 'AB 5/23/2019 21:55:56'!
+balance
+
+	self subclassResponsibility! !
+
+
+!FinancialAsset methodsFor: 'assets' stamp: 'AB 5/24/2019 00:06:34'!
+hasRegistered: aRegistrableAsset
+
+	self subclassResponsibility! !
+
+!FinancialAsset methodsFor: 'assets' stamp: 'AB 5/24/2019 00:03:20'!
+register: aRegistrableAsset
+
+	self subclassResponsibility! !
+
+
+!FinancialAsset methodsFor: 'transactions' stamp: 'AB 5/24/2019 00:36:51'!
+transactions
+
+	self subclassResponsibility! !
+
+
+!classDefinition: #Portfolio category: #'Portfolio-Ejercicio'!
+FinancialAsset subclass: #Portfolio
+	instanceVariableNames: 'financialAssets'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Portfolio-Ejercicio'!
+!Portfolio commentStamp: '<historical>' prior: 0!
+Un portfolio es una agrupación de cuentas o portfolios, y se puede hacer con ellos lo mismo que con una cuenta salvo registrar transacciones.!
+
+
+!Portfolio methodsFor: 'initialization' stamp: 'AB 5/23/2019 23:39:31'!
+initialize
+
+	super initialize.
+	financialAssets _ Set new! !
+
+
+!Portfolio methodsFor: 'transactions' stamp: 'AB 5/24/2019 01:05:58'!
+hasRegistered: aTransaction
+
+	^ financialAssets inject: false into: [ :transactionFound :aFinancialAsset | transactionFound or: (aFinancialAsset hasRegistered: aTransaction) ]! !
+
+!Portfolio methodsFor: 'transactions' stamp: 'AB 5/24/2019 01:22:50'!
+transactions 
+
+	| transactions |
+
+	transactions _ OrderedCollection new.
+
+	financialAssets do: [ :aFinancialAsset | transactions addAll: (aFinancialAsset transactions) ].
+	
+	^ transactions! !
+
+
+!Portfolio methodsFor: 'balance' stamp: 'AB 5/23/2019 23:57:46'!
+balance
+	
+	^ financialAssets sum: [:aFinancialAsset | aFinancialAsset balance] ifEmpty: [0]! !
+
+
+!Portfolio methodsFor: 'assets' stamp: 'AB 5/24/2019 00:01:27'!
+register: aFinancialAsset
+	
+	(financialAssets includes: aFinancialAsset) ifTrue: [^ self error: 'Can not add the same financial asset more than once'].
+	financialAssets add: aFinancialAsset.! !
+
+
 !classDefinition: #ReceptiveAccount category: #'Portfolio-Ejercicio'!
-Object subclass: #ReceptiveAccount
+FinancialAsset subclass: #ReceptiveAccount
 	instanceVariableNames: 'transactions'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
 
-!ReceptiveAccount methodsFor: 'initialization' stamp: 'HernanWilkinson 7/13/2011 18:35'!
+!ReceptiveAccount methodsFor: 'initialization' stamp: 'AB 5/23/2019 23:31:57'!
 initialize
 
 	super initialize.
-	transactions := OrderedCollection new.! !
+	transactions _ OrderedCollection new! !
 
 
-!ReceptiveAccount methodsFor: 'transactions' stamp: 'HernanWilkinson 7/13/2011 18:37'!
+!ReceptiveAccount methodsFor: 'transactions' stamp: 'HAW 10/11/2018 16:53:54'!
+hasRegistered: aTtransaction
+
+	^ transactions includes: aTtransaction 
+! !
+
+!ReceptiveAccount methodsFor: 'transactions' stamp: 'AB 5/24/2019 00:01:54'!
 register: aTransaction
 
 	transactions add: aTransaction 
@@ -204,14 +451,7 @@ transactions
 	^ transactions copy! !
 
 
-!ReceptiveAccount methodsFor: 'balance' stamp: 'HAW 5/23/2019 15:19:32'!
+!ReceptiveAccount methodsFor: 'balance' stamp: 'AB 5/23/2019 21:33:27'!
 balance
 
-	^transactions sum: [ :aTransaction | aTransaction value ] ifEmpty: [ 0 ]! !
-
-
-!ReceptiveAccount methodsFor: 'testing' stamp: 'HAW 10/11/2018 16:53:54'!
-hasRegistered: aTtransaction
-
-	^ transactions includes: aTtransaction 
-! !
+	^ transactions inject: 0 into: [ :currentBalance :aTransaction | aTransaction affectBalance: currentBalance ]! !
