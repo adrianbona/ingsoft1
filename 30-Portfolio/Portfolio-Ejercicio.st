@@ -5,43 +5,44 @@ TestCase subclass: #PortfolioTest
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/23/2019 23:32:57'!
+!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/24/2019 02:00:21'!
 test01NewPortfolioHasBalanceOfZero
 
-	| portfolio |
+	| aPortfolio |
 	
-	portfolio _ Portfolio new.
+	aPortfolio _ Portfolio new.
 
-	self assert: (portfolio balance = 0).! !
+	self assert: (aPortfolio balance = 0).! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/24/2019 00:00:03'!
+!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/24/2019 01:54:24'!
 test02PortfolioBalanceChangesWhenAddingAnAccount
 
-	| portfolio account deposit |
+	| aPortfolio anAccount aDeposit |
 	
-	portfolio _ Portfolio new.
-	account _ ReceptiveAccount new.
-	deposit _ Deposit register: 50 on: account.
-	portfolio register: account.
+	aPortfolio _ Portfolio new.
+	anAccount _ ReceptiveAccount new.
+	aDeposit _ Deposit register: 50 on: anAccount.
 	
-	self assert: (portfolio balance = deposit value).! !
+	aPortfolio register: anAccount.
+	
+	self assert: (aPortfolio balance = aDeposit value)! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/24/2019 00:00:03'!
+!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/24/2019 02:01:03'!
 test03CanNotAddTheSameAccountMoreThanOnce
 
-	| portfolio account deposit |
+	| aPortfolio anAccount aDeposit |
 	
-	portfolio _ Portfolio new.
-	account _ ReceptiveAccount new.
-	deposit _ Deposit register: 50 on: account.
-	portfolio register: account.
+	aPortfolio _ Portfolio new.
+	anAccount _ ReceptiveAccount new.
+	aDeposit _ Deposit register: 50 on: anAccount.
+	aPortfolio register: anAccount.
 	
 	self
-		should: [ portfolio register: account ]
+		should: [ aPortfolio register: anAccount ]
 		raise: Error
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = 'Can not add the same financial asset more than once'.
-			self assert: (portfolio balance = deposit value).
+			self assert: (aPortfolio balance = aDeposit value).
 		].! !
 
 !PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/24/2019 00:00:03'!
@@ -142,6 +143,27 @@ test08GetsTransactionsFromRegisteredAccountsAndPortfolios
 	self assert: (aPortfolio transactions includes: anotherDeposit).
 	self assert: (aPortfolio transactions size = 2)
 ! !
+
+!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/24/2019 01:44:34'!
+test09CanNotAddSameAccountWhenComingFromAnotherPortfolio
+
+	| aPortfolio anotherPortfolio anAccount aDeposit |
+	
+	aPortfolio _ Portfolio new.
+	anAccount _ ReceptiveAccount new.
+	aDeposit _ Deposit register: 50 on: anAccount.
+	aPortfolio register: anAccount.
+
+	anotherPortfolio _ Portfolio new.
+	anotherPortfolio register: anAccount .
+
+	self
+		should: [ aPortfolio register: anotherPortfolio ]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText = 'Can not add the same financial asset more than once'.
+			self assert: (aPortfolio balance = aDeposit value).
+		].! !
 
 
 !classDefinition: #ReceptiveAccountTest category: #'Portfolio-Ejercicio'!
