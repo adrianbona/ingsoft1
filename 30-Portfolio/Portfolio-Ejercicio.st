@@ -153,7 +153,7 @@ test08GetsTransactionsFromRegisteredAccountsAndPortfolios
 	self assert: (aPortfolio transactions size = 2)
 ! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/24/2019 23:41:15'!
+!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/25/2019 00:19:58'!
 test09CanNotAddSameAccountWhenComingFromAnotherPortfolio
 
 	| aPortfolio anotherPortfolio anAccount aDeposit |
@@ -172,11 +172,11 @@ test09CanNotAddSameAccountWhenComingFromAnotherPortfolio
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = 'Can not add the same asset more than once'.
 			self assert: (aPortfolio balance = aDeposit value).
-			self assert: (aPortfolio isIncludedIn: anotherPortfolio).
-			self assert: (anotherPortfolio isIncludedIn: aPortfolio).
+			self assert: (aPortfolio isGroupedBy: anotherPortfolio).
+			self assert: (anotherPortfolio isGroupedBy: aPortfolio).
 		].! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/24/2019 23:42:00'!
+!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/25/2019 00:26:11'!
 test10CanNotCreateACircularReferenceWithTwoPortfolios
 
 	| aPortfolio anotherPortfolio |
@@ -185,11 +185,15 @@ test10CanNotCreateACircularReferenceWithTwoPortfolios
 	anotherPortfolio _ Portfolio new.
 	aPortfolio register: anotherPortfolio.
 	
-	self assert: (anotherPortfolio isIncludedIn: aPortfolio).
-	self deny: (aPortfolio isIncludedIn: anotherPortfolio).! !
+	self
+		should: [ aPortfolio register: anotherPortfolio ]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText = 'Can not add the same asset more than once'.
+		].! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/24/2019 23:43:48'!
-test11CanNotCreateACircularReference
+!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/25/2019 00:14:11'!
+test11CanNotCreateACircularReferenceWithThreePortfolios
 
 	| aPortfolio anotherPortfolio aThirdPortfolio |
 	
@@ -205,9 +209,6 @@ test11CanNotCreateACircularReference
 		raise: Error
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = 'Can not add the same asset more than once'.
-			self assert: (anotherPortfolio isIncludedIn: aPortfolio).
-			self assert: (aThirdPortfolio isIncludedIn: anotherPortfolio).
-			self deny: (aPortfolio isIncludedIn: aThirdPortfolio).
 		].! !
 
 
@@ -409,8 +410,39 @@ for: aValue
 	^ self new initializeFor: aValue ! !
 
 
+!classDefinition: #FinancialAsset category: #'Portfolio-Ejercicio'!
+Object subclass: #FinancialAsset
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Portfolio-Ejercicio'!
+
+!FinancialAsset methodsFor: 'transactions' stamp: 'AB 5/25/2019 00:30:47'!
+hasRegistered: aTtransaction
+
+	self subclassResponsibility
+! !
+
+!FinancialAsset methodsFor: 'transactions' stamp: 'AB 5/25/2019 00:31:36'!
+transactions 
+
+	self subclassResponsibility! !
+
+
+!FinancialAsset methodsFor: 'assets' stamp: 'AB 5/25/2019 00:31:17'!
+register: anAsset
+
+	self subclassResponsibility! !
+
+
+!FinancialAsset methodsFor: 'balance' stamp: 'AB 5/25/2019 00:30:27'!
+balance
+
+	self subclassResponsibility ! !
+
+
 !classDefinition: #Portfolio category: #'Portfolio-Ejercicio'!
-Object subclass: #Portfolio
+FinancialAsset subclass: #Portfolio
 	instanceVariableNames: 'assets belongsTo'
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -430,25 +462,28 @@ balance
 	^ assets inject: 0 into: [ :currentBalance :anAsset | currentBalance + anAsset balance ]! !
 
 
-!Portfolio methodsFor: 'assets' stamp: 'AB 5/24/2019 23:14:36'!
+!Portfolio methodsFor: 'assets' stamp: 'AB 5/25/2019 00:27:59'!
 register: anAsset
 
-	(anAsset isIncludedIn: self) ifTrue: [ self error: 'Can not add the same asset more than once' ].
+	(anAsset isGroupedBy: self) ifTrue: [ self error: 'Can not add the same asset more than once' ].
 
-	assets add: anAsset.
+	anAsset groupBy: self.
+	
+	assets add: anAsset! !
 
-	anAsset groupBy: self.! !
 
-
-!Portfolio methodsFor: 'portfolios' stamp: 'AB 5/24/2019 23:15:17'!
+!Portfolio methodsFor: 'portfolios' stamp: 'AB 5/24/2019 23:53:14'!
 groupBy: aPortfolio
 
-	belongsTo add: aPortfolio! !
+	belongsTo add: aPortfolio.
+	
+	assets do: [ :anAsset | anAsset groupBy: aPortfolio ]! !
 
-!Portfolio methodsFor: 'portfolios' stamp: 'AB 5/24/2019 23:40:46'!
-isIncludedIn: aPortfolio
+!Portfolio methodsFor: 'portfolios' stamp: 'AB 5/25/2019 00:27:44'!
+isGroupedBy: aPortfolio
 
-	^ (belongsTo includes: aPortfolio) or: (assets inject: false into: [ :includes :anAsset | includes or: (anAsset isIncludedIn: aPortfolio) ])! !
+	^ (belongsTo includes: aPortfolio) 
+		or: (assets inject: false into: [ :includes :anAsset | includes or: (anAsset = aPortfolio) or: (anAsset isGroupedBy: aPortfolio) ])! !
 
 
 !Portfolio methodsFor: 'transactions' stamp: 'AB 5/24/2019 23:20:02'!
@@ -470,7 +505,7 @@ transactions
 
 
 !classDefinition: #ReceptiveAccount category: #'Portfolio-Ejercicio'!
-Object subclass: #ReceptiveAccount
+FinancialAsset subclass: #ReceptiveAccount
 	instanceVariableNames: 'transactions belongsTo'
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -513,7 +548,7 @@ groupBy: aPortfolio
 
 	belongsTo add: aPortfolio! !
 
-!ReceptiveAccount methodsFor: 'portfolios' stamp: 'AB 5/24/2019 23:08:12'!
-isIncludedIn: aPortfolio
+!ReceptiveAccount methodsFor: 'portfolios' stamp: 'AB 5/25/2019 00:19:58'!
+isGroupedBy: aPortfolio
 
 	^ belongsTo includes: aPortfolio! !
