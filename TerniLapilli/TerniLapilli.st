@@ -455,7 +455,7 @@ test25OCantSlideIfGameOver
 			self assert: (board at: 1@2) = #o.
 		].! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 12:09:21'!
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'JR 5/26/2019 13:48:15'!
 test26XCantSlideIfGameOver
 
 	| board |
@@ -466,7 +466,7 @@ test26XCantSlideIfGameOver
 	board slideOFrom: 2@1 to: 2@2.
 
 	self
-		should: [ board slideXFrom: 1@1 to: 1@2 ] 
+		should: [ board slideXFrom: 1@1 to: 2@1 ] 
  		raise: Error
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = 'Game has finished'.
@@ -639,75 +639,50 @@ Object subclass: #TerniLapilli
 	poolDictionaries: ''
 	category: 'TerniLapilli'!
 
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'JR 5/22/2019 20:07:06'!
+!TerniLapilli methodsFor: 'validations' stamp: 'JR 5/26/2019 13:40:45'!
+assertValidPosition: aPosition
+
+	((aPosition x between: 1 and: 3) and: (aPosition y between: 1 and: 3)) ifFalse: [ self error: 'Out of range' ].! !
+
+!TerniLapilli methodsFor: 'validations' stamp: 'JR 5/26/2019 13:51:52'!
+assertValidPutIn: aPosition 
+
+	self assertValidPosition: aPosition.
+	(self at: aPosition) = 'empty' ifFalse: [^ self error: 'Already marked'].! !
+
+!TerniLapilli methodsFor: 'validations' stamp: 'JR 5/26/2019 13:46:31'!
+assertValidSlideFrom: anOriginPoint to: aDestinationPoint 
+
+	self assertValidPosition: anOriginPoint.
+	self assertValidPosition: aDestinationPoint.
+	(self isValidSlidingDistanceFrom: anOriginPoint to: aDestinationPoint) ifFalse: [^ self error: 'Can not slide that far' ].
+	(self at: aDestinationPoint) = 'empty' ifFalse: [^ self error: 'Can not slide to an occupied position'].
+	(self at: anOriginPoint) = 'empty' ifTrue: [^ self error: 'Can not slide from an empty position'].
+! !
+
+!TerniLapilli methodsFor: 'validations' stamp: 'JR 5/26/2019 13:22:09'!
 at: aPosition
 
-	(aPosition x between: 1 and: 3) 
-	ifTrue: [ (aPosition y between: 1 and: 3) 
-		ifTrue: [ ^ board at: aPosition ifAbsent: 'empty' ]
-		ifFalse: [ ^ self error: 'Out of range']
-	]
-	ifFalse: [ ^ self error: 'Out of range']! !
+	^ board at: aPosition ifAbsent: 'empty'.! !
 
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'JR 5/26/2019 12:14:20'!
-at: aPosition put: aToken
+!TerniLapilli methodsFor: 'validations' stamp: 'JR 5/26/2019 12:54:02'!
+boardContainsThreeXTokens
 
-	(self boardContainsThreeTokensWith: aToken) ifTrue: [ ^ self error: 'More than three equal marks are not allowed' ].
+	^ (board occurrencesOf: #x) = 3! !
 
-	(aPosition x between: 1 and: 3) 
-		ifTrue: [ (aPosition y between: 1 and: 3) 
-			ifTrue: [ board at: aPosition 
-				ifPresent: [ :anElement | ^ self error: 'Already marked']
-				ifAbsent: [ 
-					board at: aPosition put: aToken.
-					state changeTurnIn: self.
-				]
-			]
-			ifFalse: [ ^ self error: 'Out of range']
-		]
-		ifFalse: [ ^ self error: 'Out of range']! !
+!TerniLapilli methodsFor: 'validations' stamp: 'JR 5/22/2019 20:44:41'!
+isValidSlidingDistanceFrom: anOriginPoint to: aDestinationPoint
+	
+	^ ((anOriginPoint x - aDestinationPoint x) abs < 2) and: ((anOriginPoint y - aDestinationPoint y) abs < 2).! !
 
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'JR 5/26/2019 12:14:26'!
-boardContainsThreeTokensWith: aToken
-
-	^ (board occurrencesOf: aToken) = 3! !
-
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'JR 5/26/2019 12:14:43'!
-initialize
-
-	board _ Dictionary new.
-	state _ TerniLapilliXTurnToPut new.! !
-
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:14:14'!
-oIsWinner
-
-	^ self winnerIs: #o! !
-
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 10:41:42'!
-putOat: aPosition
-
-	state putOat: aPosition in: self
-! !
-
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 10:33:07'!
-putXat: aPosition
-
-	state putXat: aPosition in: self
-! !
-
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:42:00'!
-state: aState
-
-	state _ aState! !
-
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'JR 5/26/2019 12:15:16'!
+!TerniLapilli methodsFor: 'validations' stamp: 'JR 5/26/2019 13:54:48'!
 threeDiagonallyContinuosWith: aToken
 
 	^ (((self at: 1@1) = aToken) and: ((self at: 2@2) = aToken) and: ((self at: 3@3) = aToken))
 		or: (((self at: 3@1) = aToken) and: ((self at: 2@2) = aToken) and: ((self at: 1@3) = aToken))
 		! !
 
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'JR 5/26/2019 12:15:27'!
+!TerniLapilli methodsFor: 'validations' stamp: 'JR 5/26/2019 12:15:27'!
 threeHorizontallyContinuosWith: aToken
 
 	^ (((self at: 1@1) = aToken) and: ((self at: 2@1) = aToken) and: ((self at: 3@1) = aToken))
@@ -715,7 +690,7 @@ threeHorizontallyContinuosWith: aToken
 		or: (((self at: 1@3) = aToken) and: ((self at: 2@3) = aToken) and: ((self at: 3@3) = aToken))
 		! !
 
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'JR 5/26/2019 12:15:37'!
+!TerniLapilli methodsFor: 'validations' stamp: 'JR 5/26/2019 12:15:37'!
 threeVerticallyContinuosWith: aToken
 
 	^ (((self at: 1@1) = aToken) and: ((self at: 1@2) = aToken) and: ((self at: 1@3) = aToken))
@@ -723,59 +698,92 @@ threeVerticallyContinuosWith: aToken
 		or: (((self at: 3@1) = aToken) and: ((self at: 3@2) = aToken) and: ((self at: 3@3) = aToken))
 		! !
 
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'JR 5/26/2019 12:15:44'!
+
+!TerniLapilli methodsFor: 'sliding movements' stamp: 'JR 5/26/2019 13:47:16'!
+pullFrom: anOriginPoint andPutIn: aDestinationPoint aToken: aToken 
+	
+	board removeKey: anOriginPoint.
+	
+	self at: aDestinationPoint put: aToken.! !
+
+!TerniLapilli methodsFor: 'sliding movements' stamp: 'JR 5/26/2019 12:57:05'!
+pullOFrom: anOriginPoint andPutIn: aDestinationPoint
+
+	self pullFrom: anOriginPoint andPutIn: aDestinationPoint aToken: #o! !
+
+!TerniLapilli methodsFor: 'sliding movements' stamp: 'JR 5/26/2019 12:57:28'!
+pullXFrom: anOriginPoint andPutIn: aDestinationPoint
+
+	self pullFrom: anOriginPoint andPutIn: aDestinationPoint aToken: #x ! !
+
+!TerniLapilli methodsFor: 'sliding movements' stamp: 'JR 5/26/2019 13:46:58'!
+slideOFrom: anOriginPoint to: aDestinationPoint
+	
+	self assertValidSlideFrom: anOriginPoint to: aDestinationPoint.
+	 
+	state slideOFrom: anOriginPoint to: aDestinationPoint in: self! !
+
+!TerniLapilli methodsFor: 'sliding movements' stamp: 'JR 5/26/2019 13:47:05'!
+slideXFrom: anOriginPoint to: aDestinationPoint
+
+	self assertValidSlideFrom: anOriginPoint to: aDestinationPoint.
+	
+	state slideXFrom: anOriginPoint to: aDestinationPoint in: self! !
+
+
+!TerniLapilli methodsFor: 'putting' stamp: 'JR 5/26/2019 13:52:34'!
+at: aPosition put: aToken
+
+	board at: aPosition put: aToken.
+	state changeTurnIn: self.
+			! !
+
+!TerniLapilli methodsFor: 'putting' stamp: 'JR 5/26/2019 13:52:11'!
+putOat: aPosition
+	
+	self assertValidPutIn: aPosition.
+
+	state putOat: aPosition in: self
+! !
+
+!TerniLapilli methodsFor: 'putting' stamp: 'JR 5/26/2019 13:52:15'!
+putXat: aPosition
+
+	self assertValidPutIn: aPosition.
+
+	state putXat: aPosition in: self
+! !
+
+
+!TerniLapilli methodsFor: 'initialization' stamp: 'JR 5/26/2019 12:14:43'!
+initialize
+
+	board _ Dictionary new.
+	state _ TerniLapilliXTurnToPut new.! !
+
+
+!TerniLapilli methodsFor: 'winning' stamp: 'AB 5/26/2019 11:14:14'!
+oIsWinner
+
+	^ self winnerIs: #o! !
+
+!TerniLapilli methodsFor: 'winning' stamp: 'JR 5/26/2019 12:15:44'!
 winnerIs: aToken
 
 	^ (self threeVerticallyContinuosWith: aToken)
 		or: (self threeHorizontallyContinuosWith: aToken)
 		or: (self threeDiagonallyContinuosWith: aToken)! !
 
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:03:42'!
+!TerniLapilli methodsFor: 'winning' stamp: 'AB 5/20/2019 20:03:42'!
 xIsWinner
 
 	^ self winnerIs: #x! !
 
 
-!TerniLapilli methodsFor: 'sliding movements' stamp: 'JR 5/22/2019 20:44:41'!
-isValidSlidingDistanceFrom: anOriginPoint to: aDestinationPoint
-	
-	^ ((anOriginPoint x - aDestinationPoint x) abs < 2) and: ((anOriginPoint y - aDestinationPoint y) abs < 2).! !
+!TerniLapilli methodsFor: 'private' stamp: 'AB 5/26/2019 11:42:00'!
+state: aState
 
-!TerniLapilli methodsFor: 'sliding movements' stamp: 'AB 5/26/2019 12:08:59'!
-pullOFrom: anOriginPoint andPutIn: aDestinationPoint
-
-	(self isValidSlidingDistanceFrom: anOriginPoint to: aDestinationPoint) ifFalse: [^ self error: 'Can not slide that far' ].
-
-	(self at: aDestinationPoint) = 'empty' ifFalse: [^ self error: 'Can not slide to an occupied position'].
-
-	(self at: anOriginPoint) = 'empty' ifTrue: [^ self error: 'Can not slide from an empty position'].
-	
-	board removeKey: anOriginPoint.
-	
-	self at: aDestinationPoint put: #o.! !
-
-!TerniLapilli methodsFor: 'sliding movements' stamp: 'AB 5/26/2019 12:08:54'!
-pullXFrom: anOriginPoint andPutIn: aDestinationPoint
-
-	(self isValidSlidingDistanceFrom: anOriginPoint to: aDestinationPoint) ifFalse: [^ self error: 'Can not slide that far' ].
-
-	(self at: aDestinationPoint) = 'empty' ifFalse: [^ self error: 'Can not slide to an occupied position'].
-
-	(self at: anOriginPoint) = 'empty' ifTrue: [^ self error: 'Can not slide from an empty position'].
-	
-	board removeKey: anOriginPoint.
-	
-	self at: aDestinationPoint put: #x.! !
-
-!TerniLapilli methodsFor: 'sliding movements' stamp: 'AB 5/26/2019 12:09:08'!
-slideOFrom: anOriginPoint to: aDestinationPoint
-	
-	state slideOFrom: anOriginPoint to: aDestinationPoint in: self! !
-
-!TerniLapilli methodsFor: 'sliding movements' stamp: 'AB 5/26/2019 12:08:31'!
-slideXFrom: anOriginPoint to: aDestinationPoint
-	
-	state slideXFrom: anOriginPoint to: aDestinationPoint in: self! !
+	state _ aState! !
 
 
 !classDefinition: #TerniLapilliState category: #TerniLapilli!
@@ -876,13 +884,13 @@ TerniLapilliState subclass: #TerniLapilliOTurnToPut
 	poolDictionaries: ''
 	category: 'TerniLapilli'!
 
-!TerniLapilliOTurnToPut methodsFor: 'as yet unclassified' stamp: 'JR 5/26/2019 12:14:20'!
+!TerniLapilliOTurnToPut methodsFor: 'as yet unclassified' stamp: 'JR 5/26/2019 12:54:16'!
 changeTurnIn: aGame
 
 	(aGame oIsWinner) 
 		ifTrue: [ aGame state: TerniLapilliGameOver new ] 
 		ifFalse: [
-			(aGame boardContainsThreeTokensWith: #x) 
+			(aGame boardContainsThreeXTokens) 
 			ifTrue: [ aGame state: TerniLapilliXTurnSliding new ]
 			ifFalse: [ aGame state: TerniLapilliXTurnToPut new ]
 		]! !
