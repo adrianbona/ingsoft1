@@ -67,7 +67,7 @@ test04AddingAPortfolioAddsUpItsBalance
 	aPortfolio register: anotherPortfolio.
 	self assert: (aPortfolio balance = (anAccount balance + anotherPortfolio balance))! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/24/2019 00:31:36'!
+!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/25/2019 20:09:51'!
 test05RegistersATransactionRegisteredInAnAccount
 
 	| aPortfolio anAccount aDeposit |
@@ -76,8 +76,6 @@ test05RegistersATransactionRegisteredInAnAccount
 	anAccount _ ReceptiveAccount new.
 	aDeposit _ Deposit register: 50 on: anAccount.
 
-	self deny: (aPortfolio hasRegistered: aDeposit).
-	
 	aPortfolio register: anAccount.
 
 	self assert: (aPortfolio hasRegistered: aDeposit)! !
@@ -112,7 +110,7 @@ test06RegistersATransactionRegisteredInAnAccountInARegisteredPortfolio
 	self deny: (anotherPortfolio hasRegistered: a50Deposit).
 ! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/24/2019 23:25:37'!
+!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/25/2019 20:07:53'!
 test07GetsTransactionsFromRegisteredAccounts
 
 	| aPortfolio anAccount a50Deposit a100Deposit |
@@ -124,12 +122,12 @@ test07GetsTransactionsFromRegisteredAccounts
 	
 	aPortfolio register: anAccount.
 
-	self assert: (aPortfolio balance = (anAccount balance)).
+	self assert: (aPortfolio balance = anAccount balance).
 	self assert: (aPortfolio transactions includes: a50Deposit).
 	self assert: (aPortfolio transactions includes: a100Deposit).
 	self assert: (aPortfolio transactions size = 2)! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/24/2019 23:26:08'!
+!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/25/2019 20:01:26'!
 test08GetsTransactionsFromRegisteredAccountsAndPortfolios
 
 	| aPortfolio anotherPortfolio anAccount anotherAccount a50Deposit a100Deposit |
@@ -144,6 +142,8 @@ test08GetsTransactionsFromRegisteredAccountsAndPortfolios
 	a100Deposit _ Deposit register: 100 on: anotherAccount.
 	anotherPortfolio register: anotherAccount.
 
+	self assert: (aPortfolio transactions size = 1).
+
 	aPortfolio register: anotherPortfolio.
 
 	self assert: (aPortfolio transactions includes: a50Deposit).
@@ -153,14 +153,14 @@ test08GetsTransactionsFromRegisteredAccountsAndPortfolios
 	self assert: (aPortfolio transactions size = 2)
 ! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/25/2019 00:19:58'!
+!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/25/2019 20:05:38'!
 test09CanNotAddSameAccountWhenComingFromAnotherPortfolio
 
-	| aPortfolio anotherPortfolio anAccount aDeposit |
+	| aPortfolio anotherPortfolio anAccount |
 	
 	aPortfolio _ Portfolio new.
 	anAccount _ ReceptiveAccount new.
-	aDeposit _ Deposit register: 50 on: anAccount.
+	Deposit register: 50 on: anAccount.
 	aPortfolio register: anAccount.
 
 	anotherPortfolio _ Portfolio new.
@@ -171,12 +171,11 @@ test09CanNotAddSameAccountWhenComingFromAnotherPortfolio
 		raise: Error
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = 'Can not add the same asset more than once'.
-			self assert: (aPortfolio balance = aDeposit value).
-			self assert: (aPortfolio isGroupedBy: anotherPortfolio).
-			self assert: (anotherPortfolio isGroupedBy: aPortfolio).
+			self assert: (aPortfolio balance = anAccount balance).
+			self assert: (anotherPortfolio balance = anAccount balance).
 		].! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/25/2019 00:26:11'!
+!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/25/2019 20:06:17'!
 test10CanNotCreateACircularReferenceWithTwoPortfolios
 
 	| aPortfolio anotherPortfolio |
@@ -186,7 +185,7 @@ test10CanNotCreateACircularReferenceWithTwoPortfolios
 	aPortfolio register: anotherPortfolio.
 	
 	self
-		should: [ aPortfolio register: anotherPortfolio ]
+		should: [ anotherPortfolio register: aPortfolio ]
 		raise: Error
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = 'Can not add the same asset more than once'.
@@ -206,6 +205,42 @@ test11CanNotCreateACircularReferenceWithThreePortfolios
 
 	self
 		should: [ aThirdPortfolio register: aPortfolio ]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText = 'Can not add the same asset more than once'.
+		].! !
+
+!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/25/2019 20:22:52'!
+test12CanNotRegisterAnAccountInAPortfolioWithAnotherPortfolioThatHasAlreadyRegisteredSameAccount
+
+	| aPortfolio anotherPortfolio anAccount |
+	
+	aPortfolio _ Portfolio new.
+	anotherPortfolio _ Portfolio new.
+	aPortfolio register: anotherPortfolio.
+
+	anAccount _ ReceptiveAccount new.
+	Deposit register: 50 on: anAccount.
+	anotherPortfolio register: anAccount.
+
+	self
+		should: [ aPortfolio register: anAccount. ]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText = 'Can not add the same asset more than once'.
+			self assert: (aPortfolio balance = anAccount balance).
+			self assert: (anotherPortfolio balance = anAccount balance).
+		].! !
+
+!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'AB 5/25/2019 21:11:53'!
+test13CanNotAddPortfolioToItself
+
+	| aPortfolio |
+	
+	aPortfolio _ Portfolio new.
+	
+	self
+		should: [ aPortfolio register: aPortfolio ]
 		raise: Error
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = 'Can not add the same asset more than once'.
@@ -462,12 +497,16 @@ balance
 	^ assets inject: 0 into: [ :currentBalance :anAsset | currentBalance + anAsset balance ]! !
 
 
-!Portfolio methodsFor: 'assets' stamp: 'AB 5/25/2019 00:27:59'!
+!Portfolio methodsFor: 'assets' stamp: 'AB 5/25/2019 21:11:22'!
 register: anAsset
+
+	(anAsset = self) ifTrue: [ self error: 'Can not add the same asset more than once' ].
 
 	(anAsset isGroupedBy: self) ifTrue: [ self error: 'Can not add the same asset more than once' ].
 
 	anAsset groupBy: self.
+	
+	belongsTo do: [ :aPortfolio | anAsset groupBy: aPortfolio ].
 	
 	assets add: anAsset! !
 
@@ -486,10 +525,10 @@ isGroupedBy: aPortfolio
 		or: (assets inject: false into: [ :includes :anAsset | includes or: (anAsset = aPortfolio) or: (anAsset isGroupedBy: aPortfolio) ])! !
 
 
-!Portfolio methodsFor: 'transactions' stamp: 'AB 5/24/2019 23:20:02'!
-hasRegistered: aTtransaction
+!Portfolio methodsFor: 'transactions' stamp: 'AB 5/25/2019 19:56:49'!
+hasRegistered: aTransaction
 
-	^ assets inject: false into: [ :hasRegistered :anAsset | hasRegistered or: (anAsset hasRegistered: aTtransaction) ]
+	^ assets inject: false into: [ :hasRegistered :anAsset | hasRegistered or: (anAsset hasRegistered: aTransaction) ]
 ! !
 
 !Portfolio methodsFor: 'transactions' stamp: 'AB 5/24/2019 23:35:14'!
@@ -548,7 +587,7 @@ groupBy: aPortfolio
 
 	belongsTo add: aPortfolio! !
 
-!ReceptiveAccount methodsFor: 'portfolios' stamp: 'AB 5/25/2019 00:19:58'!
+!ReceptiveAccount methodsFor: 'portfolios' stamp: 'AB 5/25/2019 20:51:39'!
 isGroupedBy: aPortfolio
 
 	^ belongsTo includes: aPortfolio! !
