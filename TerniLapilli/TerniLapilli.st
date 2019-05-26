@@ -5,8 +5,8 @@ TestCase subclass: #TerniLapilliTest
 	poolDictionaries: ''
 	category: 'TerniLapilli'!
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'JR 5/22/2019 20:51:33'!
-boardWithSixMarks
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:17:09'!
+boardWithSixTokens
 
 	"     |     | x 
 	   y |     | y
@@ -16,62 +16,67 @@ boardWithSixMarks
 	| board |
 	
 	board _ TerniLapilli new.
+
 	board putXat: 1@1.
-	board putYat: 2@1.
+	board putOat: 2@1.
 	board putXat: 3@1.
-	board putYat: 1@2.
+	board putOat: 1@2.
 	board putXat: 3@3.
-	board putYat: 3@2.
+	board putOat: 3@2.
 	
 	^ board.! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 21:05:28'!
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 10:30:43'!
 test01PutAnXAndCheckItsPosition
 
 	| board |
+
 	board _ TerniLapilli new.
+
 	board putXat: 2@2.
 
 	self assert: (board at: 2@2) = #x! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 21:06:48'!
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 10:43:24'!
 test02PutXAndPutYInDifferentPositionsAndCheckCorrectness
 
 	| board |
 	board _ TerniLapilli new.
 	board putXat: 2@1.
-	board putYat: 2@2.
+	board putOat: 2@2.
 
 	self assert: (board at: 2@1) = #x.
-	self assert: (board at: 2@2) = #y! !
+	self assert: (board at: 2@2) = #o! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 18:52:35'!
-test03
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 10:43:55'!
+test03CanNotPlaceATokenInAnOccuppiedSpace
 
 	| board |
 	board _ TerniLapilli new.
 	board putXat: 2@2.
 
 	self
-		should: [ board putYat: 2@2 ] 
+		should: [ board putOat: 2@2 ] 
  		raise: Error
 		 withExceptionDo: [ :anError |
 			self assert: anError messageText = 'Already marked'.
 			self assert: (board at: 2@2) = #x.
 		]! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 18:17:07'!
-test04
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 10:45:08'!
+test04NotOccuppiedPositionsAreEmptyByDefault
 
 	| board |
+	
 	board _ TerniLapilli new.
-	self assert: (board at: 2@2) = 'empty'.
-! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 18:34:47'!
-test05
+	self assert: (board at: 2@2) = 'empty'! !
+
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 10:52:15'!
+test05CanNotPlaceATokenOutOfTheBoard
 
 	| board |
+	
 	board _ TerniLapilli new.
 
 	self
@@ -79,27 +84,37 @@ test05
  		raise: Error
 		 withExceptionDo: [ :anError |
 			self assert: anError messageText = 'Out of range'
+		].
+	
+	self
+		should: [ board putXat: 4@2 ] 
+ 		raise: Error
+		 withExceptionDo: [ :anError |
+			self assert: anError messageText = 'Out of range'
 		]! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 18:29:31'!
-test06
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 10:49:42'!
+test06GameStartsWithXsTurn
 
 	| board |
+
 	board _ TerniLapilli new.
 	
 	self
-		should: [ board putYat: 2@2 ] 
+		should: [ board putOat: 2@2 ] 
  		raise: Error
 		 withExceptionDo: [ :anError |
-			self assert: anError messageText = 'It is not Ys turn'.
+			self assert: anError messageText = 'It is not Os turn'.
 			self assert: (board at: 2@2) = 'empty'.
 		]! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 19:55:01'!
-test07
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 10:48:03'!
+test07CanNotPlaceATokenXWhenItIsNotXsTurn
 
 	| board |
+
 	board _ TerniLapilli new.
+
 	board putXat: 2@2.
 	
 	self
@@ -111,62 +126,49 @@ test07
 			self assert: (board at: 2@3) = 'empty'.
 		]! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 19:56:49'!
-test08
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 10:50:29'!
+test08CanNotPlaceATokenOWhenItIsNotOsTurn
 
 	| board |
 	board _ TerniLapilli new.
 	board putXat: 2@2.
-	board putYat: 2@3.
+	board putOat: 2@3.
 	
 	self
-		should: [ board putYat: 2@1 ] 
+		should: [ board putOat: 2@1 ] 
  		raise: Error
 		 withExceptionDo: [ :anError |
-			self assert: anError messageText = 'It is not Ys turn'.
+			self assert: anError messageText = 'It is not Os turn'.
 			self assert: (board at: 2@2) = #x.
-			self assert: (board at: 2@3) = #y.
+			self assert: (board at: 2@3) = #o.
 			self assert: (board at: 2@1) = 'empty'.
 		]! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 19:57:45'!
-test09
-
-	| board |
-	board _ TerniLapilli new.
-
-	self
-		should: [ board putXat: 4@2 ] 
- 		raise: Error
-		 withExceptionDo: [ :anError |
-			self assert: anError messageText = 'Out of range'
-		]! !
-
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:02:44'!
-test10
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 10:53:18'!
+test10XIsWinnerWhenPuttingThreeTokensInARow
 
 	| board |
 	board _ TerniLapilli new.
 	board putXat: 1@1.
-	board putYat: 2@1.
+	board putOat: 2@1.
 	
 	board putXat: 1@2.
-	board putYat: 2@2.
+	board putOat: 2@2.
 	
 	board putXat: 1@3.
 
 	self assert: board xIsWinner! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:15:33'!
-test11
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:11:23'!
+test11XIsWinnerVertically
 
 	| board |
 	board _ TerniLapilli new.
 	board putXat: 2@1.
-	board putYat: 1@1.
+	board putOat: 1@1.
 	
 	board putXat: 2@2.
-	board putYat: 1@2.
+	board putOat: 1@2.
 	
 	board putXat: 2@3.
 
@@ -174,25 +176,25 @@ test11
 	
 	board _ TerniLapilli new.
 	board putXat: 3@1.
-	board putYat: 1@1.
+	board putOat: 1@1.
 	
 	board putXat: 3@2.
-	board putYat: 1@2.
+	board putOat: 1@2.
 	
 	board putXat: 3@3.
 
 	self assert: board xIsWinner! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:20:39'!
-test12
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:11:37'!
+test12XIsWinnerHorizontally
 
 	| board |
 	board _ TerniLapilli new.
 	board putXat: 1@1.
-	board putYat: 1@2.
+	board putOat: 1@2.
 	
 	board putXat: 2@1.
-	board putYat: 2@2.
+	board putOat: 2@2.
 	
 	board putXat: 3@1.
 
@@ -200,10 +202,10 @@ test12
 	
 	board _ TerniLapilli new.
 	board putXat: 1@2.
-	board putYat: 1@1.
+	board putOat: 1@1.
 	
 	board putXat: 2@2.
-	board putYat: 2@1.
+	board putOat: 2@1.
 	
 	board putXat: 3@2.
 
@@ -211,78 +213,82 @@ test12
 	
 	board _ TerniLapilli new.
 	board putXat: 1@3.
-	board putYat: 1@1.
+	board putOat: 1@1.
 	
 	board putXat: 2@3.
-	board putYat: 2@1.
+	board putOat: 2@1.
 	
 	board putXat: 3@3.
 
 	self assert: board xIsWinner! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:25:14'!
-test13
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:12:01'!
+test13XIsWinnerDiagonally
 
 	| board |
 	board _ TerniLapilli new.
 	board putXat: 1@1.
-	board putYat: 1@2.
+	board putOat: 1@2.
 	board putXat: 2@2.
-	board putYat: 1@3.
+	board putOat: 1@3.
 	board putXat: 3@3.
 
 	self assert: board xIsWinner.
 	
 	board _ TerniLapilli new.
 	board putXat: 3@1.
-	board putYat: 1@2.
+	board putOat: 1@2.
 	board putXat: 2@2.
-	board putYat: 3@2.
+	board putOat: 3@2.
 	board putXat: 1@3.
 
 	self assert: board xIsWinner! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:28:06'!
-test14
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:12:58'!
+test14OIsWinnerWhenPuttingThreeTokensInARow
 
 	| board |
+
 	board _ TerniLapilli new.
+
 	board putXat: 1@1.
-	board putYat: 3@1.
+	board putOat: 3@1.
 	
 	board putXat: 1@2.
-	board putYat: 3@2.
+	board putOat: 3@2.
 	
 	board putXat: 2@2.
-	board putYat: 3@3.
+	board putOat: 3@3.
 
-	self assert: board yIsWinner! !
+	self assert: board oIsWinner! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:29:33'!
-test15
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:15:27'!
+test15CanNotPlayOnceGameIsOver
 
 	| board |
+
 	board _ TerniLapilli new.
 	board putXat: 1@1.
-	board putYat: 2@1.
+	board putOat: 2@1.
 	
 	board putXat: 1@2.
-	board putYat: 2@2.
+	board putOat: 2@2.
 	
 	board putXat: 1@3.
 	
 	self
-		should: [ board putYat: 3@2. ] 
+		should: [ board putOat: 3@2. ] 
  		raise: Error
 		 withExceptionDo: [ :anError |
 			self assert: anError messageText = 'Game has finished'
 		]! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'JR 5/22/2019 20:50:46'!
-test16
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:17:46'!
+test16CanNotPutMoreThanSixTokens
 
 	| board |
-	board _ self boardWithSixMarks.
+
+	board _ self boardWithSixTokens.
 	
 	self
 		should: [ board putXat: 2@3 ] 
@@ -291,34 +297,39 @@ test16
 			self assert: anError messageText = 'More than three equal marks are not allowed'
 		]! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'JR 5/22/2019 20:51:22'!
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:18:18'!
 test17SlideXAndWinGame
 
 	| board |
-	board _ self boardWithSixMarks. 
+
+	board _ self boardWithSixTokens. 
 	
 	board slideXFrom: 3@1 to: 2@2.
+
 	self assert: (board at: 2@2) = #x.
 	self assert: (board at: 3@1) = 'empty'.
 	self assert: (board winnerIs: #x).! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'JR 5/22/2019 20:51:55'!
-test18SlideYAndWinGame
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:56:27'!
+test18SlideOAndWinGame
 
 	| board |
-	board _ self boardWithSixMarks.
+	
+	board _ self boardWithSixTokens.
 	
 	board slideXFrom: 3@3 to: 2@3.
-	board slideYFrom: 2@1 to: 2@2.
-	self assert: (board at: 2@2) = #y.
-	self assert: (board at: 2@1) = 'empty'.
-	self assert: (board winnerIs: #y).! !
+	board slideOFrom: 2@1 to: 2@2.
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'JR 5/22/2019 20:52:10'!
+	self assert: (board at: 2@2) = #o.
+	self assert: (board at: 2@1) = 'empty'.
+	self assert: (board winnerIs: #o).! !
+
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:52:31'!
 test19CantSlideXFromEmptyPosition
 
 	| board |
-	board _ self boardWithSixMarks.
+	
+	board _ self boardWithSixTokens.
 	
 	self
 		should: [ board slideXFrom: 1@3 to: 2@3 ] 
@@ -327,11 +338,12 @@ test19CantSlideXFromEmptyPosition
 			self assert: anError messageText = 'Can not slide from an empty position'
 		]! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'JR 5/22/2019 20:52:28'!
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:52:24'!
 test20CantSlideXToOccupiedPosition
 
 	| board |
-	board _ self boardWithSixMarks.
+	
+	board _ self boardWithSixTokens.
 
 	self
 		should: [ board slideXFrom: 1@1 to: 1@2 ] 
@@ -340,33 +352,35 @@ test20CantSlideXToOccupiedPosition
 			self assert: anError messageText = 'Can not slide to an occupied position'
 		]! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'JR 5/22/2019 20:52:50'!
-test21CantSlideYFromEmptyPositionNeitherToOccupiedPosition
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:55:37'!
+test21CantSlideOFromEmptyPositionNeitherToOccupiedPosition
 
 	| board |
-	board _ self boardWithSixMarks.
+	
+	board _ self boardWithSixTokens.
 	
 	board slideXFrom: 3@3 to: 2@3.
 	
 	self
-		should: [ board slideYFrom: 2@2 to: 1@3 ] 
+		should: [ board slideOFrom: 2@2 to: 1@3 ] 
  		raise: Error
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = 'Can not slide from an empty position'
 		].
 	
 	self
-		should: [ board slideYFrom: 3@2 to: 2@3 ] 
+		should: [ board slideOFrom: 3@2 to: 2@3 ] 
  		raise: Error
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = 'Can not slide to an occupied position'
 		]! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'JR 5/22/2019 20:53:02'!
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:55:53'!
 test22CantSlideToOutOfRange
 
 	| board |
-	board _ self boardWithSixMarks.
+	
+	board _ self boardWithSixTokens.
 		
 	self
 		should: [ board slideXFrom: 3@3 to: 3@4 ] 
@@ -376,29 +390,32 @@ test22CantSlideToOutOfRange
 			self assert: (board at: 3@3) = #x.
 		].! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'JR 5/22/2019 20:53:14'!
-test23YCantSlideOnXTurn
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:57:02'!
+test23OCantSlideOnXTurn
 
 	| board |
-	board _ self boardWithSixMarks.
+
+	board _ self boardWithSixTokens.
 	
 	self
-		should: [ board slideYFrom: 1@2 to: 2@2 ] 
+		should: [ board slideOFrom: 1@2 to: 2@2 ] 
  		raise: Error
 		withExceptionDo: [ :anError |
-			self assert: anError messageText = 'It is not Ys turn'.
-			self assert: (board at: 1@2) = #y.
+			self assert: anError messageText = 'It is not Os turn'.
+			self assert: (board at: 1@2) = #o.
 		].! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'JR 5/22/2019 20:21:55'!
-test24XCantSlideOnYTurn
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 12:00:57'!
+test24XCantSlideOnOTurnToPut
 
 	| board |
+	
 	board _ TerniLapilli new.
+
 	board putXat: 1@1.
-	board putYat: 2@1.
+	board putOat: 2@1.
 	board putXat: 3@1.
-	board putYat: 1@2.
+	board putOat: 1@2.
 	board putXat: 3@3.
 	
 	"     |     | x 
@@ -414,30 +431,32 @@ test24XCantSlideOnYTurn
 			self assert: (board at: 3@1) = #x.
 		].! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'JR 5/22/2019 20:54:25'!
-test25CantSlideIfGameOver
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 12:02:24'!
+test25OCantSlideIfGameOver
 
 	| board |
-	board _ self boardWithSixMarks.
+
+	board _ self boardWithSixTokens.
 	
 	board slideXFrom: 3@1 to: 2@2.
 	
 	self
-		should: [ board slideYFrom: 1@2 to: 1@3 ] 
+		should: [ board slideOFrom: 1@2 to: 1@3 ] 
  		raise: Error
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = 'Game has finished'.
-			self assert: (board at: 1@2) = #y.
+			self assert: (board at: 1@2) = #o.
 		].! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'JR 5/22/2019 20:54:37'!
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 12:09:21'!
 test26XCantSlideIfGameOver
 
 	| board |
-	board _ self boardWithSixMarks.
+	
+	board _ self boardWithSixTokens.
 	
 	board slideXFrom: 3@3 to: 2@3.
-	board slideYFrom: 2@1 to: 2@2.
+	board slideOFrom: 2@1 to: 2@2.
 
 	self
 		should: [ board slideXFrom: 1@1 to: 1@2 ] 
@@ -447,11 +466,12 @@ test26XCantSlideIfGameOver
 			self assert: (board at: 1@1) = #x.
 		].! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'JR 5/22/2019 20:54:51'!
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 12:09:33'!
 test27XCantSlideToDistantPosition
 
 	| board |
-	board _ self boardWithSixMarks.
+	
+	board _ self boardWithSixTokens.
 	
 	self
 		should: [ board slideXFrom: 1@1 to: 1@3 ] 
@@ -461,25 +481,26 @@ test27XCantSlideToDistantPosition
 			self assert: (board at: 1@1) = #x.
 		].! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'JR 5/22/2019 20:55:07'!
-test28YCantSlideToDistantPosition
+!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 12:10:17'!
+test28OCantSlideToDistantPosition
 
 	| board |
-	board _ self boardWithSixMarks.
+	
+	board _ self boardWithSixTokens.
 	
 	board slideXFrom: 1@1 to: 2@2.
 	self
-		should: [ board slideYFrom: 2@1 to: 2@3 ] 
+		should: [ board slideOFrom: 2@1 to: 2@3 ] 
  		raise: Error
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = 'Can not slide that far'.
-			self assert: (board at: 2@1) = #y.
+			self assert: (board at: 2@1) = #o.
 		].! !
 
 
 !classDefinition: #TerniLapilli category: #TerniLapilli!
 Object subclass: #TerniLapilli
-	instanceVariableNames: 'board isXTurn'
+	instanceVariableNames: 'board state'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TerniLapilli'!
@@ -494,19 +515,18 @@ at: aPosition
 	]
 	ifFalse: [ ^ self error: 'Out of range']! !
 
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:50:16'!
-at: aPosition put: aMark
+!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:40:54'!
+at: aPosition put: aToken
 
-	(self xIsWinner or: self yIsWinner) ifTrue: [ ^ self error: 'Game has finished' ].
-	(self boardContainsThreeMarksWith: aMark) ifTrue: [ ^ self error: 'More than three equal marks are not allowed' ].
+	(self boardContainsThreeMarksWith: aToken) ifTrue: [ ^ self error: 'More than three equal marks are not allowed' ].
 
 	(aPosition x between: 1 and: 3) 
 		ifTrue: [ (aPosition y between: 1 and: 3) 
 			ifTrue: [ board at: aPosition 
 				ifPresent: [ :anElement | ^ self error: 'Already marked']
 				ifAbsent: [ 
-					board at: aPosition put: aMark.
-					isXTurn _ isXTurn not.
+					board at: aPosition put: aToken.
+					state changeTurnIn: self.
 				]
 			]
 			ifFalse: [ ^ self error: 'Out of range']
@@ -518,23 +538,34 @@ boardContainsThreeMarksWith: aMark
 
 	^ (board occurrencesOf: aMark) = 3! !
 
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 18:20:57'!
+!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 10:30:16'!
 initialize
 
 	board _ Dictionary new.
-	isXTurn _ true.! !
+	isXTurn _ true.
+	state _ TerniLapilliXTurnToPut new.! !
 
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 18:59:43'!
-putXat: aPosition 
+!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:14:14'!
+oIsWinner
 
-	(isXTurn) ifFalse: [ ^ self error: 'It is not Xs turn' ].
-	self at: aPosition put: #x! !
+	^ self winnerIs: #o! !
 
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 18:59:40'!
-putYat: aPosition 
+!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 10:41:42'!
+putOat: aPosition
 
-	(isXTurn) ifTrue: [ ^ self error: 'It is not Ys turn' ].
-	self at: aPosition put: #y! !
+	state putOat: aPosition in: self
+! !
+
+!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 10:33:07'!
+putXat: aPosition
+
+	state putXat: aPosition in: self
+! !
+
+!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:42:00'!
+state: aState
+
+	state _ aState! !
 
 !TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:24:44'!
 threeDiagonallyContinuosWith: aMark
@@ -571,45 +602,201 @@ xIsWinner
 
 	^ self winnerIs: #x! !
 
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'AB 5/20/2019 20:26:12'!
-yIsWinner
-
-	^ self winnerIs: #y! !
-
 
 !TerniLapilli methodsFor: 'sliding movements' stamp: 'JR 5/22/2019 20:44:41'!
 isValidSlidingDistanceFrom: anOriginPoint to: aDestinationPoint
 	
 	^ ((anOriginPoint x - aDestinationPoint x) abs < 2) and: ((anOriginPoint y - aDestinationPoint y) abs < 2).! !
 
-!TerniLapilli methodsFor: 'sliding movements' stamp: 'JR 5/22/2019 20:22:23'!
-pullXFrom: aPoint
+!TerniLapilli methodsFor: 'sliding movements' stamp: 'AB 5/26/2019 12:08:59'!
+pullOFrom: anOriginPoint andPutIn: aDestinationPoint
 
-	(self at: aPoint) = 'empty' ifTrue: [^ self error: 'Can not slide from an empty position'].
-	(isXTurn) ifFalse: [ ^ self error: 'It is not Xs turn' ].
-	board removeKey: aPoint.! !
+	(self isValidSlidingDistanceFrom: anOriginPoint to: aDestinationPoint) ifFalse: [^ self error: 'Can not slide that far' ].
 
-!TerniLapilli methodsFor: 'sliding movements' stamp: 'JR 5/22/2019 20:19:44'!
-pullYFrom: aPoint
+	(self at: aDestinationPoint) = 'empty' ifFalse: [^ self error: 'Can not slide to an occupied position'].
 
-	(self at: aPoint) = 'empty' ifTrue: [^ self error: 'Can not slide from an empty position'].
-	(isXTurn) ifTrue: [ ^ self error: 'It is not Ys turn' ].
-	board removeKey: aPoint.! !
+	(self at: anOriginPoint) = 'empty' ifTrue: [^ self error: 'Can not slide from an empty position'].
+	
+	board removeKey: anOriginPoint.
+	
+	self at: aDestinationPoint put: #o.! !
 
-!TerniLapilli methodsFor: 'sliding movements' stamp: 'JR 5/22/2019 20:39:57'!
+!TerniLapilli methodsFor: 'sliding movements' stamp: 'AB 5/26/2019 12:08:54'!
+pullXFrom: anOriginPoint andPutIn: aDestinationPoint
+
+	(self isValidSlidingDistanceFrom: anOriginPoint to: aDestinationPoint) ifFalse: [^ self error: 'Can not slide that far' ].
+
+	(self at: aDestinationPoint) = 'empty' ifFalse: [^ self error: 'Can not slide to an occupied position'].
+
+	(self at: anOriginPoint) = 'empty' ifTrue: [^ self error: 'Can not slide from an empty position'].
+	
+	board removeKey: anOriginPoint.
+	
+	self at: aDestinationPoint put: #x.! !
+
+!TerniLapilli methodsFor: 'sliding movements' stamp: 'AB 5/26/2019 12:09:08'!
+slideOFrom: anOriginPoint to: aDestinationPoint
+	
+	state slideOFrom: anOriginPoint to: aDestinationPoint in: self! !
+
+!TerniLapilli methodsFor: 'sliding movements' stamp: 'AB 5/26/2019 12:08:31'!
 slideXFrom: anOriginPoint to: aDestinationPoint
 	
-	(self xIsWinner or: self yIsWinner) ifTrue: [ ^ self error: 'Game has finished' ].
-	(self isValidSlidingDistanceFrom: anOriginPoint to: aDestinationPoint) ifFalse: [^ self error: 'Can not slide that far' ].
-	(self at: aDestinationPoint) = 'empty' ifFalse: [^ self error: 'Can not slide to an occupied position'].
-	self pullXFrom: anOriginPoint.
-	self putXat: aDestinationPoint.! !
+	state slideXFrom: anOriginPoint to: aDestinationPoint in: self! !
 
-!TerniLapilli methodsFor: 'sliding movements' stamp: 'JR 5/22/2019 20:46:21'!
-slideYFrom: anOriginPoint to: aDestinationPoint
-	
-	(self xIsWinner or: self yIsWinner) ifTrue: [ ^ self error: 'Game has finished' ].
-	(self isValidSlidingDistanceFrom: anOriginPoint to: aDestinationPoint) ifFalse: [^ self error: 'Can not slide that far' ].
-	(self at: aDestinationPoint) = 'empty' ifFalse: [^ self error: 'Can not slide to an occupied position'].
-	self pullYFrom: anOriginPoint .
-	self putYat: aDestinationPoint.! !
+
+!classDefinition: #TerniLapilliState category: #TerniLapilli!
+Object subclass: #TerniLapilliState
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TerniLapilli'!
+
+
+!classDefinition: #TerniLapilliGameOver category: #TerniLapilli!
+TerniLapilliState subclass: #TerniLapilliGameOver
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TerniLapilli'!
+
+!TerniLapilliGameOver methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:16:15'!
+putOat: aPosition in: aGame
+
+	self error: 'Game has finished'! !
+
+!TerniLapilliGameOver methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 12:01:59'!
+slideOFrom: anOriginPoint to: aDestinationPoint in: aGame
+
+	self error: 'Game has finished'! !
+
+!TerniLapilliGameOver methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 12:02:47'!
+slideXFrom: anOriginPoint to: aDestinationPoint in: aGame
+
+	self error: 'Game has finished'! !
+
+
+!classDefinition: #TerniLapilliOTurnSliding category: #TerniLapilli!
+TerniLapilliState subclass: #TerniLapilliOTurnSliding
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TerniLapilli'!
+
+!TerniLapilliOTurnSliding methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:55:12'!
+changeTurnIn: aGame
+
+	(aGame oIsWinner) 
+		ifTrue: [ aGame state: TerniLapilliGameOver new ] 
+		ifFalse: [ aGame state: TerniLapilliXTurnSliding new ]! !
+
+!TerniLapilliOTurnSliding methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:54:50'!
+slideOFrom: anOriginPoint to: aDestinationPoint in: aGame
+
+	aGame pullOFrom: anOriginPoint andPutIn: aDestinationPoint! !
+
+!TerniLapilliOTurnSliding methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:58:50'!
+slideXFrom: anOriginPoint to: aDestinationPoint in: aGame
+
+	self error: 'It is not Xs turn'! !
+
+
+!classDefinition: #TerniLapilliOTurnToPut category: #TerniLapilli!
+TerniLapilliState subclass: #TerniLapilliOTurnToPut
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TerniLapilli'!
+
+!TerniLapilliOTurnToPut methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:48:22'!
+changeTurnIn: aGame
+
+	(aGame oIsWinner) 
+		ifTrue: [ aGame state: TerniLapilliGameOver new ] 
+		ifFalse: [
+			(aGame boardContainsThreeMarksWith: #x) 
+			ifTrue: [ aGame state: TerniLapilliXTurnSliding new ]
+			ifFalse: [ aGame state: TerniLapilliXTurnToPut new ]
+		]! !
+
+!TerniLapilliOTurnToPut methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:13:44'!
+finishGame
+
+	 ^ TerniLapilliGameOver new! !
+
+!TerniLapilliOTurnToPut methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 10:42:10'!
+putOat: aPosition in: aGame
+
+	aGame at: aPosition put: #o! !
+
+!TerniLapilliOTurnToPut methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 10:48:35'!
+putXat: aPosition in: aGame
+
+	self error: 'It is not Xs turn'! !
+
+!TerniLapilliOTurnToPut methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 12:01:15'!
+slideXFrom: anOriginPoint to: aDestinationPoint in: aGame
+
+	self error: 'It is not Xs turn'! !
+
+
+!classDefinition: #TerniLapilliXTurnSliding category: #TerniLapilli!
+TerniLapilliState subclass: #TerniLapilliXTurnSliding
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TerniLapilli'!
+
+!TerniLapilliXTurnSliding methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:49:24'!
+changeTurnIn: aGame
+
+	(aGame xIsWinner) 
+		ifTrue: [ aGame state: TerniLapilliGameOver new ] 
+		ifFalse: [ aGame state: TerniLapilliOTurnSliding new ]! !
+
+!TerniLapilliXTurnSliding methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 12:05:23'!
+putXat: aPosition in: aGame
+
+	self error: 'More than three equal marks are not allowed'! !
+
+!TerniLapilliXTurnSliding methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:57:42'!
+slideOFrom: anOriginPoint to: aDestinationPoint in: aGame
+
+	self error: 'It is not Os turn'! !
+
+!TerniLapilliXTurnSliding methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:30:58'!
+slideXFrom: anOriginPoint to: aDestinationPoint in: aGame
+
+	aGame pullXFrom: anOriginPoint andPutIn: aDestinationPoint! !
+
+
+!classDefinition: #TerniLapilliXTurnToPut category: #TerniLapilli!
+TerniLapilliState subclass: #TerniLapilliXTurnToPut
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TerniLapilli'!
+
+!TerniLapilliXTurnToPut methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:51:46'!
+changeTurnIn: aGame
+
+	(aGame xIsWinner) 
+		ifTrue: [ aGame state: TerniLapilliGameOver new ] 
+		ifFalse: [ aGame state: TerniLapilliOTurnToPut new ]
+
+	 ! !
+
+!TerniLapilliXTurnToPut methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 10:57:12'!
+finishGame
+
+	 ^ TerniLapilliGameOver new! !
+
+!TerniLapilliXTurnToPut methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 10:47:13'!
+putOat: aPosition in: aGame
+
+	self error: 'It is not Os turn'! !
+
+!TerniLapilliXTurnToPut methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 10:36:00'!
+putXat: aPosition in: aGame
+
+	aGame at: aPosition put: #x ! !
