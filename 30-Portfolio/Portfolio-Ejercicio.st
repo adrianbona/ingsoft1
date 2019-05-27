@@ -478,17 +478,17 @@ balance
 
 !classDefinition: #Portfolio category: #'Portfolio-Ejercicio'!
 FinancialAsset subclass: #Portfolio
-	instanceVariableNames: 'assets belongsTo'
+	instanceVariableNames: 'assets holders'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
 
-!Portfolio methodsFor: 'initialization' stamp: 'AB 5/24/2019 23:06:53'!
+!Portfolio methodsFor: 'initialization' stamp: 'AB 5/27/2019 12:44:16'!
 initialize
 
 	super initialize.
 	assets _ OrderedCollection new.
-	belongsTo _ OrderedCollection new! !
+	holders _ OrderedCollection new! !
 
 
 !Portfolio methodsFor: 'balance' stamp: 'AB 5/24/2019 22:51:55'!
@@ -497,32 +497,32 @@ balance
 	^ assets inject: 0 into: [ :currentBalance :anAsset | currentBalance + anAsset balance ]! !
 
 
-!Portfolio methodsFor: 'assets' stamp: 'AB 5/25/2019 21:11:22'!
+!Portfolio methodsFor: 'assets' stamp: 'AB 5/27/2019 12:44:16'!
 register: anAsset
 
 	(anAsset = self) ifTrue: [ self error: 'Can not add the same asset more than once' ].
 
-	(anAsset isGroupedBy: self) ifTrue: [ self error: 'Can not add the same asset more than once' ].
+	(anAsset isHeldBy: self) ifTrue: [ self error: 'Can not add the same asset more than once' ].
 
-	anAsset groupBy: self.
+	anAsset holdBy: self.
 	
-	belongsTo do: [ :aPortfolio | anAsset groupBy: aPortfolio ].
+	holders do: [ :aPortfolio | anAsset holdBy: aPortfolio ].
 	
 	assets add: anAsset! !
 
 
-!Portfolio methodsFor: 'portfolios' stamp: 'AB 5/24/2019 23:53:14'!
-groupBy: aPortfolio
+!Portfolio methodsFor: 'portfolios' stamp: 'AB 5/27/2019 12:44:16'!
+holdBy: aPortfolio
 
-	belongsTo add: aPortfolio.
+	holders add: aPortfolio.
 	
-	assets do: [ :anAsset | anAsset groupBy: aPortfolio ]! !
+	assets do: [ :anAsset | anAsset holdBy: aPortfolio ]! !
 
-!Portfolio methodsFor: 'portfolios' stamp: 'AB 5/25/2019 00:27:44'!
-isGroupedBy: aPortfolio
+!Portfolio methodsFor: 'portfolios' stamp: 'AB 5/27/2019 12:44:16'!
+isHeldBy: aPortfolio
 
-	^ (belongsTo includes: aPortfolio) 
-		or: (assets inject: false into: [ :includes :anAsset | includes or: (anAsset = aPortfolio) or: (anAsset isGroupedBy: aPortfolio) ])! !
+	^ (holders includes: aPortfolio) 
+		or: (assets inject: false into: [ :includes :anAsset | includes or: (anAsset = aPortfolio) or: (anAsset isHeldBy: aPortfolio) ])! !
 
 
 !Portfolio methodsFor: 'transactions' stamp: 'AB 5/25/2019 19:56:49'!
@@ -545,17 +545,17 @@ transactions
 
 !classDefinition: #ReceptiveAccount category: #'Portfolio-Ejercicio'!
 FinancialAsset subclass: #ReceptiveAccount
-	instanceVariableNames: 'transactions belongsTo'
+	instanceVariableNames: 'transactions holders'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
 
-!ReceptiveAccount methodsFor: 'initialization' stamp: 'AB 5/24/2019 23:07:02'!
+!ReceptiveAccount methodsFor: 'initialization' stamp: 'AB 5/27/2019 12:43:57'!
 initialize
 
 	super initialize.
 	transactions _ OrderedCollection new.
-	belongsTo _ OrderedCollection new! !
+	holders _ OrderedCollection new! !
 
 
 !ReceptiveAccount methodsFor: 'transactions' stamp: 'HAW 10/11/2018 16:53:54'!
@@ -582,12 +582,12 @@ balance
 	^ transactions inject: 0 into: [ :currentBalance :aTransaction | aTransaction affectBalance: currentBalance ]! !
 
 
-!ReceptiveAccount methodsFor: 'portfolios' stamp: 'AB 5/24/2019 23:15:29'!
-groupBy: aPortfolio
+!ReceptiveAccount methodsFor: 'portfolios' stamp: 'AB 5/27/2019 12:43:57'!
+holdBy: aPortfolio
 
-	belongsTo add: aPortfolio! !
+	holders add: aPortfolio! !
 
-!ReceptiveAccount methodsFor: 'portfolios' stamp: 'AB 5/25/2019 20:51:39'!
-isGroupedBy: aPortfolio
+!ReceptiveAccount methodsFor: 'portfolios' stamp: 'AB 5/27/2019 12:43:57'!
+isHeldBy: aPortfolio
 
-	^ belongsTo includes: aPortfolio! !
+	^ holders includes: aPortfolio! !
