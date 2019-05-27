@@ -76,7 +76,7 @@ test05CanNotPlaceATokenOutOfTheBoard
 			self assert: anError messageText = 'Out of range'
 		]! !
 
-!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:31:27'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 15:02:51'!
 test06GameStartsWithXsTurn
 
 	| game |
@@ -87,11 +87,12 @@ test06GameStartsWithXsTurn
 		should: [ game putOat: 2@2 ] 
  		raise: Error
 		 withExceptionDo: [ :anError |
+			self assert: game isPlayingX.
 			self assert: anError messageText = 'It is not Os turn'.
 			self assert: (game at: 2@2) = 'empty'.
 		]! !
 
-!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:31:44'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 15:02:43'!
 test07CanNotPlaceATokenXWhenItIsNotXsTurn
 
 	| game |
@@ -104,12 +105,13 @@ test07CanNotPlaceATokenXWhenItIsNotXsTurn
 		should: [ game putXat: 2@3 ] 
  		raise: Error
 		 withExceptionDo: [ :anError |
+			self assert: game isPlayingO.
 			self assert: anError messageText = 'It is not Xs turn'.
 			self assert: (game at: 2@2) = #x.
 			self assert: (game at: 2@3) = 'empty'.
 		]! !
 
-!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:31:54'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 15:02:37'!
 test08CanNotPlaceATokenOWhenItIsNotOsTurn
 
 	| game |
@@ -123,13 +125,14 @@ test08CanNotPlaceATokenOWhenItIsNotOsTurn
 		should: [ game putOat: 2@1 ] 
  		raise: Error
 		 withExceptionDo: [ :anError |
+			self assert: game isPlayingX.
 			self assert: anError messageText = 'It is not Os turn'.
 			self assert: (game at: 2@2) = #x.
 			self assert: (game at: 2@3) = #o.
 			self assert: (game at: 2@1) = 'empty'.
 		]! !
 
-!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:32:28'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 15:07:20'!
 test10XIsWinnerWhenPuttingThreeTokensInARow
 
 	| game |
@@ -144,9 +147,9 @@ test10XIsWinnerWhenPuttingThreeTokensInARow
 	
 	game putXat: 1@3.
 
-	self assert: game xIsWinner! !
+	self assert: game hasPlayerXWon! !
 
-!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:32:49'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 15:07:20'!
 test11XIsWinnerVertically
 
 	| game |
@@ -161,7 +164,7 @@ test11XIsWinnerVertically
 	
 	game putXat: 2@3.
 
-	self assert: game xIsWinner.
+	self assert: game hasPlayerXWon.
 	
 	game _ TerniLapilli new.
 
@@ -173,9 +176,9 @@ test11XIsWinnerVertically
 	
 	game putXat: 3@3.
 
-	self assert: game xIsWinner! !
+	self assert: game hasPlayerXWon! !
 
-!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:33:24'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 15:07:20'!
 test12XIsWinnerHorizontally
 
 	| game |
@@ -187,7 +190,7 @@ test12XIsWinnerHorizontally
 	game putOat: 2@2.
 	game putXat: 3@1.
 
-	self assert: game xIsWinner.
+	self assert: game hasPlayerXWon.
 	
 	game _ TerniLapilli new.
 	game putXat: 1@2.
@@ -196,7 +199,7 @@ test12XIsWinnerHorizontally
 	game putOat: 2@1.
 	game putXat: 3@2.
 
-	self assert: game xIsWinner.
+	self assert: game hasPlayerXWon.
 	
 	game _ TerniLapilli new.
 	game putXat: 1@3.
@@ -205,9 +208,9 @@ test12XIsWinnerHorizontally
 	game putOat: 2@1.
 	game putXat: 3@3.
 
-	self assert: game xIsWinner! !
+	self assert: game hasPlayerXWon! !
 
-!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:33:54'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 15:07:19'!
 test13XIsWinnerDiagonally
 
 	| game |
@@ -219,7 +222,7 @@ test13XIsWinnerDiagonally
 	game putOat: 1@3.
 	game putXat: 3@3.
 
-	self assert: game xIsWinner.
+	self assert: game hasPlayerXWon.
 	
 	game _ TerniLapilli new.
 	game putXat: 3@1.
@@ -228,9 +231,9 @@ test13XIsWinnerDiagonally
 	game putOat: 3@2.
 	game putXat: 1@3.
 
-	self assert: game xIsWinner! !
+	self assert: game hasPlayerXWon! !
 
-!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:34:12'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 15:07:03'!
 test14OIsWinnerWhenPuttingThreeTokensInARow
 
 	| game |
@@ -244,9 +247,9 @@ test14OIsWinnerWhenPuttingThreeTokensInARow
 	game putXat: 2@2.
 	game putOat: 3@3.
 
-	self assert: game oIsWinner! !
+	self assert: game hasPlayerOWon! !
 
-!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 14:40:29'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 15:16:27'!
 test15CanNotPlayOnceGameIsOver
 
 	| game |
@@ -263,6 +266,7 @@ test15CanNotPlayOnceGameIsOver
 		should: [ game putOat: 3@2. ] 
  		raise: Error
 		 withExceptionDo: [ :anError |
+			self assert: game hasPlayerXWon.
 			self assert: anError messageText = 'Game has finished'
 		].
 	
@@ -270,6 +274,7 @@ test15CanNotPlayOnceGameIsOver
 		should: [ game putXat: 3@2. ] 
  		raise: Error
 		 withExceptionDo: [ :anError |
+			self assert: game hasPlayerXWon.
 			self assert: anError messageText = 'Game has finished'
 		]! !
 
@@ -287,20 +292,21 @@ test16CanNotPutMoreThanSixTokens
 			self assert: anError messageText = 'More than three equal marks are not allowed'
 		]! !
 
-!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:34:40'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 15:18:06'!
 test17SlideXAndWinGame
 
 	| game |
 
 	game _ self boardWithSixTokens. 
-	
+
 	game slideXFrom: 3@1 to: 2@2.
 
+	self assert: game hasPlayerXWon.
 	self assert: (game at: 2@2) = #x.
 	self assert: (game at: 3@1) = 'empty'.
-	self assert: (game winnerIs: #x).! !
+! !
 
-!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:34:48'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 15:15:45'!
 test18SlideOAndWinGame
 
 	| game |
@@ -310,6 +316,7 @@ test18SlideOAndWinGame
 	game slideXFrom: 3@3 to: 2@3.
 	game slideOFrom: 2@1 to: 2@2.
 
+	self assert: game hasPlayerOWon.
 	self assert: (game at: 2@2) = #o.
 	self assert: (game at: 2@1) = 'empty'.
 	self assert: (game winnerIs: #o).! !
@@ -380,7 +387,7 @@ test22CantSlideToOutOfRange
 			self assert: (game at: 3@3) = #x.
 		].! !
 
-!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:35:26'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 15:02:10'!
 test23OCantSlideOnXTurnToSlide
 
 	| game |
@@ -391,11 +398,12 @@ test23OCantSlideOnXTurnToSlide
 		should: [ game slideOFrom: 1@2 to: 2@2 ] 
  		raise: Error
 		withExceptionDo: [ :anError |
+			self assert: game isPlayingX.
 			self assert: anError messageText = 'It is not Os turn'.
 			self assert: (game at: 1@2) = #o.
 		].! !
 
-!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:35:39'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 15:02:02'!
 test24XCantSlideOnOTurnToPut
 
 	| game |
@@ -412,11 +420,12 @@ test24XCantSlideOnOTurnToPut
 		should: [ game slideXFrom: 3@1 to: 2@2 ] 
  		raise: Error
 		withExceptionDo: [ :anError |
+			self assert: game isPlayingO.
 			self assert: anError messageText = 'It is not Xs turn'.
 			self assert: (game at: 3@1) = #x.
 		].! !
 
-!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:35:44'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 15:15:17'!
 test25OCantSlideIfGameOver
 
 	| game |
@@ -429,11 +438,12 @@ test25OCantSlideIfGameOver
 		should: [ game slideOFrom: 1@2 to: 1@3 ] 
  		raise: Error
 		withExceptionDo: [ :anError |
+			self assert: game hasPlayerXWon.
 			self assert: anError messageText = 'Game has finished'.
 			self assert: (game at: 1@2) = #o.
 		].! !
 
-!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:35:50'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 15:14:59'!
 test26XCantSlideIfGameOver
 
 	| game |
@@ -447,11 +457,12 @@ test26XCantSlideIfGameOver
 		should: [ game slideXFrom: 1@1 to: 2@1 ] 
  		raise: Error
 		withExceptionDo: [ :anError |
+			self assert: game hasPlayerOWon.
 			self assert: anError messageText = 'Game has finished'.
 			self assert: (game at: 1@1) = #x.
 		].! !
 
-!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:36:07'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 15:01:43'!
 test27XCantSlideToDistantPosition
 
 	| game |
@@ -462,11 +473,12 @@ test27XCantSlideToDistantPosition
 		should: [ game slideXFrom: 1@1 to: 1@3 ] 
  		raise: Error
 		withExceptionDo: [ :anError |
+			self assert: game isPlayingX.
 			self assert: anError messageText = 'Can not slide that far'.
 			self assert: (game at: 1@1) = #x.
 		].! !
 
-!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:36:17'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 15:01:34'!
 test28OCantSlideToDistantPosition
 
 	| game |
@@ -479,11 +491,12 @@ test28OCantSlideToDistantPosition
 		should: [ game slideOFrom: 2@1 to: 2@3 ] 
  		raise: Error
 		withExceptionDo: [ :anError |
+			self assert: game isPlayingO.
 			self assert: anError messageText = 'Can not slide that far'.
 			self assert: (game at: 2@1) = #o.
 		].! !
 
-!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:36:31'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 15:01:14'!
 test29OCantSlideOnXTurnToPut
 
 	| game |
@@ -499,11 +512,12 @@ test29OCantSlideOnXTurnToPut
 		should: [ game slideOFrom: 1@2 to: 1@3 ] 
  		raise: Error
 		withExceptionDo: [ :anError |
+			self assert: game isPlayingX.
 			self assert: anError messageText = 'It is not Os turn'.
 			self assert: (game at: 1@2) = #o.
 		].! !
 
-!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:36:42'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 15:01:04'!
 test30OCantSlideOnOTurnToPut
 
 	| game |
@@ -520,12 +534,13 @@ test30OCantSlideOnOTurnToPut
 		should: [ game slideOFrom: 1@2 to: 1@3 ] 
  		raise: Error
 		withExceptionDo: [ :anError |
+			self assert: game isPlayingO.
 			self assert: anError messageText = 'It is not Os turn to slide'.
 			self assert: (game at: 1@2) = #o.
 			self assert: (game at: 1@3) = 'empty'.
 		].! !
 
-!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:36:51'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 15:00:57'!
 test31XCantSlideOnXTurnToPut
 
 	| game |
@@ -541,12 +556,13 @@ test31XCantSlideOnXTurnToPut
 		should: [ game slideXFrom: 1@1 to: 2@2 ] 
  		raise: Error
 		withExceptionDo: [ :anError |
+			self assert: game isPlayingX.
 			self assert: anError messageText = 'It is not Xs turn to slide'.
 			self assert: (game at: 1@1) = #x.
 			self assert: (game at: 2@2) = 'empty'.
 		].! !
 
-!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:36:57'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 15:00:39'!
 test32OCantPutOnXTurnToSlide
 
 	| game |
@@ -557,6 +573,7 @@ test32OCantPutOnXTurnToSlide
 		should: [ game putOat: 1@3 ] 
  		raise: Error
 		withExceptionDo: [ :anError |
+			self assert: game isPlayingX.
 			self assert: anError messageText = 'It is not Os turn'.
 			self assert: (game at: 1@3) = 'empty'.
 		].! !
@@ -578,7 +595,7 @@ test33OCantPutOnOTurnToSlide
 			self assert: (game at: 1@3) = 'empty'.
 		].! !
 
-!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:37:10'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 15:00:28'!
 test34XCantPutOnOTurnToSlide
 
 	| game |
@@ -591,6 +608,7 @@ test34XCantPutOnOTurnToSlide
 		should: [ game putXat: 1@3 ] 
  		raise: Error
 		withExceptionDo: [ :anError |
+			self assert: game isPlayingO.
 			self assert: anError messageText = 'It is not Xs turn'.
 			self assert: (game at: 1@3) = 'empty'.
 		].! !
@@ -749,11 +767,6 @@ initialize
 	state _ (TerniLapilliXTurnToPut for: self).! !
 
 
-!TerniLapilli methodsFor: 'winning' stamp: 'AB 5/26/2019 11:14:14'!
-oIsWinner
-
-	^ self winnerIs: #o! !
-
 !TerniLapilli methodsFor: 'winning' stamp: 'JR 5/26/2019 12:15:44'!
 winnerIs: aToken
 
@@ -761,16 +774,42 @@ winnerIs: aToken
 		or: (self threeHorizontallyContinuosWith: aToken)
 		or: (self threeDiagonallyContinuosWith: aToken)! !
 
-!TerniLapilli methodsFor: 'winning' stamp: 'AB 5/20/2019 20:03:42'!
-xIsWinner
-
-	^ self winnerIs: #x! !
-
 
 !TerniLapilli methodsFor: 'private' stamp: 'AB 5/26/2019 11:42:00'!
 state: aState
 
 	state _ aState! !
+
+
+!TerniLapilli methodsFor: 'status' stamp: 'AB 5/27/2019 15:08:14'!
+hasPlayerOWon
+
+	^ state hasPlayerOWon! !
+
+!TerniLapilli methodsFor: 'status' stamp: 'AB 5/27/2019 15:08:22'!
+hasPlayerXWon
+
+	^ state hasPlayerXWon! !
+
+!TerniLapilli methodsFor: 'status' stamp: 'AB 5/27/2019 15:19:03'!
+isOver
+
+	^ state isOver! !
+
+!TerniLapilli methodsFor: 'status' stamp: 'AB 5/27/2019 14:54:10'!
+isPlayingO
+
+	^ state isPlayingO! !
+
+!TerniLapilli methodsFor: 'status' stamp: 'AB 5/27/2019 14:54:07'!
+isPlayingX
+
+	^ state isPlayingX! !
+
+!TerniLapilli methodsFor: 'status' stamp: 'AB 5/27/2019 15:19:12'!
+isTied
+
+	^ state isTied! !
 
 
 !classDefinition: #TerniLapilliState category: #TerniLapilli!
@@ -810,6 +849,37 @@ slideXFrom: anOriginPoint to: aDestinationPoint
 
 !TerniLapilliState methodsFor: 'update' stamp: 'AB 5/27/2019 13:44:58'!
 changeTurn
+
+	self subclassResponsibility ! !
+
+
+!TerniLapilliState methodsFor: 'status' stamp: 'AB 5/27/2019 15:10:14'!
+hasPlayerOWon
+
+	^ false! !
+
+!TerniLapilliState methodsFor: 'status' stamp: 'AB 5/27/2019 15:09:43'!
+hasPlayerXWon
+
+	^ false! !
+
+!TerniLapilliState methodsFor: 'status' stamp: 'AB 5/27/2019 15:05:28'!
+isOver
+
+	self subclassResponsibility ! !
+
+!TerniLapilliState methodsFor: 'status' stamp: 'AB 5/27/2019 14:54:25'!
+isPlayingO
+
+	self subclassResponsibility ! !
+
+!TerniLapilliState methodsFor: 'status' stamp: 'AB 5/27/2019 14:54:23'!
+isPlayingX
+
+	self subclassResponsibility ! !
+
+!TerniLapilliState methodsFor: 'status' stamp: 'AB 5/27/2019 15:05:25'!
+isTied
 
 	self subclassResponsibility ! !
 
@@ -854,6 +924,37 @@ slideXFrom: anOriginPoint to: aDestinationPoint
 	self error: 'Game has finished'! !
 
 
+!TerniLapilliGameOver methodsFor: 'status' stamp: 'AB 5/27/2019 15:09:30'!
+hasPlayerOWon
+
+	^ game winnerIs: #o! !
+
+!TerniLapilliGameOver methodsFor: 'status' stamp: 'AB 5/27/2019 15:09:25'!
+hasPlayerXWon
+
+	^ game winnerIs: #x! !
+
+!TerniLapilliGameOver methodsFor: 'status' stamp: 'AB 5/27/2019 15:04:01'!
+isOver
+
+	^ true! !
+
+!TerniLapilliGameOver methodsFor: 'status' stamp: 'AB 5/27/2019 14:55:06'!
+isPlayingO
+
+	self error: 'Game has finished'! !
+
+!TerniLapilliGameOver methodsFor: 'status' stamp: 'AB 5/27/2019 14:55:05'!
+isPlayingX
+
+	self error: 'Game has finished'! !
+
+!TerniLapilliGameOver methodsFor: 'status' stamp: 'AB 5/27/2019 15:04:17'!
+isTied
+
+	^ false! !
+
+
 !TerniLapilliGameOver methodsFor: 'update' stamp: 'AB 5/27/2019 13:45:22'!
 changeTurn
 
@@ -889,12 +990,33 @@ slideXFrom: anOriginPoint to: aDestinationPoint
 	self error: 'It is not Xs turn'! !
 
 
-!TerniLapilliOTurnSliding methodsFor: 'update' stamp: 'AB 5/27/2019 13:44:32'!
+!TerniLapilliOTurnSliding methodsFor: 'update' stamp: 'AB 5/27/2019 15:13:40'!
 changeTurn
 
-	(game oIsWinner) 
+	(game winnerIs: #o)
 		ifTrue: [ game state: (TerniLapilliGameOver for: game) ] 
 		ifFalse: [ game state: (TerniLapilliXTurnSliding for: game) ]! !
+
+
+!TerniLapilliOTurnSliding methodsFor: 'status' stamp: 'AB 5/27/2019 15:04:35'!
+isOver
+
+	^ false! !
+
+!TerniLapilliOTurnSliding methodsFor: 'status' stamp: 'AB 5/27/2019 14:55:51'!
+isPlayingO
+
+	^ true! !
+
+!TerniLapilliOTurnSliding methodsFor: 'status' stamp: 'AB 5/27/2019 14:55:46'!
+isPlayingX
+
+	^ false! !
+
+!TerniLapilliOTurnSliding methodsFor: 'status' stamp: 'AB 5/27/2019 15:04:31'!
+isTied
+
+	^ true! !
 
 
 !classDefinition: #TerniLapilliOTurnToPut category: #TerniLapilli!
@@ -926,10 +1048,31 @@ slideXFrom: anOriginPoint to: aDestinationPoint
 	self error: 'It is not Xs turn'! !
 
 
-!TerniLapilliOTurnToPut methodsFor: 'update' stamp: 'AB 5/27/2019 13:43:16'!
+!TerniLapilliOTurnToPut methodsFor: 'status' stamp: 'AB 5/27/2019 15:04:57'!
+isOver
+
+	^ false! !
+
+!TerniLapilliOTurnToPut methodsFor: 'status' stamp: 'AB 5/27/2019 14:56:21'!
+isPlayingO
+
+	^ true! !
+
+!TerniLapilliOTurnToPut methodsFor: 'status' stamp: 'AB 5/27/2019 14:56:15'!
+isPlayingX
+
+	^ false! !
+
+!TerniLapilliOTurnToPut methodsFor: 'status' stamp: 'AB 5/27/2019 15:04:52'!
+isTied
+
+	^ true! !
+
+
+!TerniLapilliOTurnToPut methodsFor: 'update' stamp: 'AB 5/27/2019 15:13:28'!
 changeTurn
 
-	(game oIsWinner) 
+	(game winnerIs: #o)
 		ifTrue: [ game state: (TerniLapilliGameOver for: game) ] 
 		ifFalse: [
 			(game boardContainsThreeXTokens) 
@@ -967,12 +1110,33 @@ slideXFrom: anOriginPoint to: aDestinationPoint
 	game pullXFrom: anOriginPoint andPutIn: aDestinationPoint! !
 
 
-!TerniLapilliXTurnSliding methodsFor: 'update' stamp: 'AB 5/27/2019 13:40:23'!
+!TerniLapilliXTurnSliding methodsFor: 'update' stamp: 'AB 5/27/2019 15:13:10'!
 changeTurn
 
-	(game xIsWinner) 
+	(game winnerIs: #x)
 		ifTrue: [ game state: (TerniLapilliGameOver for: game) ] 
 		ifFalse: [ game state: (TerniLapilliOTurnSliding for: game) ]! !
+
+
+!TerniLapilliXTurnSliding methodsFor: 'status' stamp: 'AB 5/27/2019 15:05:06'!
+isOver
+
+	^ false! !
+
+!TerniLapilliXTurnSliding methodsFor: 'status' stamp: 'AB 5/27/2019 14:56:52'!
+isPlayingO
+
+	^ false! !
+
+!TerniLapilliXTurnSliding methodsFor: 'status' stamp: 'AB 5/27/2019 14:56:47'!
+isPlayingX
+
+	^ true! !
+
+!TerniLapilliXTurnSliding methodsFor: 'status' stamp: 'AB 5/27/2019 15:05:02'!
+isTied
+
+	^ true! !
 
 
 !classDefinition: #TerniLapilliXTurnToPut category: #TerniLapilli!
@@ -1004,10 +1168,31 @@ slideXFrom: anOriginPoint to: aDestinationPoint
 	self error: 'It is not Xs turn to slide'! !
 
 
-!TerniLapilliXTurnToPut methodsFor: 'update' stamp: 'AB 5/27/2019 13:41:52'!
+!TerniLapilliXTurnToPut methodsFor: 'status' stamp: 'AB 5/27/2019 15:05:15'!
+isOver
+
+	^ false! !
+
+!TerniLapilliXTurnToPut methodsFor: 'status' stamp: 'AB 5/27/2019 14:57:19'!
+isPlayingO
+
+	^ false! !
+
+!TerniLapilliXTurnToPut methodsFor: 'status' stamp: 'AB 5/27/2019 14:57:14'!
+isPlayingX
+
+	^ true! !
+
+!TerniLapilliXTurnToPut methodsFor: 'status' stamp: 'AB 5/27/2019 15:05:11'!
+isTied
+
+	^ true! !
+
+
+!TerniLapilliXTurnToPut methodsFor: 'update' stamp: 'AB 5/27/2019 15:12:47'!
 changeTurn
 
-	(game xIsWinner) 
+	(game winnerIs: #x) 
 		ifTrue: [ game state: (TerniLapilliGameOver for: game) ] 
 		ifFalse: [ game state: (TerniLapilliOTurnToPut for: game) ]
 
