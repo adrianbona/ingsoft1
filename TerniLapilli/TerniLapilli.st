@@ -5,28 +5,7 @@ TestCase subclass: #TerniLapilliTest
 	poolDictionaries: ''
 	category: 'TerniLapilli'!
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:17:09'!
-boardWithSixTokens
-
-	"     |     | x 
-	   y |     | y
-	   x | y  | x
-	"
-
-	| board |
-	
-	board _ TerniLapilli new.
-
-	board putXat: 1@1.
-	board putOat: 2@1.
-	board putXat: 3@1.
-	board putOat: 1@2.
-	board putXat: 3@3.
-	board putOat: 3@2.
-	
-	^ board.! !
-
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:29:05'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:29:05'!
 test01PutAnXAndCheckItsPosition
 
 	| game |
@@ -37,7 +16,7 @@ test01PutAnXAndCheckItsPosition
 
 	self assert: (game at: 2@2) = #x! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:30:59'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:30:59'!
 test02PutXAndPutYInDifferentPositionsAndCheckCorrectness
 
 	| game |
@@ -50,7 +29,7 @@ test02PutXAndPutYInDifferentPositionsAndCheckCorrectness
 	self assert: (game at: 2@1) = #x.
 	self assert: (game at: 2@2) = #o! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:31:03'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:31:03'!
 test03CanNotPlaceATokenInAnOccuppiedSpace
 
 	| game |
@@ -67,7 +46,7 @@ test03CanNotPlaceATokenInAnOccuppiedSpace
 			self assert: (game at: 2@2) = #x.
 		]! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:31:11'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:31:11'!
 test04NotOccuppiedPositionsAreEmptyByDefault
 
 	| game |
@@ -76,7 +55,7 @@ test04NotOccuppiedPositionsAreEmptyByDefault
 
 	self assert: (game at: 2@2) = 'empty'! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:31:18'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:31:18'!
 test05CanNotPlaceATokenOutOfTheBoard
 
 	| game |
@@ -97,7 +76,7 @@ test05CanNotPlaceATokenOutOfTheBoard
 			self assert: anError messageText = 'Out of range'
 		]! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:31:27'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:31:27'!
 test06GameStartsWithXsTurn
 
 	| game |
@@ -112,7 +91,7 @@ test06GameStartsWithXsTurn
 			self assert: (game at: 2@2) = 'empty'.
 		]! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:31:44'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:31:44'!
 test07CanNotPlaceATokenXWhenItIsNotXsTurn
 
 	| game |
@@ -130,7 +109,7 @@ test07CanNotPlaceATokenXWhenItIsNotXsTurn
 			self assert: (game at: 2@3) = 'empty'.
 		]! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:31:54'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:31:54'!
 test08CanNotPlaceATokenOWhenItIsNotOsTurn
 
 	| game |
@@ -150,7 +129,7 @@ test08CanNotPlaceATokenOWhenItIsNotOsTurn
 			self assert: (game at: 2@1) = 'empty'.
 		]! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:32:28'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:32:28'!
 test10XIsWinnerWhenPuttingThreeTokensInARow
 
 	| game |
@@ -167,7 +146,7 @@ test10XIsWinnerWhenPuttingThreeTokensInARow
 
 	self assert: game xIsWinner! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:32:49'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:32:49'!
 test11XIsWinnerVertically
 
 	| game |
@@ -196,7 +175,7 @@ test11XIsWinnerVertically
 
 	self assert: game xIsWinner! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:33:24'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:33:24'!
 test12XIsWinnerHorizontally
 
 	| game |
@@ -228,7 +207,7 @@ test12XIsWinnerHorizontally
 
 	self assert: game xIsWinner! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:33:54'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:33:54'!
 test13XIsWinnerDiagonally
 
 	| game |
@@ -251,7 +230,7 @@ test13XIsWinnerDiagonally
 
 	self assert: game xIsWinner! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:34:12'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:34:12'!
 test14OIsWinnerWhenPuttingThreeTokensInARow
 
 	| game |
@@ -267,12 +246,13 @@ test14OIsWinnerWhenPuttingThreeTokensInARow
 
 	self assert: game oIsWinner! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:34:22'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 14:40:29'!
 test15CanNotPlayOnceGameIsOver
 
 	| game |
 
 	game _ TerniLapilli new.
+	
 	game putXat: 1@1.
 	game putOat: 2@1.	
 	game putXat: 1@2.
@@ -293,7 +273,7 @@ test15CanNotPlayOnceGameIsOver
 			self assert: anError messageText = 'Game has finished'
 		]! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:34:32'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:34:32'!
 test16CanNotPutMoreThanSixTokens
 
 	| game |
@@ -307,7 +287,7 @@ test16CanNotPutMoreThanSixTokens
 			self assert: anError messageText = 'More than three equal marks are not allowed'
 		]! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:34:40'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:34:40'!
 test17SlideXAndWinGame
 
 	| game |
@@ -320,7 +300,7 @@ test17SlideXAndWinGame
 	self assert: (game at: 3@1) = 'empty'.
 	self assert: (game winnerIs: #x).! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:34:48'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:34:48'!
 test18SlideOAndWinGame
 
 	| game |
@@ -334,7 +314,7 @@ test18SlideOAndWinGame
 	self assert: (game at: 2@1) = 'empty'.
 	self assert: (game winnerIs: #o).! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:34:56'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:34:56'!
 test19CantSlideXFromEmptyPosition
 
 	| game |
@@ -348,7 +328,7 @@ test19CantSlideXFromEmptyPosition
 			self assert: anError messageText = 'Can not slide from an empty position'
 		]! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:35:03'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:35:03'!
 test20CantSlideXToOccupiedPosition
 
 	| game |
@@ -362,7 +342,7 @@ test20CantSlideXToOccupiedPosition
 			self assert: anError messageText = 'Can not slide to an occupied position'
 		]! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:35:12'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:35:12'!
 test21CantSlideOFromEmptyPositionNeitherToOccupiedPosition
 
 	| game |
@@ -385,7 +365,7 @@ test21CantSlideOFromEmptyPositionNeitherToOccupiedPosition
 			self assert: anError messageText = 'Can not slide to an occupied position'
 		]! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:35:20'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:35:20'!
 test22CantSlideToOutOfRange
 
 	| game |
@@ -400,7 +380,7 @@ test22CantSlideToOutOfRange
 			self assert: (game at: 3@3) = #x.
 		].! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:35:26'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:35:26'!
 test23OCantSlideOnXTurnToSlide
 
 	| game |
@@ -415,7 +395,7 @@ test23OCantSlideOnXTurnToSlide
 			self assert: (game at: 1@2) = #o.
 		].! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:35:39'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:35:39'!
 test24XCantSlideOnOTurnToPut
 
 	| game |
@@ -436,7 +416,7 @@ test24XCantSlideOnOTurnToPut
 			self assert: (game at: 3@1) = #x.
 		].! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:35:44'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:35:44'!
 test25OCantSlideIfGameOver
 
 	| game |
@@ -453,7 +433,7 @@ test25OCantSlideIfGameOver
 			self assert: (game at: 1@2) = #o.
 		].! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:35:50'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:35:50'!
 test26XCantSlideIfGameOver
 
 	| game |
@@ -471,7 +451,7 @@ test26XCantSlideIfGameOver
 			self assert: (game at: 1@1) = #x.
 		].! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:36:07'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:36:07'!
 test27XCantSlideToDistantPosition
 
 	| game |
@@ -486,7 +466,7 @@ test27XCantSlideToDistantPosition
 			self assert: (game at: 1@1) = #x.
 		].! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:36:17'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:36:17'!
 test28OCantSlideToDistantPosition
 
 	| game |
@@ -503,7 +483,7 @@ test28OCantSlideToDistantPosition
 			self assert: (game at: 2@1) = #o.
 		].! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:36:31'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:36:31'!
 test29OCantSlideOnXTurnToPut
 
 	| game |
@@ -523,7 +503,7 @@ test29OCantSlideOnXTurnToPut
 			self assert: (game at: 1@2) = #o.
 		].! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:36:42'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:36:42'!
 test30OCantSlideOnOTurnToPut
 
 	| game |
@@ -545,7 +525,7 @@ test30OCantSlideOnOTurnToPut
 			self assert: (game at: 1@3) = 'empty'.
 		].! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:36:51'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:36:51'!
 test31XCantSlideOnXTurnToPut
 
 	| game |
@@ -566,7 +546,7 @@ test31XCantSlideOnXTurnToPut
 			self assert: (game at: 2@2) = 'empty'.
 		].! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:36:57'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:36:57'!
 test32OCantPutOnXTurnToSlide
 
 	| game |
@@ -581,7 +561,7 @@ test32OCantPutOnXTurnToSlide
 			self assert: (game at: 1@3) = 'empty'.
 		].! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:37:03'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:37:03'!
 test33OCantPutOnOTurnToSlide
 
 	| game |
@@ -598,7 +578,7 @@ test33OCantPutOnOTurnToSlide
 			self assert: (game at: 1@3) = 'empty'.
 		].! !
 
-!TerniLapilliTest methodsFor: 'as yet unclassified' stamp: 'AB 5/27/2019 12:37:10'!
+!TerniLapilliTest methodsFor: 'testing' stamp: 'AB 5/27/2019 12:37:10'!
 test34XCantPutOnOTurnToSlide
 
 	| game |
@@ -615,6 +595,27 @@ test34XCantPutOnOTurnToSlide
 			self assert: (game at: 1@3) = 'empty'.
 		].! !
 
+
+!TerniLapilliTest methodsFor: 'setUp' stamp: 'AB 5/27/2019 14:39:06'!
+boardWithSixTokens
+
+	"    |     | x 
+	  y |     |  y
+	  x | y  | x "
+
+	| board |
+	
+	board _ TerniLapilli new.
+
+	board putXat: 1@1.
+	board putOat: 2@1.
+	board putXat: 3@1.
+	board putOat: 1@2.
+	board putXat: 3@3.
+	board putOat: 3@2.
+	
+	^ board.! !
+
 
 !classDefinition: #TerniLapilli category: #TerniLapilli!
 Object subclass: #TerniLapilli
@@ -623,41 +624,45 @@ Object subclass: #TerniLapilli
 	poolDictionaries: ''
 	category: 'TerniLapilli'!
 
-!TerniLapilli methodsFor: 'validations' stamp: 'JR 5/26/2019 13:40:45'!
-assertValidPosition: aPosition
+!TerniLapilli methodsFor: 'validations' stamp: 'AB 5/27/2019 14:30:11'!
+assertPositionIsInARange1To3: aPosition
 
 	((aPosition x between: 1 and: 3) and: (aPosition y between: 1 and: 3)) ifFalse: [ self error: 'Out of range' ].! !
 
-!TerniLapilli methodsFor: 'validations' stamp: 'JR 5/26/2019 13:51:52'!
-assertValidPutIn: aPosition 
+!TerniLapilli methodsFor: 'validations' stamp: 'AB 5/27/2019 14:34:37'!
+assertPositionsAreInRangeOriginIsOccupiedDestinationIsEmptyAndCanSlideFrom: anOriginPoint to: aDestinationPoint 
 
-	self assertValidPosition: aPosition.
-	(self at: aPosition) = 'empty' ifFalse: [^ self error: 'Already marked'].! !
+	self assertPositionIsInARange1To3: anOriginPoint.
+	self assertPositionIsInARange1To3: aDestinationPoint.
 
-!TerniLapilli methodsFor: 'validations' stamp: 'JR 5/26/2019 13:46:31'!
-assertValidSlideFrom: anOriginPoint to: aDestinationPoint 
+	(self isDistanceValidForSlidingFrom: anOriginPoint to: aDestinationPoint) ifFalse: [^ self error: 'Can not slide that far' ].
 
-	self assertValidPosition: anOriginPoint.
-	self assertValidPosition: aDestinationPoint.
-	(self isValidSlidingDistanceFrom: anOriginPoint to: aDestinationPoint) ifFalse: [^ self error: 'Can not slide that far' ].
 	(self at: aDestinationPoint) = 'empty' ifFalse: [^ self error: 'Can not slide to an occupied position'].
 	(self at: anOriginPoint) = 'empty' ifTrue: [^ self error: 'Can not slide from an empty position'].
 ! !
 
-!TerniLapilli methodsFor: 'validations' stamp: 'JR 5/26/2019 13:22:09'!
+!TerniLapilli methodsFor: 'validations' stamp: 'AB 5/27/2019 14:31:24'!
+assertPostionIsInRangeAndEmpty: aPosition 
+
+	self assertPositionIsInARange1To3: aPosition.
+	
+	(self at: aPosition) = 'empty' ifFalse: [^ self error: 'Already marked']! !
+
+!TerniLapilli methodsFor: 'validations' stamp: 'AB 5/27/2019 13:55:50'!
 at: aPosition
 
-	^ board at: aPosition ifAbsent: 'empty'.! !
+	^ board at: aPosition ifAbsent: 'empty'! !
 
 !TerniLapilli methodsFor: 'validations' stamp: 'JR 5/26/2019 12:54:02'!
 boardContainsThreeXTokens
 
 	^ (board occurrencesOf: #x) = 3! !
 
-!TerniLapilli methodsFor: 'validations' stamp: 'JR 5/22/2019 20:44:41'!
-isValidSlidingDistanceFrom: anOriginPoint to: aDestinationPoint
+!TerniLapilli methodsFor: 'validations' stamp: 'AB 5/27/2019 14:35:03'!
+isDistanceValidForSlidingFrom: anOriginPoint to: aDestinationPoint
 	
-	^ ((anOriginPoint x - aDestinationPoint x) abs < 2) and: ((anOriginPoint y - aDestinationPoint y) abs < 2).! !
+	^ ((anOriginPoint x - aDestinationPoint x) abs < 2) 
+		and: ((anOriginPoint y - aDestinationPoint y) abs < 2)! !
 
 !TerniLapilli methodsFor: 'validations' stamp: 'JR 5/26/2019 13:54:48'!
 threeDiagonallyContinuosWith: aToken
@@ -700,50 +705,48 @@ pullXFrom: anOriginPoint andPutIn: aDestinationPoint
 
 	self pullFrom: anOriginPoint andPutIn: aDestinationPoint aToken: #x ! !
 
-!TerniLapilli methodsFor: 'sliding movements' stamp: 'JR 5/26/2019 13:46:58'!
+!TerniLapilli methodsFor: 'sliding movements' stamp: 'AB 5/27/2019 14:34:37'!
 slideOFrom: anOriginPoint to: aDestinationPoint
 	
-	self assertValidSlideFrom: anOriginPoint to: aDestinationPoint.
+	self assertPositionsAreInRangeOriginIsOccupiedDestinationIsEmptyAndCanSlideFrom: anOriginPoint to: aDestinationPoint.
 	 
-	state slideOFrom: anOriginPoint to: aDestinationPoint in: self! !
+	state slideOFrom: anOriginPoint to: aDestinationPoint! !
 
-!TerniLapilli methodsFor: 'sliding movements' stamp: 'JR 5/26/2019 13:47:05'!
+!TerniLapilli methodsFor: 'sliding movements' stamp: 'AB 5/27/2019 14:34:37'!
 slideXFrom: anOriginPoint to: aDestinationPoint
 
-	self assertValidSlideFrom: anOriginPoint to: aDestinationPoint.
+	self assertPositionsAreInRangeOriginIsOccupiedDestinationIsEmptyAndCanSlideFrom: anOriginPoint to: aDestinationPoint.
 	
-	state slideXFrom: anOriginPoint to: aDestinationPoint in: self! !
+	state slideXFrom: anOriginPoint to: aDestinationPoint! !
 
 
-!TerniLapilli methodsFor: 'putting' stamp: 'JR 5/26/2019 13:52:34'!
+!TerniLapilli methodsFor: 'putting' stamp: 'AB 5/27/2019 13:55:19'!
 at: aPosition put: aToken
 
 	board at: aPosition put: aToken.
-	state changeTurnIn: self.
-			! !
+	
+	state changeTurn! !
 
-!TerniLapilli methodsFor: 'putting' stamp: 'JR 5/26/2019 13:52:11'!
+!TerniLapilli methodsFor: 'putting' stamp: 'AB 5/27/2019 14:31:24'!
 putOat: aPosition
 	
-	self assertValidPutIn: aPosition.
+	self assertPostionIsInRangeAndEmpty: aPosition.
 
-	state putOat: aPosition in: self
-! !
+	state putOat: aPosition! !
 
-!TerniLapilli methodsFor: 'putting' stamp: 'JR 5/26/2019 13:52:15'!
+!TerniLapilli methodsFor: 'putting' stamp: 'AB 5/27/2019 14:31:24'!
 putXat: aPosition
 
-	self assertValidPutIn: aPosition.
+	self assertPostionIsInRangeAndEmpty: aPosition.
 
-	state putXat: aPosition in: self
-! !
+	state putXat: aPosition! !
 
 
-!TerniLapilli methodsFor: 'initialization' stamp: 'JR 5/26/2019 12:14:43'!
+!TerniLapilli methodsFor: 'initialization' stamp: 'AB 5/27/2019 13:46:27'!
 initialize
 
 	board _ Dictionary new.
-	state _ TerniLapilliXTurnToPut new.! !
+	state _ (TerniLapilliXTurnToPut for: self).! !
 
 
 !TerniLapilli methodsFor: 'winning' stamp: 'AB 5/26/2019 11:14:14'!
@@ -772,30 +775,54 @@ state: aState
 
 !classDefinition: #TerniLapilliState category: #TerniLapilli!
 Object subclass: #TerniLapilliState
-	instanceVariableNames: ''
+	instanceVariableNames: 'game'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TerniLapilli'!
 
-!TerniLapilliState methodsFor: 'as yet unclassified' stamp: 'JR 5/26/2019 12:45:59'!
-putOat: aPosition in: aGame
+!TerniLapilliState methodsFor: 'initialization' stamp: 'AB 5/27/2019 13:33:08'!
+initializeFor: aGame
+
+	game _ aGame! !
+
+
+!TerniLapilliState methodsFor: 'putting' stamp: 'AB 5/27/2019 13:48:40'!
+putOat: aPosition
 
 	self subclassResponsibility ! !
 
-!TerniLapilliState methodsFor: 'as yet unclassified' stamp: 'JR 5/26/2019 12:46:08'!
-putXat: aPosition in: aGame
+!TerniLapilliState methodsFor: 'putting' stamp: 'AB 5/27/2019 13:48:45'!
+putXat: aPosition
 
 	self subclassResponsibility ! !
 
-!TerniLapilliState methodsFor: 'as yet unclassified' stamp: 'JR 5/26/2019 12:46:23'!
-slideOFrom: anOriginPoint to: aDestinationPoint in: aGame
+
+!TerniLapilliState methodsFor: 'sliding' stamp: 'AB 5/27/2019 13:49:05'!
+slideOFrom: anOriginPoint to: aDestinationPoint
 
 	self subclassResponsibility ! !
 
-!TerniLapilliState methodsFor: 'as yet unclassified' stamp: 'JR 5/26/2019 12:46:25'!
-slideXFrom: anOriginPoint to: aDestinationPoint in: aGame
+!TerniLapilliState methodsFor: 'sliding' stamp: 'AB 5/27/2019 13:49:10'!
+slideXFrom: anOriginPoint to: aDestinationPoint
 
 	self subclassResponsibility ! !
+
+
+!TerniLapilliState methodsFor: 'update' stamp: 'AB 5/27/2019 13:44:58'!
+changeTurn
+
+	self subclassResponsibility ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TerniLapilliState class' category: #TerniLapilli!
+TerniLapilliState class
+	instanceVariableNames: ''!
+
+!TerniLapilliState class methodsFor: 'initialization' stamp: 'AB 5/27/2019 13:47:15'!
+for: aGame
+
+	^ self new initializeFor: aGame! !
 
 
 !classDefinition: #TerniLapilliGameOver category: #TerniLapilli!
@@ -805,23 +832,30 @@ TerniLapilliState subclass: #TerniLapilliGameOver
 	poolDictionaries: ''
 	category: 'TerniLapilli'!
 
-!TerniLapilliGameOver methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:16:15'!
-putOat: aPosition in: aGame
+!TerniLapilliGameOver methodsFor: 'putting' stamp: 'AB 5/27/2019 13:50:25'!
+putOat: aPosition
 
 	self error: 'Game has finished'! !
 
-!TerniLapilliGameOver methodsFor: 'as yet unclassified' stamp: 'JR 5/26/2019 12:16:03'!
-putXat: aPosition in: aGame
+!TerniLapilliGameOver methodsFor: 'putting' stamp: 'AB 5/27/2019 13:50:29'!
+putXat: aPosition
 
 	self error: 'Game has finished'! !
 
-!TerniLapilliGameOver methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 12:01:59'!
-slideOFrom: anOriginPoint to: aDestinationPoint in: aGame
+
+!TerniLapilliGameOver methodsFor: 'sliding' stamp: 'AB 5/27/2019 13:50:04'!
+slideOFrom: anOriginPoint to: aDestinationPoint
 
 	self error: 'Game has finished'! !
 
-!TerniLapilliGameOver methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 12:02:47'!
-slideXFrom: anOriginPoint to: aDestinationPoint in: aGame
+!TerniLapilliGameOver methodsFor: 'sliding' stamp: 'AB 5/27/2019 13:50:00'!
+slideXFrom: anOriginPoint to: aDestinationPoint
+
+	self error: 'Game has finished'! !
+
+
+!TerniLapilliGameOver methodsFor: 'update' stamp: 'AB 5/27/2019 13:45:22'!
+changeTurn
 
 	self error: 'Game has finished'! !
 
@@ -833,32 +867,34 @@ TerniLapilliState subclass: #TerniLapilliOTurnSliding
 	poolDictionaries: ''
 	category: 'TerniLapilli'!
 
-!TerniLapilliOTurnSliding methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:55:12'!
-changeTurnIn: aGame
-
-	(aGame oIsWinner) 
-		ifTrue: [ aGame state: TerniLapilliGameOver new ] 
-		ifFalse: [ aGame state: TerniLapilliXTurnSliding new ]! !
-
-!TerniLapilliOTurnSliding methodsFor: 'as yet unclassified' stamp: 'JR 5/26/2019 12:42:35'!
-putOat: aPosition in: aGame
+!TerniLapilliOTurnSliding methodsFor: 'putting' stamp: 'AB 5/27/2019 13:51:02'!
+putOat: aPosition
 
 	self error: 'More than three equal marks are not allowed'! !
 
-!TerniLapilliOTurnSliding methodsFor: 'as yet unclassified' stamp: 'JR 5/26/2019 12:43:44'!
-putXat: aPosition in: aGame
+!TerniLapilliOTurnSliding methodsFor: 'putting' stamp: 'AB 5/27/2019 13:51:06'!
+putXat: aPosition
 
 	self error: 'It is not Xs turn'! !
 
-!TerniLapilliOTurnSliding methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:54:50'!
-slideOFrom: anOriginPoint to: aDestinationPoint in: aGame
 
-	aGame pullOFrom: anOriginPoint andPutIn: aDestinationPoint! !
+!TerniLapilliOTurnSliding methodsFor: 'sliding' stamp: 'AB 5/27/2019 13:51:22'!
+slideOFrom: anOriginPoint to: aDestinationPoint
 
-!TerniLapilliOTurnSliding methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:58:50'!
-slideXFrom: anOriginPoint to: aDestinationPoint in: aGame
+	game pullOFrom: anOriginPoint andPutIn: aDestinationPoint! !
+
+!TerniLapilliOTurnSliding methodsFor: 'sliding' stamp: 'AB 5/27/2019 13:51:28'!
+slideXFrom: anOriginPoint to: aDestinationPoint
 
 	self error: 'It is not Xs turn'! !
+
+
+!TerniLapilliOTurnSliding methodsFor: 'update' stamp: 'AB 5/27/2019 13:44:32'!
+changeTurn
+
+	(game oIsWinner) 
+		ifTrue: [ game state: (TerniLapilliGameOver for: game) ] 
+		ifFalse: [ game state: (TerniLapilliXTurnSliding for: game) ]! !
 
 
 !classDefinition: #TerniLapilliOTurnToPut category: #TerniLapilli!
@@ -868,36 +904,38 @@ TerniLapilliState subclass: #TerniLapilliOTurnToPut
 	poolDictionaries: ''
 	category: 'TerniLapilli'!
 
-!TerniLapilliOTurnToPut methodsFor: 'as yet unclassified' stamp: 'JR 5/26/2019 12:54:16'!
-changeTurnIn: aGame
+!TerniLapilliOTurnToPut methodsFor: 'putting' stamp: 'AB 5/27/2019 13:52:17'!
+putOat: aPosition
 
-	(aGame oIsWinner) 
-		ifTrue: [ aGame state: TerniLapilliGameOver new ] 
-		ifFalse: [
-			(aGame boardContainsThreeXTokens) 
-			ifTrue: [ aGame state: TerniLapilliXTurnSliding new ]
-			ifFalse: [ aGame state: TerniLapilliXTurnToPut new ]
-		]! !
+	game at: aPosition put: #o! !
 
-!TerniLapilliOTurnToPut methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 10:42:10'!
-putOat: aPosition in: aGame
-
-	aGame at: aPosition put: #o! !
-
-!TerniLapilliOTurnToPut methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 10:48:35'!
-putXat: aPosition in: aGame
+!TerniLapilliOTurnToPut methodsFor: 'putting' stamp: 'AB 5/27/2019 13:52:23'!
+putXat: aPosition
 
 	self error: 'It is not Xs turn'! !
 
-!TerniLapilliOTurnToPut methodsFor: 'as yet unclassified' stamp: 'JR 5/26/2019 12:30:33'!
-slideOFrom: anOriginPoint to: aDestinationPoint in: aGame
+
+!TerniLapilliOTurnToPut methodsFor: 'sliding' stamp: 'AB 5/27/2019 13:52:38'!
+slideOFrom: anOriginPoint to: aDestinationPoint
 
 	self error: 'It is not Os turn to slide'! !
 
-!TerniLapilliOTurnToPut methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 12:01:15'!
-slideXFrom: anOriginPoint to: aDestinationPoint in: aGame
+!TerniLapilliOTurnToPut methodsFor: 'sliding' stamp: 'AB 5/27/2019 13:52:43'!
+slideXFrom: anOriginPoint to: aDestinationPoint
 
 	self error: 'It is not Xs turn'! !
+
+
+!TerniLapilliOTurnToPut methodsFor: 'update' stamp: 'AB 5/27/2019 13:43:16'!
+changeTurn
+
+	(game oIsWinner) 
+		ifTrue: [ game state: (TerniLapilliGameOver for: game) ] 
+		ifFalse: [
+			(game boardContainsThreeXTokens) 
+			ifTrue: [ game state: (TerniLapilliXTurnSliding for: game) ]
+			ifFalse: [ game state: (TerniLapilliXTurnToPut for: game) ]
+		]! !
 
 
 !classDefinition: #TerniLapilliXTurnSliding category: #TerniLapilli!
@@ -907,32 +945,34 @@ TerniLapilliState subclass: #TerniLapilliXTurnSliding
 	poolDictionaries: ''
 	category: 'TerniLapilli'!
 
-!TerniLapilliXTurnSliding methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:49:24'!
-changeTurnIn: aGame
-
-	(aGame xIsWinner) 
-		ifTrue: [ aGame state: TerniLapilliGameOver new ] 
-		ifFalse: [ aGame state: TerniLapilliOTurnSliding new ]! !
-
-!TerniLapilliXTurnSliding methodsFor: 'as yet unclassified' stamp: 'JR 5/26/2019 12:35:51'!
-putOat: aPosition in: aGame
+!TerniLapilliXTurnSliding methodsFor: 'putting' stamp: 'AB 5/27/2019 13:53:03'!
+putOat: aPosition
 
 	self error: 'It is not Os turn'! !
 
-!TerniLapilliXTurnSliding methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 12:05:23'!
-putXat: aPosition in: aGame
+!TerniLapilliXTurnSliding methodsFor: 'putting' stamp: 'AB 5/27/2019 13:53:08'!
+putXat: aPosition
 
 	self error: 'More than three equal marks are not allowed'! !
 
-!TerniLapilliXTurnSliding methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:57:42'!
-slideOFrom: anOriginPoint to: aDestinationPoint in: aGame
+
+!TerniLapilliXTurnSliding methodsFor: 'sliding' stamp: 'AB 5/27/2019 13:53:19'!
+slideOFrom: anOriginPoint to: aDestinationPoint
 
 	self error: 'It is not Os turn'! !
 
-!TerniLapilliXTurnSliding methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:30:58'!
-slideXFrom: anOriginPoint to: aDestinationPoint in: aGame
+!TerniLapilliXTurnSliding methodsFor: 'sliding' stamp: 'AB 5/27/2019 13:53:27'!
+slideXFrom: anOriginPoint to: aDestinationPoint
 
-	aGame pullXFrom: anOriginPoint andPutIn: aDestinationPoint! !
+	game pullXFrom: anOriginPoint andPutIn: aDestinationPoint! !
+
+
+!TerniLapilliXTurnSliding methodsFor: 'update' stamp: 'AB 5/27/2019 13:40:23'!
+changeTurn
+
+	(game xIsWinner) 
+		ifTrue: [ game state: (TerniLapilliGameOver for: game) ] 
+		ifFalse: [ game state: (TerniLapilliOTurnSliding for: game) ]! !
 
 
 !classDefinition: #TerniLapilliXTurnToPut category: #TerniLapilli!
@@ -942,31 +982,33 @@ TerniLapilliState subclass: #TerniLapilliXTurnToPut
 	poolDictionaries: ''
 	category: 'TerniLapilli'!
 
-!TerniLapilliXTurnToPut methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 11:51:46'!
-changeTurnIn: aGame
-
-	(aGame xIsWinner) 
-		ifTrue: [ aGame state: TerniLapilliGameOver new ] 
-		ifFalse: [ aGame state: TerniLapilliOTurnToPut new ]
-
-	 ! !
-
-!TerniLapilliXTurnToPut methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 10:47:13'!
-putOat: aPosition in: aGame
+!TerniLapilliXTurnToPut methodsFor: 'putting' stamp: 'AB 5/27/2019 13:53:41'!
+putOat: aPosition
 
 	self error: 'It is not Os turn'! !
 
-!TerniLapilliXTurnToPut methodsFor: 'as yet unclassified' stamp: 'AB 5/26/2019 10:36:00'!
-putXat: aPosition in: aGame
+!TerniLapilliXTurnToPut methodsFor: 'putting' stamp: 'AB 5/27/2019 13:53:48'!
+putXat: aPosition
 
-	aGame at: aPosition put: #x ! !
+	game at: aPosition put: #x ! !
 
-!TerniLapilliXTurnToPut methodsFor: 'as yet unclassified' stamp: 'JR 5/26/2019 12:26:52'!
-slideOFrom: anOriginPoint to: aDestinationPoint in: aGame
+
+!TerniLapilliXTurnToPut methodsFor: 'sliding' stamp: 'AB 5/27/2019 13:54:00'!
+slideOFrom: anOriginPoint to: aDestinationPoint
 
 	self error: 'It is not Os turn'! !
 
-!TerniLapilliXTurnToPut methodsFor: 'as yet unclassified' stamp: 'JR 5/26/2019 12:32:11'!
-slideXFrom: anOriginPoint to: aDestinationPoint in: aGame
+!TerniLapilliXTurnToPut methodsFor: 'sliding' stamp: 'AB 5/27/2019 13:54:05'!
+slideXFrom: anOriginPoint to: aDestinationPoint
 
 	self error: 'It is not Xs turn to slide'! !
+
+
+!TerniLapilliXTurnToPut methodsFor: 'update' stamp: 'AB 5/27/2019 13:41:52'!
+changeTurn
+
+	(game xIsWinner) 
+		ifTrue: [ game state: (TerniLapilliGameOver for: game) ] 
+		ifFalse: [ game state: (TerniLapilliOTurnToPut for: game) ]
+
+	 ! !
