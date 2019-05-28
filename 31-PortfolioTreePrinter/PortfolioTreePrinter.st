@@ -1,3 +1,148 @@
+!classDefinition: #AccountReportTest category: #PortfolioTreePrinter!
+TestCase subclass: #AccountReportTest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!AccountReportTest methodsFor: 'testing' stamp: 'AB 5/28/2019 20:00:08'!
+test01PrintAnAccountWithADepositOf50
+
+	| anAccount lines aReport value |
+	
+	value _ 50.
+	anAccount _ ReceptiveAccount new.
+	Deposit register: value on: anAccount.
+	aReport _ AccountSummary for: anAccount.
+
+	lines _ ReadStream on: aReport value.
+	
+	self assert: 'Depósito por ', value printString, '.' equals: lines next! !
+
+!AccountReportTest methodsFor: 'testing' stamp: 'AB 5/28/2019 20:00:24'!
+test02PrintAnAccountWithAWithdrawOf50
+
+	| anAccount lines aReport value |
+	
+	value _ 50.
+	anAccount _ ReceptiveAccount new.
+	Deposit register: value on: anAccount.
+	Withdraw register: value on: anAccount.
+	aReport _ AccountSummary for: anAccount.
+
+	lines _ ReadStream on: aReport value.
+	
+	self assert: 'Depósito por ', value printString, '.' equals: lines next.
+	self assert: 'Extracción por ', value printString, '.' equals: lines next! !
+
+!AccountReportTest methodsFor: 'testing' stamp: 'AB 5/28/2019 20:00:35'!
+test03PrintAnAccountWithATransferenceDepositOf50
+
+	| anAccount anotherAccount lines aReport value |
+	
+	value _ 50.
+	anAccount _ ReceptiveAccount new.
+	anotherAccount _ ReceptiveAccount new.
+	Deposit register: value on: anAccount.
+	Withdraw register: value on: anAccount.
+	Transference register: value from: anotherAccount to: anAccount.
+	aReport _ AccountSummary for: anAccount.
+
+	lines _ ReadStream on: aReport value.
+	
+	self assert: 'Depósito por ', value printString, '.' equals: lines next.
+	self assert: 'Extracción por ', value printString, '.' equals: lines next.
+	self assert: 'Entrada por transferencia de ', value printString, '.' equals: lines next! !
+
+!AccountReportTest methodsFor: 'testing' stamp: 'AB 5/28/2019 20:00:42'!
+test04PrintAnAccountWithATransferenceWithdrawOf50
+
+	| anAccount anotherAccount lines aReport value |
+	
+	value _ 50.
+	anAccount _ ReceptiveAccount new.
+	anotherAccount _ ReceptiveAccount new.
+	Deposit register: value on: anAccount.
+	Withdraw register: value on: anAccount.
+	Transference register: value from: anAccount to: anotherAccount.
+	aReport _ AccountSummary for: anAccount.
+
+	lines _ ReadStream on: aReport value.
+	
+	self assert: 'Depósito por ', value printString, '.' equals: lines next.
+	self assert: 'Extracción por ', value printString, '.' equals: lines next.
+	self assert: 'Salida por transferencia de ', value printString, '.' equals: lines next! !
+
+!AccountReportTest methodsFor: 'testing' stamp: 'AB 5/28/2019 20:00:50'!
+test05PrintBalanceAtTheEndOfTheReport
+
+	| anAccount anotherAccount lines aReport value |
+	
+	value _ 50.
+	anAccount _ ReceptiveAccount new.
+	anotherAccount _ ReceptiveAccount new.
+	Deposit register: value on: anAccount.
+	Withdraw register: value on: anAccount.
+	Transference register: value from: anotherAccount to: anAccount.
+	aReport _ AccountSummary for: anAccount.
+
+	lines _ ReadStream on: aReport value.
+	
+	self assert: 'Depósito por ', value printString, '.' equals: lines next.
+	self assert: 'Extracción por ', value printString, '.' equals: lines next.
+	self assert: 'Entrada por transferencia de ', value printString, '.' equals: lines next.
+	self assert: 'Balance = ', value printString equals: lines next.
+	self assert: lines atEnd! !
+
+!AccountReportTest methodsFor: 'testing' stamp: 'AB 5/28/2019 20:15:13'!
+test06PrintsTransferNetWithZeroWhenNoTrasferencesWereMade
+
+	| anAccount lines aReport |
+	
+	anAccount _ ReceptiveAccount new.
+	Deposit register: 100 on: anAccount.
+	Withdraw register: 25 on: anAccount.
+	aReport _ TransferNet for: anAccount.
+
+	lines _ ReadStream on: aReport value.
+	
+	self assert: 0 printString equals: lines next! !
+
+!AccountReportTest methodsFor: 'testing' stamp: 'AB 5/28/2019 20:18:16'!
+test07PrintsTransferNetWhenHavingATransferenceToTheAccount
+
+	| aValue anAccount anotherAccount lines aReport |
+	
+	aValue _ 50.
+	anAccount _ ReceptiveAccount new.
+	anotherAccount _ ReceptiveAccount new.
+	Deposit register: aValue on: anAccount.
+	Transference register: aValue from: anotherAccount to: anAccount.
+	aReport _ TransferNet for: anAccount.
+
+	lines _ ReadStream on: aReport value.
+	
+	self assert: aValue printString equals: lines next! !
+
+!AccountReportTest methodsFor: 'testing' stamp: 'AB 5/28/2019 20:25:23'!
+test08PrintsTransferNetWhenHavingATransferenceFromTheAccount
+
+	| aValue anAccount anotherAccount lines aReport |
+	
+	anAccount _ ReceptiveAccount new.
+	anotherAccount _ ReceptiveAccount new.
+
+	aValue _ 50.
+	Deposit register: aValue on: anAccount.
+	Transference register: aValue from: anAccount to: anotherAccount.
+
+	aReport _ TransferNet for: anAccount.
+	lines _ ReadStream on: aReport value.
+	
+	self assert: -50 printString equals: lines next.
+	self assert: 100 equals: anAccount balance! !
+
+
 !classDefinition: #PortfolioTest category: #PortfolioTreePrinter!
 TestCase subclass: #PortfolioTest
 	instanceVariableNames: ''
@@ -335,6 +480,77 @@ test10CanGoFromATransferenceDepositToATransferenceWithdraw
 	self assert: withdraw equals: deposit transference withdraw.! !
 
 
+!classDefinition: #AccountReport category: #PortfolioTreePrinter!
+Object subclass: #AccountReport
+	instanceVariableNames: 'asset'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!AccountReport methodsFor: 'value' stamp: 'AB 5/28/2019 18:14:33'!
+initializeFor: aFinancialAsset
+
+	asset _ aFinancialAsset! !
+
+!AccountReport methodsFor: 'value' stamp: 'AB 5/28/2019 19:48:20'!
+value
+
+	self subclassResponsibility! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'AccountReport class' category: #PortfolioTreePrinter!
+AccountReport class
+	instanceVariableNames: ''!
+
+!AccountReport class methodsFor: 'instance creation' stamp: 'AB 5/28/2019 18:13:23'!
+for: aFinancialAsset
+
+	^ self new initializeFor: aFinancialAsset! !
+
+
+!classDefinition: #AccountSummary category: #PortfolioTreePrinter!
+AccountReport subclass: #AccountSummary
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!AccountSummary methodsFor: 'value' stamp: 'AB 5/28/2019 19:48:28'!
+value
+
+	| lines |
+
+	lines _ OrderedCollection new.
+
+	asset transactions do: [ :transaction | lines add: transaction print ].
+
+	lines add: 'Balance = ', asset balance printString.
+	
+	^ lines! !
+
+
+!classDefinition: #TransferNet category: #PortfolioTreePrinter!
+AccountReport subclass: #TransferNet
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!TransferNet methodsFor: 'value' stamp: 'AB 5/28/2019 20:13:56'!
+value
+
+	| lines transferNet |
+
+	lines _ OrderedCollection new.
+
+	transferNet _ asset transactions inject: 0 into: [ :currentNet :transaction | transaction affectTransferNet: currentNet ].
+
+	lines add: transferNet printString.
+	
+	^ lines! !
+
+
 !classDefinition: #AccountTransaction category: #PortfolioTreePrinter!
 Object subclass: #AccountTransaction
 	instanceVariableNames: ''
@@ -352,6 +568,17 @@ value
 affectBalance: aBalance
 
 	self subclassResponsibility ! !
+
+!AccountTransaction methodsFor: 'balance' stamp: 'AB 5/28/2019 20:05:27'!
+affectTransferNet: aTransferNet
+
+	self subclassResponsibility ! !
+
+
+!AccountTransaction methodsFor: 'printing' stamp: 'AB 5/28/2019 19:24:09'!
+print
+
+	^ self description! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -393,6 +620,17 @@ value
 affectBalance: aBalance
 
 	^ aBalance + value! !
+
+!Deposit methodsFor: 'balance' stamp: 'AB 5/28/2019 20:05:51'!
+affectTransferNet: aTransferNet
+
+	^ aTransferNet ! !
+
+
+!Deposit methodsFor: 'printing' stamp: 'AB 5/28/2019 19:30:20'!
+description
+
+	^ 'Depósito por ' , value printString, '.'! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -473,6 +711,11 @@ affectBalance: aBalance
 
 	^ aBalance + self value! !
 
+!TransferenceDeposit methodsFor: 'balance' stamp: 'AB 5/28/2019 20:08:07'!
+affectTransferNet: aTransferNet
+
+	^ aTransferNet + self value! !
+
 
 !TransferenceDeposit methodsFor: 'value' stamp: 'AB 5/28/2019 16:43:04'!
 value
@@ -484,6 +727,12 @@ value
 transference
 
 	^ transference! !
+
+
+!TransferenceDeposit methodsFor: 'printing' stamp: 'AB 5/28/2019 19:30:50'!
+description
+
+	^ 'Entrada por transferencia de ' , transference value printString, '.'! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -515,17 +764,28 @@ affectBalance: aBalance
 
 	^ aBalance - transference value! !
 
+!TransferenceWithdraw methodsFor: 'balance' stamp: 'AB 5/28/2019 20:09:37'!
+affectTransferNet: aTransferNet
+
+	^ aTransferNet - transference value! !
 
 
-!TransferenceWithdraw methodsFor: 'value' stamp: 'AB 5/28/2019 17:15:06'!
+!TransferenceWithdraw methodsFor: 'transaction' stamp: 'AB 5/28/2019 17:15:06'!
 transference
 
 	^ transference! !
+
 
 !TransferenceWithdraw methodsFor: 'value' stamp: 'AB 5/28/2019 16:43:24'!
 value
 
 	^ transference value! !
+
+
+!TransferenceWithdraw methodsFor: 'printing' stamp: 'AB 5/28/2019 19:32:27'!
+description
+
+	^ 'Salida por transferencia de ' , transference value printString, '.'! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -558,10 +818,21 @@ value
 	^ value! !
 
 
-!Withdraw methodsFor: 'balance' stamp: 'HAW 5/25/2019 11:25:15'!
+!Withdraw methodsFor: 'balance' stamp: 'AB 5/28/2019 20:06:19'!
 affectBalance: aBalance
 
-	^aBalance - value! !
+	^ aBalance - value! !
+
+!Withdraw methodsFor: 'balance' stamp: 'AB 5/28/2019 20:06:16'!
+affectTransferNet: aTransferNet
+
+	^ aTransferNet ! !
+
+
+!Withdraw methodsFor: 'printing' stamp: 'AB 5/28/2019 19:26:52'!
+description
+
+	^ 'Extracción por ' , value printString, '.'! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -647,12 +918,12 @@ add: accountToAdd
 	accountToAdd addedTo: self 
 	! !
 
-!Portfolio methodsFor: 'accounts management' stamp: 'HAW 5/25/2019 12:17:31'!
+!Portfolio methodsFor: 'accounts management' stamp: 'AB 5/28/2019 20:12:10'!
 rootParents
 	
 	| rootParents |
 	
-	rootParents := Set new.
+	rootParents _ Set new.
 	self addRootParentsTo: rootParents.
 	
 	^ rootParents! !
@@ -676,15 +947,15 @@ addTransactionsTo: aCollectionOfTransactions
 
 	accounts do: [ :anAccount | anAccount addTransactionsTo: aCollectionOfTransactions ]! !
 
-!Portfolio methodsFor: 'transactions' stamp: 'HAW 5/25/2019 11:38:32'!
+!Portfolio methodsFor: 'transactions' stamp: 'AB 5/28/2019 20:12:21'!
 transactions
 	
 	| transactions |
 	
-	transactions := OrderedCollection new.
+	transactions _ OrderedCollection new.
 	accounts do: [ :anAccount | anAccount addTransactionsTo: transactions ].
 	
-	^transactions ! !
+	^ transactions ! !
 
 
 !Portfolio methodsFor: 'composition' stamp: 'HAW 5/25/2019 12:02:59'!
