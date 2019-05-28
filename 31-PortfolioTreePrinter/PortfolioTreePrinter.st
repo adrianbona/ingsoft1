@@ -1,9 +1,9 @@
-!classDefinition: #PortfolioTest category: #'Portfolio-Solucion'!
+!classDefinition: #PortfolioTest category: #PortfolioTreePrinter!
 TestCase subclass: #PortfolioTest
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'Portfolio-Solucion'!
+	category: 'PortfolioTreePrinter'!
 
 !PortfolioTest methodsFor: 'tests' stamp: 'HAW 5/25/2019 11:16:26'!
 test01BalanceOfPortfolioWithoutAccountsIsZero
@@ -197,144 +197,431 @@ test14ComposedPortfolioCanNotHaveAccountOfAnyRootParentRecursively
 			self assert: portfolio accountsIsEmpty ]! !
 
 
-!classDefinition: #ReceptiveAccountTest category: #'Portfolio-Solucion'!
+!classDefinition: #ReceptiveAccountTest category: #PortfolioTreePrinter!
 TestCase subclass: #ReceptiveAccountTest
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'Portfolio-Solucion'!
+	category: 'PortfolioTreePrinter'!
 
-!ReceptiveAccountTest methodsFor: 'tests' stamp: 'HAW 5/23/2019 15:19:48'!
+!ReceptiveAccountTest methodsFor: 'tests' stamp: 'AB 5/28/2019 16:00:08'!
 test01ReceptiveAccountHaveZeroAsBalanceWhenCreated 
 
 	| account |
 	
-	account := ReceptiveAccount new.
+	account _ ReceptiveAccount new.
 
-	self assert: 0 equals: account balance .
-! !
+	self assert: 0 equals: account balance! !
 
-!ReceptiveAccountTest methodsFor: 'tests' stamp: 'HAW 5/23/2019 15:19:54'!
+!ReceptiveAccountTest methodsFor: 'tests' stamp: 'AB 5/28/2019 16:00:17'!
 test02DepositIncreasesBalanceOnTransactionValue 
 
 	| account |
 	
-	account := ReceptiveAccount  new.
+	account _ ReceptiveAccount  new.
 	Deposit register: 100 on: account.
 		
-	self assert: 100 equals: account balance .
-! !
+	self assert: 100 equals: account balance! !
 
-!ReceptiveAccountTest methodsFor: 'tests' stamp: 'HAW 5/23/2019 15:20:02'!
+!ReceptiveAccountTest methodsFor: 'tests' stamp: 'AB 5/28/2019 16:00:25'!
 test03WithdrawDecreasesBalanceOnTransactionValue 
 
 	| account |
 	
-	account := ReceptiveAccount new.
+	account _ ReceptiveAccount new.
 	Deposit register: 100 on: account.
 	Withdraw register: 50 on: account.
 		
-	self assert: 50 equals: account balance .
-! !
+	self assert: 50 equals: account balance! !
 
-!ReceptiveAccountTest methodsFor: 'tests' stamp: 'HAW 5/23/2019 15:20:32'!
+!ReceptiveAccountTest methodsFor: 'tests' stamp: 'AB 5/28/2019 16:00:35'!
 test04WithdrawValueMustBePositive 
 
 	| account withdrawValue |
 	
-	account := ReceptiveAccount new.
-	withdrawValue := 50.
+	account _ ReceptiveAccount new.
+	withdrawValue _ 50.
 	
-	self assert: withdrawValue equals: (Withdraw register: withdrawValue on: account) value
-! !
+	self assert: withdrawValue equals: (Withdraw register: withdrawValue on: account) value! !
 
-!ReceptiveAccountTest methodsFor: 'tests' stamp: 'HAW 5/23/2019 15:20:46'!
+!ReceptiveAccountTest methodsFor: 'tests' stamp: 'AB 5/28/2019 16:00:45'!
 test05ReceptiveAccountKnowsRegisteredTransactions 
 
 	| account deposit withdraw |
 	
-	account := ReceptiveAccount new.
-	deposit := Deposit register: 100 on: account.
-	withdraw := Withdraw register: 50 on: account.
+	account _ ReceptiveAccount new.
+	deposit _ Deposit register: 100 on: account.
+	withdraw _ Withdraw register: 50 on: account.
 		
 	self assert: (account hasRegistered: deposit).
-	self assert: (account hasRegistered: withdraw).
-! !
+	self assert: (account hasRegistered: withdraw)! !
 
-!ReceptiveAccountTest methodsFor: 'tests' stamp: 'HAW 5/23/2019 15:20:54'!
+!ReceptiveAccountTest methodsFor: 'tests' stamp: 'AB 5/28/2019 16:00:55'!
 test06ReceptiveAccountDoNotKnowNotRegisteredTransactions
 
 	| account deposit withdraw |
 	
-	account := ReceptiveAccount new.
-	deposit :=  Deposit for: 100.
-	withdraw := Withdraw for: 50.
+	account _ ReceptiveAccount new.
+	deposit _  Deposit for: 100.
+	withdraw _ Withdraw for: 50.
 		
 	self deny: (account hasRegistered: deposit).
-	self deny: (account hasRegistered:withdraw).
-! !
+	self deny: (account hasRegistered:withdraw)! !
 
-!ReceptiveAccountTest methodsFor: 'tests' stamp: 'HAW 5/23/2019 15:21:24'!
+!ReceptiveAccountTest methodsFor: 'tests' stamp: 'AB 5/28/2019 16:01:05'!
 test07AccountKnowsItsTransactions 
 
 	| account1 deposit1 |
 	
-	account1 := ReceptiveAccount new.
+	account1 _ ReceptiveAccount new.
 	
-	deposit1 := Deposit register: 100 on: account1.
+	deposit1 _ Deposit register: 100 on: account1.
 		
 	self assert: 1 equals: account1 transactions size .
-	self assert: (account1 transactions includes: deposit1).
-! !
+	self assert: (account1 transactions includes: deposit1)! !
+
+!ReceptiveAccountTest methodsFor: 'tests' stamp: 'AB 5/28/2019 17:03:44'!
+test08TransferenceIncreasesBalanceOnDestinationAccount 
+
+	| originAccount destinationAccount |
+	
+	originAccount _ ReceptiveAccount new.
+
+	destinationAccount _ ReceptiveAccount new.
+
+	self assert: 0 equals: destinationAccount balance.
+
+	Deposit register: 50 on: destinationAccount.
+
+	self assert: 50 equals: destinationAccount balance.
+
+	Transference register: 100 from: originAccount to: destinationAccount.
+		
+	self assert: 150 equals: destinationAccount balance! !
+
+!ReceptiveAccountTest methodsFor: 'tests' stamp: 'AB 5/28/2019 17:03:57'!
+test09TransferenceDecreasesBalanceOnOriginAccount 
+
+	| originAccount destinationAccount |
+	
+	originAccount _ ReceptiveAccount new.
+
+	destinationAccount _ ReceptiveAccount new.
+
+	self assert: 0 equals: originAccount balance.
+
+	Deposit register: 75 on: originAccount.
+
+	self assert: 75 equals: originAccount balance.
+
+	Transference register: 100 from: originAccount to: destinationAccount.
+		
+	self assert: -25 equals: originAccount balance! !
+
+!ReceptiveAccountTest methodsFor: 'tests' stamp: 'AB 5/28/2019 17:16:52'!
+test10CanGoFromATransferenceDepositToATransferenceWithdraw 
+
+	| originAccount destinationAccount transference deposit withdraw |
+	
+	originAccount _ ReceptiveAccount new.
+	destinationAccount _ ReceptiveAccount new.
+
+	transference _ Transference register: 100 from: originAccount to: destinationAccount.
+		
+	deposit _ transference deposit.
+	withdraw _ transference withdraw.
+
+	self assert: deposit equals: withdraw transference deposit.
+	self assert: withdraw equals: deposit transference withdraw.! !
 
 
-!classDefinition: #Account category: #'Portfolio-Solucion'!
-Object subclass: #Account
+!classDefinition: #AccountTransaction category: #PortfolioTreePrinter!
+Object subclass: #AccountTransaction
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'Portfolio-Solucion'!
+	category: 'PortfolioTreePrinter'!
 
-!Account methodsFor: 'testing' stamp: 'HAW 5/25/2019 12:23:47'!
+!AccountTransaction methodsFor: 'value' stamp: 'HernanWilkinson 9/12/2011 12:25'!
+value 
+
+	self subclassResponsibility ! !
+
+
+!AccountTransaction methodsFor: 'balance' stamp: 'HAW 5/25/2019 11:25:39'!
+affectBalance: aBalance
+
+	self subclassResponsibility ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'AccountTransaction class' category: #PortfolioTreePrinter!
+AccountTransaction class
+	instanceVariableNames: ''!
+
+!AccountTransaction class methodsFor: 'instance creation' stamp: 'HernanWilkinson 7/13/2011 18:38'!
+register: aValue on: account
+
+	| withdraw |
+	
+	withdraw := self for: aValue.
+	account register: withdraw.
+		
+	^ withdraw! !
+
+
+!classDefinition: #Deposit category: #PortfolioTreePrinter!
+AccountTransaction subclass: #Deposit
+	instanceVariableNames: 'value'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!Deposit methodsFor: 'initialization' stamp: 'AB 5/28/2019 16:28:23'!
+initializeFor: aValue
+
+	value _ aValue! !
+
+
+!Deposit methodsFor: 'value' stamp: 'HernanWilkinson 7/13/2011 18:38'!
+value
+
+	^ value! !
+
+
+!Deposit methodsFor: 'balance' stamp: 'AB 5/28/2019 16:29:17'!
+affectBalance: aBalance
+
+	^ aBalance + value! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Deposit class' category: #PortfolioTreePrinter!
+Deposit class
+	instanceVariableNames: ''!
+
+!Deposit class methodsFor: 'instance creation' stamp: 'HernanWilkinson 7/13/2011 18:38'!
+for: aValue
+
+	^ self new initializeFor: aValue ! !
+
+
+!classDefinition: #Transference category: #PortfolioTreePrinter!
+AccountTransaction subclass: #Transference
+	instanceVariableNames: 'from to value'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!Transference methodsFor: 'value' stamp: 'AB 5/28/2019 16:45:08'!
+value
+
+	^ value! !
+
+
+!Transference methodsFor: 'initialization' stamp: 'AB 5/28/2019 16:57:21'!
+initializeFor: aValue from: originAccount to:destinationAccount
+
+	value _ aValue.
+
+	from _ TransferenceWithdraw from: self.
+	originAccount register: from.
+
+	to _ TransferenceDeposit from: self.
+	destinationAccount register: to.
+		
+	^ self! !
+
+
+!Transference methodsFor: 'transaction' stamp: 'AB 5/28/2019 17:15:41'!
+deposit
+
+	^ to! !
+
+!Transference methodsFor: 'transaction' stamp: 'AB 5/28/2019 17:15:37'!
+withdraw
+
+	^ from! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Transference class' category: #PortfolioTreePrinter!
+Transference class
+	instanceVariableNames: ''!
+
+!Transference class methodsFor: 'instance creation' stamp: 'AB 5/28/2019 16:44:32'!
+register: aValue from: originAccount to: destinationAccount
+ 
+	^ self new initializeFor: aValue from: originAccount to:destinationAccount! !
+
+
+!classDefinition: #TransferenceDeposit category: #PortfolioTreePrinter!
+Transference subclass: #TransferenceDeposit
+	instanceVariableNames: 'transference'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!TransferenceDeposit methodsFor: 'initialization' stamp: 'AB 5/28/2019 16:41:40'!
+initializeFrom: aTransference
+
+	transference _ aTransference! !
+
+
+!TransferenceDeposit methodsFor: 'balance' stamp: 'AB 5/28/2019 16:43:15'!
+affectBalance: aBalance
+
+	^ aBalance + self value! !
+
+
+!TransferenceDeposit methodsFor: 'value' stamp: 'AB 5/28/2019 16:43:04'!
+value
+
+	^ transference value! !
+
+
+!TransferenceDeposit methodsFor: 'transaction' stamp: 'AB 5/28/2019 17:14:39'!
+transference
+
+	^ transference! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TransferenceDeposit class' category: #PortfolioTreePrinter!
+TransferenceDeposit class
+	instanceVariableNames: ''!
+
+!TransferenceDeposit class methodsFor: 'instance creation' stamp: 'AB 5/28/2019 16:39:49'!
+from: aTransference
+
+	^ self new initializeFrom: aTransference ! !
+
+
+!classDefinition: #TransferenceWithdraw category: #PortfolioTreePrinter!
+Transference subclass: #TransferenceWithdraw
+	instanceVariableNames: 'transference'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!TransferenceWithdraw methodsFor: 'initialization' stamp: 'AB 5/28/2019 16:42:01'!
+initializeFrom: aTransference
+
+	transference _ aTransference! !
+
+
+!TransferenceWithdraw methodsFor: 'balance' stamp: 'AB 5/28/2019 16:43:46'!
+affectBalance: aBalance
+
+	^ aBalance - transference value! !
+
+
+
+!TransferenceWithdraw methodsFor: 'value' stamp: 'AB 5/28/2019 17:15:06'!
+transference
+
+	^ transference! !
+
+!TransferenceWithdraw methodsFor: 'value' stamp: 'AB 5/28/2019 16:43:24'!
+value
+
+	^ transference value! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TransferenceWithdraw class' category: #PortfolioTreePrinter!
+TransferenceWithdraw class
+	instanceVariableNames: ''!
+
+!TransferenceWithdraw class methodsFor: 'instance creation' stamp: 'AB 5/28/2019 16:39:58'!
+from: aTransference
+
+	^ self new initializeFrom: aTransference ! !
+
+
+!classDefinition: #Withdraw category: #PortfolioTreePrinter!
+AccountTransaction subclass: #Withdraw
+	instanceVariableNames: 'value'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!Withdraw methodsFor: 'initialization' stamp: 'AB 5/28/2019 16:28:30'!
+initializeFor: aValue
+
+	value _ aValue! !
+
+
+!Withdraw methodsFor: 'value' stamp: 'HernanWilkinson 7/13/2011 18:33'!
+value
+
+	^ value! !
+
+
+!Withdraw methodsFor: 'balance' stamp: 'HAW 5/25/2019 11:25:15'!
+affectBalance: aBalance
+
+	^aBalance - value! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Withdraw class' category: #PortfolioTreePrinter!
+Withdraw class
+	instanceVariableNames: ''!
+
+!Withdraw class methodsFor: 'instance creation' stamp: 'HernanWilkinson 7/13/2011 18:33'!
+for: aValue
+
+	^ self new initializeFor: aValue ! !
+
+
+!classDefinition: #FinancialAsset category: #PortfolioTreePrinter!
+Object subclass: #FinancialAsset
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!FinancialAsset methodsFor: 'testing' stamp: 'HAW 5/25/2019 12:23:47'!
 hasRegistered: aTransaction
 
 	self subclassResponsibility ! !
 
-!Account methodsFor: 'testing' stamp: 'HAW 5/25/2019 12:24:25'!
+!FinancialAsset methodsFor: 'testing' stamp: 'HAW 5/25/2019 12:24:25'!
 isComposedBy: anAccount
 
 	self subclassResponsibility ! !
 
 
-!Account methodsFor: 'balance' stamp: 'HAW 5/25/2019 12:23:40'!
+!FinancialAsset methodsFor: 'balance' stamp: 'HAW 5/25/2019 12:23:40'!
 balance
 
 	self subclassResponsibility ! !
 
 
-!Account methodsFor: 'transactions' stamp: 'HAW 5/25/2019 12:23:27'!
+!FinancialAsset methodsFor: 'transactions' stamp: 'HAW 5/25/2019 12:23:27'!
 addTransactionsTo: aCollectionOfTransactions
 
 	self subclassResponsibility ! !
 
-!Account methodsFor: 'transactions' stamp: 'HAW 5/25/2019 12:23:15'!
+!FinancialAsset methodsFor: 'transactions' stamp: 'HAW 5/25/2019 12:23:15'!
 transactions
 
 	self subclassResponsibility ! !
 
 
-!Account methodsFor: 'composition' stamp: 'HAW 5/25/2019 12:24:04'!
+!FinancialAsset methodsFor: 'composition' stamp: 'HAW 5/25/2019 12:24:04'!
 addedTo: aPortfolio
 
 	self subclassResponsibility ! !
 
 
-!classDefinition: #Portfolio category: #'Portfolio-Solucion'!
-Account subclass: #Portfolio
+!classDefinition: #Portfolio category: #PortfolioTreePrinter!
+FinancialAsset subclass: #Portfolio
 	instanceVariableNames: 'accounts parents'
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'Portfolio-Solucion'!
+	category: 'PortfolioTreePrinter'!
 
 !Portfolio methodsFor: 'accounts management' stamp: 'HAW 5/25/2019 11:49:20'!
 accountsIncludes: anAccount
@@ -442,7 +729,7 @@ signalCanNotAddAccount
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-!classDefinition: 'Portfolio class' category: #'Portfolio-Solucion'!
+!classDefinition: 'Portfolio class' category: #PortfolioTreePrinter!
 Portfolio class
 	instanceVariableNames: ''!
 
@@ -467,12 +754,12 @@ with: anAccount with: anotherAccount
 		yourself! !
 
 
-!classDefinition: #ReceptiveAccount category: #'Portfolio-Solucion'!
-Account subclass: #ReceptiveAccount
+!classDefinition: #ReceptiveAccount category: #PortfolioTreePrinter!
+FinancialAsset subclass: #ReceptiveAccount
 	instanceVariableNames: 'transactions'
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'Portfolio-Solucion'!
+	category: 'PortfolioTreePrinter'!
 
 !ReceptiveAccount methodsFor: 'initialization' stamp: 'HernanWilkinson 7/13/2011 18:35'!
 initialize
@@ -522,110 +809,3 @@ isComposedBy: anAccount
 addedTo: aPortfolio 
 	
 	! !
-
-
-!classDefinition: #AccountTransaction category: #'Portfolio-Solucion'!
-Object subclass: #AccountTransaction
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'Portfolio-Solucion'!
-
-!AccountTransaction methodsFor: 'value' stamp: 'HernanWilkinson 9/12/2011 12:25'!
-value 
-
-	self subclassResponsibility ! !
-
-
-!AccountTransaction methodsFor: 'balance' stamp: 'HAW 5/25/2019 11:25:39'!
-affectBalance: aBalance
-
-	self subclassResponsibility ! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'AccountTransaction class' category: #'Portfolio-Solucion'!
-AccountTransaction class
-	instanceVariableNames: ''!
-
-!AccountTransaction class methodsFor: 'instance creation' stamp: 'HernanWilkinson 7/13/2011 18:38'!
-register: aValue on: account
-
-	| withdraw |
-	
-	withdraw := self for: aValue.
-	account register: withdraw.
-		
-	^ withdraw! !
-
-
-!classDefinition: #Deposit category: #'Portfolio-Solucion'!
-AccountTransaction subclass: #Deposit
-	instanceVariableNames: 'value'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'Portfolio-Solucion'!
-
-!Deposit methodsFor: 'initialization' stamp: 'HernanWilkinson 7/13/2011 18:45'!
-initializeFor: aValue
-
-	value := aValue ! !
-
-
-!Deposit methodsFor: 'value' stamp: 'HernanWilkinson 7/13/2011 18:38'!
-value
-
-	^ value! !
-
-
-!Deposit methodsFor: 'balance' stamp: 'HAW 5/25/2019 11:25:02'!
-affectBalance: aBalance
-
-	^aBalance + value ! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'Deposit class' category: #'Portfolio-Solucion'!
-Deposit class
-	instanceVariableNames: ''!
-
-!Deposit class methodsFor: 'instance creation' stamp: 'HernanWilkinson 7/13/2011 18:38'!
-for: aValue
-
-	^ self new initializeFor: aValue ! !
-
-
-!classDefinition: #Withdraw category: #'Portfolio-Solucion'!
-AccountTransaction subclass: #Withdraw
-	instanceVariableNames: 'value'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'Portfolio-Solucion'!
-
-!Withdraw methodsFor: 'initialization' stamp: 'HernanWilkinson 7/13/2011 18:46'!
-initializeFor: aValue
-
-	value := aValue ! !
-
-
-!Withdraw methodsFor: 'value' stamp: 'HernanWilkinson 7/13/2011 18:33'!
-value
-
-	^ value! !
-
-
-!Withdraw methodsFor: 'balance' stamp: 'HAW 5/25/2019 11:25:15'!
-affectBalance: aBalance
-
-	^aBalance - value! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'Withdraw class' category: #'Portfolio-Solucion'!
-Withdraw class
-	instanceVariableNames: ''!
-
-!Withdraw class methodsFor: 'instance creation' stamp: 'HernanWilkinson 7/13/2011 18:33'!
-for: aValue
-
-	^ self new initializeFor: aValue ! !
