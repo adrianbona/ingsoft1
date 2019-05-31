@@ -341,6 +341,23 @@ test14ComposedPortfolioCanNotHaveAccountOfAnyRootParentRecursively
 			self assert: Portfolio canNotAddAccountErrorMessage equals: anError messageText.
 			self assert: portfolio accountsIsEmpty ]! !
 
+!PortfolioTest methodsFor: 'tests' stamp: 'AB 5/31/2019 10:56:32'!
+test15PortfolioCanNotIncludeAnyOfTheComposedAccountOfPortfolioToAdd
+
+	| portfolioToAdd portfolioToModify rootPortfolio sharedAccount |
+
+	sharedAccount := ReceptiveAccount new.
+	portfolioToModify := Portfolio new.
+	rootPortfolio := Portfolio with: sharedAccount with: portfolioToModify.
+	portfolioToAdd := Portfolio with: sharedAccount.
+
+	self
+		should: [ portfolioToModify add: portfolioToAdd ]
+		raise: Error - MessageNotUnderstood 
+		withExceptionDo: [ :anError | 
+			self assert: Portfolio canNotAddAccountErrorMessage equals: anError messageText.
+			self assert: portfolioToModify accountsIsEmpty ]! !
+
 
 !classDefinition: #ReceptiveAccountTest category: #PortfolioTreePrinter!
 TestCase subclass: #ReceptiveAccountTest
@@ -974,10 +991,10 @@ hasRegistered: aTransaction
 
 	^accounts anySatisfy: [ :anAccount | anAccount hasRegistered: aTransaction ]! !
 
-!Portfolio methodsFor: 'testing' stamp: 'HAW 5/25/2019 11:57:20'!
+!Portfolio methodsFor: 'testing' stamp: 'AB 5/31/2019 10:57:23'!
 isComposedBy: anAccount
 
-	^ self = anAccount or: [ accounts anySatisfy: [ :composedAccount | composedAccount isComposedBy: anAccount ]]! !
+	^ self = anAccount or: [ accounts anySatisfy: [ :composedAccount | (composedAccount isComposedBy: anAccount) or: [ anAccount isComposedBy: composedAccount ]]]! !
 
 
 !Portfolio methodsFor: 'account management - private' stamp: 'HAW 5/25/2019 12:17:31'!
