@@ -5,7 +5,7 @@ TestCase subclass: #ShoppingCartTest
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!ShoppingCartTest methodsFor: 'as yet unclassified' stamp: 'AB 5/31/2019 11:04:45'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 5/31/2019 11:04:45'!
 test01CreateNewShoppingCartIsEmptyCart
 
 	| shoppingCart |
@@ -14,7 +14,7 @@ test01CreateNewShoppingCartIsEmptyCart
 	
 	self assert: shoppingCart isEmpty! !
 
-!ShoppingCartTest methodsFor: 'as yet unclassified' stamp: 'AB 5/31/2019 11:08:13'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 5/31/2019 11:08:13'!
 test02WhenAddingBookToShoppingCarItIsNotEmpty
 
 	| shoppingCart |
@@ -25,7 +25,7 @@ test02WhenAddingBookToShoppingCarItIsNotEmpty
 	
 	self deny: shoppingCart isEmpty! !
 
-!ShoppingCartTest methodsFor: 'as yet unclassified' stamp: 'AB 5/31/2019 11:15:31'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 5/31/2019 11:15:31'!
 test03WhenAddingBookToShoppingCartICanCheckIsThere
 
 	| shoppingCart |
@@ -37,7 +37,7 @@ test03WhenAddingBookToShoppingCartICanCheckIsThere
 	self deny: shoppingCart isEmpty.
 	self assert: (shoppingCart contains: #book)! !
 
-!ShoppingCartTest methodsFor: 'as yet unclassified' stamp: 'AB 5/31/2019 11:22:49'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 5/31/2019 11:22:49'!
 test04AddingTwoBooksMakesSizeTwoAndBothAreContained
 
 	| shoppingCart |
@@ -52,7 +52,7 @@ test04AddingTwoBooksMakesSizeTwoAndBothAreContained
 	self assert: (shoppingCart contains: #aBook).
 	self assert: (shoppingCart contains: #anotherBook)! !
 
-!ShoppingCartTest methodsFor: 'as yet unclassified' stamp: 'AB 5/31/2019 11:33:29'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 5/31/2019 11:33:29'!
 test05AddTwoCopiesOfTheSameBookAssertInclusionInCart
 
 	| shoppingCart |
@@ -65,7 +65,7 @@ test05AddTwoCopiesOfTheSameBookAssertInclusionInCart
 	self assert: 2 equals: shoppingCart itemsAmount.
 	self assert: (shoppingCart contains: #aBook)! !
 
-!ShoppingCartTest methodsFor: 'as yet unclassified' stamp: 'JR 5/31/2019 19:12:50'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'JR 5/31/2019 19:12:50'!
 test06AddingABookWithAQuantityLessThan1ThrowsAnError
 
 	| shoppingCart |
@@ -79,7 +79,7 @@ test06AddingABookWithAQuantityLessThan1ThrowsAnError
 		self assert: shoppingCart isEmpty.
 		].! !
 
-!ShoppingCartTest methodsFor: 'as yet unclassified' stamp: 'JR 5/31/2019 19:29:58'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'JR 5/31/2019 19:29:58'!
 test07AShoppingCartReturnsNumberOfCopiesOfABook 
 
 	| shoppingCart |
@@ -90,10 +90,10 @@ test07AShoppingCartReturnsNumberOfCopiesOfABook
 	shoppingCart add: #aBook quantity: 3.
 	self assert: (shoppingCart quantityOf: #aBook) = 3.! !
 
-!ShoppingCartTest methodsFor: 'as yet unclassified' stamp: 'JR 5/31/2019 19:58:00'!
-test08AShoppingCartReturnsACollectionOfItsDistinctBooks 
+!ShoppingCartTest methodsFor: 'testing' stamp: 'JR 5/31/2019 20:26:20'!
+test08AShoppingCartReturnsCollectionWithTheBooksItContains
 
-	| shoppingCart distinctBooks |
+	| shoppingCart items |
 	
 	shoppingCart _ ShoppingCart new.
 	
@@ -101,11 +101,11 @@ test08AShoppingCartReturnsACollectionOfItsDistinctBooks
 	shoppingCart add: #book2 quantity: 2.
 	shoppingCart add: #book3 quantity: 3.
 	
-	distinctBooks _ shoppingCart distinctItems.
+	items _ shoppingCart items.
 	
-	self assert: (distinctBooks occurrencesOf: #book1) = 1.
-	self assert: (distinctBooks occurrencesOf: #book2) = 1.
-	self assert: (distinctBooks occurrencesOf: #book3) = 1! !
+	self assert: (items includes: #book1).
+	self assert: (items includes: #book2).
+	self assert: (items includes: #book3)! !
 
 
 !classDefinition: #ShoppingCart category: #'TusLibros.com'!
@@ -115,49 +115,51 @@ Object subclass: #ShoppingCart
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!ShoppingCart methodsFor: 'as yet unclassified' stamp: 'JR 5/31/2019 19:43:18'!
+!ShoppingCart methodsFor: 'accessing' stamp: 'JR 5/31/2019 20:25:32'!
+items
+	
+	^ items! !
+
+
+!ShoppingCart methodsFor: 'adding' stamp: 'JR 5/31/2019 19:43:18'!
 add: anItem
 
 	^ items add: anItem! !
 
-!ShoppingCart methodsFor: 'as yet unclassified' stamp: 'JR 5/31/2019 19:43:23'!
+!ShoppingCart methodsFor: 'adding' stamp: 'JR 5/31/2019 19:43:23'!
 add: anItem quantity: aQuantity
 
 	(aQuantity < 1) ifTrue: [ self error: ShoppingCart quantityMustBeBiggerThanOneError].
 	
 	^ aQuantity timesRepeat: [ self add: anItem ]! !
 
-!ShoppingCart methodsFor: 'as yet unclassified' stamp: 'JR 5/31/2019 19:43:29'!
+
+!ShoppingCart methodsFor: 'querying' stamp: 'JR 5/31/2019 19:43:29'!
 contains: anItem
 
 	^ items includes: anItem! !
 
-!ShoppingCart methodsFor: 'as yet unclassified' stamp: 'AB 5/31/2019 11:10:11'!
-initialize
-
-	items _ OrderedCollection new.
-	super initialize! !
-
-!ShoppingCart methodsFor: 'as yet unclassified' stamp: 'AB 5/31/2019 11:12:37'!
+!ShoppingCart methodsFor: 'querying' stamp: 'AB 5/31/2019 11:12:37'!
 isEmpty
 
 	^ items isEmpty! !
 
-!ShoppingCart methodsFor: 'as yet unclassified' stamp: 'AB 5/31/2019 11:23:00'!
+!ShoppingCart methodsFor: 'querying' stamp: 'AB 5/31/2019 11:23:00'!
 itemsAmount
 
 	^ items size! !
 
-!ShoppingCart methodsFor: 'as yet unclassified' stamp: 'JR 5/31/2019 19:43:38'!
+!ShoppingCart methodsFor: 'querying' stamp: 'JR 5/31/2019 19:43:38'!
 quantityOf: anItem
 
 	^ items occurrencesOf: anItem.! !
 
 
-!ShoppingCart methodsFor: 'accessing' stamp: 'JR 5/31/2019 19:58:00'!
-distinctItems
-	
-	^ items asSet! !
+!ShoppingCart methodsFor: 'initialization' stamp: 'AB 5/31/2019 11:10:11'!
+initialize
+
+	items _ OrderedCollection new.
+	super initialize! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
