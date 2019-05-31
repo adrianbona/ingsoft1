@@ -661,57 +661,8 @@ for: aValue
 	^ self new initializeFor: aValue ! !
 
 
-!classDefinition: #Transference category: #PortfolioTreePrinter!
-AccountTransaction subclass: #Transference
-	instanceVariableNames: 'from to value'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PortfolioTreePrinter'!
-
-!Transference methodsFor: 'value' stamp: 'AB 5/28/2019 16:45:08'!
-value
-
-	^ value! !
-
-
-!Transference methodsFor: 'initialization' stamp: 'AB 5/28/2019 16:57:21'!
-initializeFor: aValue from: originAccount to:destinationAccount
-
-	value _ aValue.
-
-	from _ TransferenceWithdraw from: self.
-	originAccount register: from.
-
-	to _ TransferenceDeposit from: self.
-	destinationAccount register: to.
-		
-	^ self! !
-
-
-!Transference methodsFor: 'transaction' stamp: 'AB 5/28/2019 17:15:41'!
-deposit
-
-	^ to! !
-
-!Transference methodsFor: 'transaction' stamp: 'AB 5/28/2019 17:15:37'!
-withdraw
-
-	^ from! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'Transference class' category: #PortfolioTreePrinter!
-Transference class
-	instanceVariableNames: ''!
-
-!Transference class methodsFor: 'instance creation' stamp: 'AB 5/28/2019 16:44:32'!
-register: aValue from: originAccount to: destinationAccount
- 
-	^ self new initializeFor: aValue from: originAccount to:destinationAccount! !
-
-
 !classDefinition: #TransferenceDeposit category: #PortfolioTreePrinter!
-Transference subclass: #TransferenceDeposit
+AccountTransaction subclass: #TransferenceDeposit
 	instanceVariableNames: 'transference'
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -764,7 +715,7 @@ from: aTransference
 
 
 !classDefinition: #TransferenceWithdraw category: #PortfolioTreePrinter!
-Transference subclass: #TransferenceWithdraw
+AccountTransaction subclass: #TransferenceWithdraw
 	instanceVariableNames: 'transference'
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -1097,3 +1048,52 @@ isComposedBy: anAccount
 addedTo: aPortfolio 
 	
 	! !
+
+
+!classDefinition: #Transference category: #PortfolioTreePrinter!
+Object subclass: #Transference
+	instanceVariableNames: 'from to value'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!Transference methodsFor: 'value' stamp: 'AB 5/28/2019 16:45:08'!
+value
+
+	^ value! !
+
+
+!Transference methodsFor: 'initialization' stamp: 'AB 5/28/2019 16:57:21'!
+initializeFor: aValue from: originAccount to:destinationAccount
+
+	value _ aValue.
+
+	from _ TransferenceWithdraw from: self.
+	originAccount register: from.
+
+	to _ TransferenceDeposit from: self.
+	destinationAccount register: to.
+		
+	^ self! !
+
+
+!Transference methodsFor: 'transaction' stamp: 'AB 5/28/2019 17:15:41'!
+deposit
+
+	^ to! !
+
+!Transference methodsFor: 'transaction' stamp: 'AB 5/28/2019 17:15:37'!
+withdraw
+
+	^ from! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Transference class' category: #PortfolioTreePrinter!
+Transference class
+	instanceVariableNames: ''!
+
+!Transference class methodsFor: 'instance creation' stamp: 'AB 5/28/2019 16:44:32'!
+register: aValue from: originAccount to: destinationAccount
+ 
+	^ self new initializeFor: aValue from: originAccount to:destinationAccount! !
