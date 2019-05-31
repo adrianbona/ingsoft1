@@ -65,6 +65,48 @@ test05AddTwoCopiesOfTheSameBookAssertInclusionInCart
 	self assert: 2 equals: shoppingCart itemsAmount.
 	self assert: (shoppingCart contains: #aBook)! !
 
+!ShoppingCartTest methodsFor: 'as yet unclassified' stamp: 'JR 5/31/2019 19:12:50'!
+test06AddingABookWithAQuantityLessThan1ThrowsAnError
+
+	| shoppingCart |
+	
+	shoppingCart _ ShoppingCart new.
+	
+	self should: [shoppingCart add: #book quantity: 0]
+	raise: Error
+	withExceptionDo: [ :anError |
+		self assert: anError messageText = ShoppingCart quantityMustBeBiggerThanOneError.
+		self assert: shoppingCart isEmpty.
+		].! !
+
+!ShoppingCartTest methodsFor: 'as yet unclassified' stamp: 'JR 5/31/2019 19:29:58'!
+test07AShoppingCartReturnsNumberOfCopiesOfABook 
+
+	| shoppingCart |
+	
+	shoppingCart _ ShoppingCart new.
+	self assert: (shoppingCart quantityOf: #aBook) = 0.
+	
+	shoppingCart add: #aBook quantity: 3.
+	self assert: (shoppingCart quantityOf: #aBook) = 3.! !
+
+!ShoppingCartTest methodsFor: 'as yet unclassified' stamp: 'JR 5/31/2019 19:58:00'!
+test08AShoppingCartReturnsACollectionOfItsDistinctBooks 
+
+	| shoppingCart distinctBooks |
+	
+	shoppingCart _ ShoppingCart new.
+	
+	shoppingCart add: #book1 quantity: 1.
+	shoppingCart add: #book2 quantity: 2.
+	shoppingCart add: #book3 quantity: 3.
+	
+	distinctBooks _ shoppingCart distinctItems.
+	
+	self assert: (distinctBooks occurrencesOf: #book1) = 1.
+	self assert: (distinctBooks occurrencesOf: #book2) = 1.
+	self assert: (distinctBooks occurrencesOf: #book3) = 1! !
+
 
 !classDefinition: #ShoppingCart category: #'TusLibros.com'!
 Object subclass: #ShoppingCart
@@ -73,20 +115,22 @@ Object subclass: #ShoppingCart
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!ShoppingCart methodsFor: 'as yet unclassified' stamp: 'AB 5/31/2019 11:12:21'!
-add: aBook
+!ShoppingCart methodsFor: 'as yet unclassified' stamp: 'JR 5/31/2019 19:43:18'!
+add: anItem
 
-	^ items add: aBook! !
+	^ items add: anItem! !
 
-!ShoppingCart methodsFor: 'as yet unclassified' stamp: 'AB 5/31/2019 11:35:03'!
-add: aBook quantity: aQuantity
+!ShoppingCart methodsFor: 'as yet unclassified' stamp: 'JR 5/31/2019 19:43:23'!
+add: anItem quantity: aQuantity
 
-	^ aQuantity timesRepeat: [ self add: aBook ]! !
+	(aQuantity < 1) ifTrue: [ self error: ShoppingCart quantityMustBeBiggerThanOneError].
+	
+	^ aQuantity timesRepeat: [ self add: anItem ]! !
 
-!ShoppingCart methodsFor: 'as yet unclassified' stamp: 'AB 5/31/2019 11:16:03'!
-contains: aBook
+!ShoppingCart methodsFor: 'as yet unclassified' stamp: 'JR 5/31/2019 19:43:29'!
+contains: anItem
 
-	^ items includes: aBook! !
+	^ items includes: anItem! !
 
 !ShoppingCart methodsFor: 'as yet unclassified' stamp: 'AB 5/31/2019 11:10:11'!
 initialize
@@ -103,3 +147,25 @@ isEmpty
 itemsAmount
 
 	^ items size! !
+
+!ShoppingCart methodsFor: 'as yet unclassified' stamp: 'JR 5/31/2019 19:43:38'!
+quantityOf: anItem
+
+	^ items occurrencesOf: anItem.! !
+
+
+!ShoppingCart methodsFor: 'accessing' stamp: 'JR 5/31/2019 19:58:00'!
+distinctItems
+	
+	^ items asSet! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'ShoppingCart class' category: #'TusLibros.com'!
+ShoppingCart class
+	instanceVariableNames: ''!
+
+!ShoppingCart class methodsFor: 'as yet unclassified' stamp: 'JR 5/31/2019 19:09:34'!
+quantityMustBeBiggerThanOneError
+	
+	^ 'Quantity must be bigger than one.'! !
