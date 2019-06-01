@@ -1,48 +1,48 @@
 !classDefinition: #ShoppingCartTest category: #'TusLibros.com'!
 TestCase subclass: #ShoppingCartTest
-	instanceVariableNames: 'emptyCatalogue threeBooksCatalogue'
+	instanceVariableNames: 'emptyCatalogue threeBooksCatalogue oneBookCatalogue twoBooksCatalogue'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 5/31/2019 11:04:45'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/1/2019 16:08:17'!
 test01CreateNewShoppingCartIsEmptyCart
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart new.
+	shoppingCart _ ShoppingCart with: emptyCatalogue.
 	
 	self assert: shoppingCart isEmpty! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 5/31/2019 11:08:13'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/1/2019 16:13:39'!
 test02WhenAddingBookToShoppingCarItIsNotEmpty
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart new.
+	shoppingCart _ ShoppingCart with: oneBookCatalogue.
 	
-	shoppingCart add: #book.
+	shoppingCart add: #aBook.
 	
 	self deny: shoppingCart isEmpty! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 5/31/2019 11:15:31'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/1/2019 16:13:45'!
 test03WhenAddingBookToShoppingCartICanCheckIsThere
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart new.
+	shoppingCart _ ShoppingCart with: oneBookCatalogue.
 	
-	shoppingCart add: #book.
+	shoppingCart add: #aBook.
 	
 	self deny: shoppingCart isEmpty.
-	self assert: (shoppingCart contains: #book)! !
+	self assert: (shoppingCart contains: #aBook)! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 5/31/2019 11:22:49'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/1/2019 16:11:47'!
 test04AddingTwoBooksMakesSizeTwoAndBothAreContained
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart new.
+	shoppingCart _ ShoppingCart with: twoBooksCatalogue.
 	
 	shoppingCart add: #aBook.
 	shoppingCart add: #anotherBook.
@@ -52,12 +52,12 @@ test04AddingTwoBooksMakesSizeTwoAndBothAreContained
 	self assert: (shoppingCart contains: #aBook).
 	self assert: (shoppingCart contains: #anotherBook)! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 5/31/2019 11:33:29'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/1/2019 16:13:08'!
 test05AddTwoCopiesOfTheSameBookAssertInclusionInCart
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart new.
+	shoppingCart _ ShoppingCart with: oneBookCatalogue.
 	
 	shoppingCart add: #aBook quantity: 2.
 	
@@ -65,37 +65,37 @@ test05AddTwoCopiesOfTheSameBookAssertInclusionInCart
 	self assert: 2 equals: shoppingCart itemsAmount.
 	self assert: (shoppingCart contains: #aBook)! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'JR 5/31/2019 19:12:50'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/1/2019 16:14:18'!
 test06AddingABookWithAQuantityLessThan1ThrowsAnError
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart new.
+	shoppingCart _ ShoppingCart with: oneBookCatalogue.
 	
-	self should: [shoppingCart add: #book quantity: 0]
+	self should: [shoppingCart add: #aBook quantity: 0]
 	raise: Error
 	withExceptionDo: [ :anError |
 		self assert: anError messageText = ShoppingCart quantityMustBeBiggerThanOneError.
 		self assert: shoppingCart isEmpty.
 		].! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'JR 5/31/2019 19:29:58'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/1/2019 16:14:31'!
 test07AShoppingCartReturnsNumberOfCopiesOfABook 
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart new.
+	shoppingCart _ ShoppingCart with: oneBookCatalogue.
 	self assert: (shoppingCart quantityOf: #aBook) = 0.
 	
 	shoppingCart add: #aBook quantity: 3.
 	self assert: (shoppingCart quantityOf: #aBook) = 3.! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'JR 5/31/2019 20:26:20'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/1/2019 16:14:44'!
 test08AShoppingCartReturnsCollectionWithTheBooksItContains
 
 	| shoppingCart items |
 	
-	shoppingCart _ ShoppingCart new.
+	shoppingCart _ ShoppingCart with: threeBooksCatalogue.
 	
 	shoppingCart add: #book1 quantity: 1.
 	shoppingCart add: #book2 quantity: 2.
@@ -107,58 +107,78 @@ test08AShoppingCartReturnsCollectionWithTheBooksItContains
 	self assert: (items includes: #book2).
 	self assert: (items includes: #book3)! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/1/2019 15:29:13'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/1/2019 16:14:58'!
 test09CanNotAddANotIntegerQuantityOfBooksToCart
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart new.
+	shoppingCart _ ShoppingCart with: oneBookCatalogue.
 	
-	self should: [shoppingCart add: #book quantity: 2.5]
+	self should: [shoppingCart add: #aBook quantity: 2.5]
 	raise: Error
 	withExceptionDo: [ :anError |
 		self assert: anError messageText = ShoppingCart quantityMustBeAnIntegerValue.
 		self assert: shoppingCart isEmpty.
 		].! !
 
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/1/2019 16:15:47'!
+test10CanNotAddABookNotIncludedTheCatalogue
 
-!ShoppingCartTest methodsFor: 'setUp' stamp: 'AB 6/1/2019 15:26:26'!
+	| shoppingCart |
+	
+	shoppingCart _ ShoppingCart with: oneBookCatalogue.
+	
+	self should: [shoppingCart add: #anotherBook quantity: 2]
+	raise: Error
+	withExceptionDo: [ :anError |
+		self assert: anError messageText = ShoppingCart catalogueDoestNotIncludeItem.
+		self assert: shoppingCart isEmpty.
+		].! !
+
+
+!ShoppingCartTest methodsFor: 'setUp' stamp: 'AB 6/1/2019 16:13:26'!
 setUp
 
 	emptyCatalogue _ Catalogue new.
-	
+
+	oneBookCatalogue _ Catalogue new.
+	oneBookCatalogue add: #aBook.
+
+	twoBooksCatalogue _ Catalogue new.
+	twoBooksCatalogue add: #aBook; add: #anotherBook. 
+
 	threeBooksCatalogue _ Catalogue new.
-	threeBooksCatalogue add: #book1 ; add: #book2; add: #book3.! !
+	threeBooksCatalogue add: #book1; add: #book2; add: #book3.! !
 
 
 !classDefinition: #Catalogue category: #'TusLibros.com'!
 Object subclass: #Catalogue
-	instanceVariableNames: 'books'
+	instanceVariableNames: 'items'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!Catalogue methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 15:23:31'!
-add: aBook
+!Catalogue methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:06:58'!
+add: anItem
 
-	books add: aBook.
+	items add: anItem.
 ! !
 
-!Catalogue methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 15:24:01'!
-includes: aBook
+!Catalogue methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:07:18'!
+includes: anItem
 
-	^ books includes: aBook! !
+	^ items includes: anItem! !
 
-!Catalogue methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 15:23:43'!
+!Catalogue methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:06:44'!
 initialize
 
-	books _ Set new.
+	items _ Set new.
 	super initialize! !
 
 
 !classDefinition: #ShoppingCart category: #'TusLibros.com'!
 Object subclass: #ShoppingCart
-	instanceVariableNames: 'items'
+	instanceVariableNames: 'items catalogue'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
@@ -169,17 +189,25 @@ items
 	^ items! !
 
 
-!ShoppingCart methodsFor: 'adding' stamp: 'JR 5/31/2019 19:43:18'!
-add: anItem
-
-	^ items add: anItem! !
-
-!ShoppingCart methodsFor: 'adding' stamp: 'AB 6/1/2019 15:30:36'!
-add: anItem quantity: aQuantity
+!ShoppingCart methodsFor: 'assertions' stamp: 'AB 6/1/2019 16:17:34'!
+assertQuantityIsAnIntegerValueAndBiggerThenZero: aQuantity
 
 	(aQuantity < 1) ifTrue: [ self error: ShoppingCart quantityMustBeBiggerThanOneError ].
 
-	(aQuantity isInteger) ifFalse: [ self error: ShoppingCart quantityMustBeAnIntegerValue ].
+	(aQuantity isInteger) ifFalse: [ self error: ShoppingCart quantityMustBeAnIntegerValue ]! !
+
+
+!ShoppingCart methodsFor: 'adding' stamp: 'AB 6/1/2019 16:17:51'!
+add: anItem
+
+	(catalogue includes: anItem) ifFalse: [ self error: ShoppingCart catalogueDoestNotIncludeItem ].
+
+	^ items add: anItem! !
+
+!ShoppingCart methodsFor: 'adding' stamp: 'AB 6/1/2019 16:18:12'!
+add: anItem quantity: aQuantity
+
+	self assertQuantityIsAnIntegerValueAndBiggerThenZero: aQuantity.
 	
 	^ aQuantity timesRepeat: [ self add: anItem ]! !
 
@@ -205,10 +233,11 @@ quantityOf: anItem
 	^ items occurrencesOf: anItem.! !
 
 
-!ShoppingCart methodsFor: 'initialization' stamp: 'AB 5/31/2019 11:10:11'!
-initialize
+!ShoppingCart methodsFor: 'initialization' stamp: 'AB 6/1/2019 16:06:08'!
+initializeWith: aCatalogue
 
 	items _ OrderedCollection new.
+	catalogue _ aCatalogue.
 	super initialize! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
@@ -216,6 +245,11 @@ initialize
 !classDefinition: 'ShoppingCart class' category: #'TusLibros.com'!
 ShoppingCart class
 	instanceVariableNames: ''!
+
+!ShoppingCart class methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:10:42'!
+catalogueDoestNotIncludeItem
+
+	^ 'Catalogue does not include item'! !
 
 !ShoppingCart class methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 15:29:39'!
 quantityMustBeAnIntegerValue
@@ -226,3 +260,8 @@ quantityMustBeAnIntegerValue
 quantityMustBeBiggerThanOneError
 	
 	^ 'Quantity must be bigger than one.'! !
+
+!ShoppingCart class methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:05:47'!
+with: aCatalogue
+	
+	^ self new initializeWith: aCatalogue! !
