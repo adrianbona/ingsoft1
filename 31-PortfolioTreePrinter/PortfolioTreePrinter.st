@@ -124,7 +124,7 @@ test07PrintsTransferNetWhenHavingATransferenceToTheAccount
 	
 	self assert: aValue printString equals: lines next! !
 
-!AccountReportTest methodsFor: 'testing' stamp: 'AB 5/28/2019 20:25:23'!
+!AccountReportTest methodsFor: 'testing' stamp: 'JR 5/31/2019 20:34:39'!
 test08PrintsTransferNetWhenHavingATransferenceFromTheAccount
 
 	| aValue anAccount anotherAccount lines aReport |
@@ -140,7 +140,7 @@ test08PrintsTransferNetWhenHavingATransferenceFromTheAccount
 	lines _ ReadStream on: aReport value.
 	
 	self assert: -50 printString equals: lines next.
-	self assert: 100 equals: anAccount balance! !
+	self assert: 0 equals: anAccount balance! !
 
 
 !classDefinition: #PortfolioTest category: #PortfolioTreePrinter!
@@ -533,18 +533,27 @@ AccountReport subclass: #AccountSummary
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
-!AccountSummary methodsFor: 'value' stamp: 'AB 5/28/2019 19:48:28'!
+!AccountSummary methodsFor: 'value' stamp: 'JR 5/31/2019 21:17:29'!
 value
 
 	| lines |
 
 	lines _ OrderedCollection new.
 
-	asset transactions do: [ :transaction | lines add: transaction print ].
+	asset transactions do: [ :transaction | lines add: (self print: transaction) ].
 
 	lines add: 'Balance = ', asset balance printString.
 	
 	^ lines! !
+
+
+!AccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 5/31/2019 21:24:08'!
+print: aTransaction
+	
+	(aTransaction isKindOf: Deposit ) ifTrue: [^ 'Depósito por ', aTransaction value printString, '.'].
+	(aTransaction isKindOf: TransferenceDeposit ) ifTrue: [^ 'Entrada por transferencia de ', aTransaction value printString, '.'].
+	(aTransaction isKindOf: TransferenceWithdraw ) ifTrue: [^ 'Salida por transferencia de ', aTransaction value printString, '.'].
+	(aTransaction isKindOf: Withdraw ) ifTrue: [^ 'Extracción por ', aTransaction value printString, '.'].! !
 
 
 !classDefinition: #TransferNet category: #PortfolioTreePrinter!
@@ -592,11 +601,6 @@ affectTransferNet: aTransferNet
 	self subclassResponsibility ! !
 
 
-!AccountTransaction methodsFor: 'printing' stamp: 'AB 5/28/2019 19:24:09'!
-print
-
-	^ self description! !
-
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'AccountTransaction class' category: #PortfolioTreePrinter!
@@ -643,11 +647,6 @@ affectTransferNet: aTransferNet
 
 	^ aTransferNet ! !
 
-
-!Deposit methodsFor: 'printing' stamp: 'AB 5/28/2019 19:30:20'!
-description
-
-	^ 'Depósito por ' , value printString, '.'! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -697,11 +696,6 @@ transference
 	^ transference! !
 
 
-!TransferenceDeposit methodsFor: 'printing' stamp: 'AB 5/28/2019 19:30:50'!
-description
-
-	^ 'Entrada por transferencia de ' , transference value printString, '.'! !
-
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'TransferenceDeposit class' category: #PortfolioTreePrinter!
@@ -750,11 +744,6 @@ value
 	^ transference value! !
 
 
-!TransferenceWithdraw methodsFor: 'printing' stamp: 'AB 5/28/2019 19:32:27'!
-description
-
-	^ 'Salida por transferencia de ' , transference value printString, '.'! !
-
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'TransferenceWithdraw class' category: #PortfolioTreePrinter!
@@ -796,11 +785,6 @@ affectTransferNet: aTransferNet
 
 	^ aTransferNet ! !
 
-
-!Withdraw methodsFor: 'printing' stamp: 'AB 5/28/2019 19:26:52'!
-description
-
-	^ 'Extracción por ' , value printString, '.'! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1063,8 +1047,8 @@ value
 	^ value! !
 
 
-!Transference methodsFor: 'initialization' stamp: 'AB 5/28/2019 16:57:21'!
-initializeFor: aValue from: originAccount to:destinationAccount
+!Transference methodsFor: 'initialization' stamp: 'JR 5/31/2019 20:42:50'!
+initializeFor: aValue from: originAccount to: destinationAccount
 
 	value _ aValue.
 
@@ -1073,8 +1057,7 @@ initializeFor: aValue from: originAccount to:destinationAccount
 
 	to _ TransferenceDeposit from: self.
 	destinationAccount register: to.
-		
-	^ self! !
+! !
 
 
 !Transference methodsFor: 'transaction' stamp: 'AB 5/28/2019 17:15:41'!
