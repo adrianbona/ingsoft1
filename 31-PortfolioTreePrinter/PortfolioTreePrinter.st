@@ -563,18 +563,27 @@ AccountReport subclass: #TransferNet
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
-!TransferNet methodsFor: 'value' stamp: 'AB 5/28/2019 20:13:56'!
+!TransferNet methodsFor: 'value' stamp: 'JR 5/31/2019 22:34:42'!
 value
 
 	| lines transferNet |
 
 	lines _ OrderedCollection new.
 
-	transferNet _ asset transactions inject: 0 into: [ :currentNet :transaction | transaction affectTransferNet: currentNet ].
+	transferNet _ asset transactions inject: 0 into: [ :currentNet :transaction | self affectNet: currentNet withTransaction: transaction ].
 
 	lines add: transferNet printString.
 	
 	^ lines! !
+
+
+!TransferNet methodsFor: 'as yet unclassified' stamp: 'JR 5/31/2019 22:37:02'!
+affectNet: aTransferNet withTransaction: aTransaction
+	
+	(aTransaction isKindOf: Deposit ) ifTrue: [^ aTransferNet ].
+	(aTransaction isKindOf: TransferenceDeposit ) ifTrue: [^ aTransferNet + aTransaction value].
+	(aTransaction isKindOf: TransferenceWithdraw ) ifTrue: [^ aTransferNet - aTransaction value ].
+	(aTransaction isKindOf: Withdraw ) ifTrue: [^ aTransferNet ].! !
 
 
 !classDefinition: #AccountTransaction category: #PortfolioTreePrinter!
@@ -642,11 +651,6 @@ affectBalance: aBalance
 
 	^ aBalance + value! !
 
-!Deposit methodsFor: 'balance' stamp: 'AB 5/28/2019 20:05:51'!
-affectTransferNet: aTransferNet
-
-	^ aTransferNet ! !
-
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -677,11 +681,6 @@ initializeFrom: aTransference
 affectBalance: aBalance
 
 	^ aBalance + self value! !
-
-!TransferenceDeposit methodsFor: 'balance' stamp: 'AB 5/28/2019 20:08:07'!
-affectTransferNet: aTransferNet
-
-	^ aTransferNet + self value! !
 
 
 !TransferenceDeposit methodsFor: 'value' stamp: 'AB 5/28/2019 16:43:04'!
@@ -725,11 +724,6 @@ initializeFrom: aTransference
 affectBalance: aBalance
 
 	^ aBalance - transference value! !
-
-!TransferenceWithdraw methodsFor: 'balance' stamp: 'AB 5/28/2019 20:09:37'!
-affectTransferNet: aTransferNet
-
-	^ aTransferNet - transference value! !
 
 
 !TransferenceWithdraw methodsFor: 'transaction' stamp: 'AB 5/28/2019 17:15:06'!
@@ -779,11 +773,6 @@ value
 affectBalance: aBalance
 
 	^ aBalance - value! !
-
-!Withdraw methodsFor: 'balance' stamp: 'AB 5/28/2019 20:06:16'!
-affectTransferNet: aTransferNet
-
-	^ aTransferNet ! !
 
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
