@@ -533,43 +533,48 @@ AccountReport subclass: #AccountSummary
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
-!AccountSummary methodsFor: 'value' stamp: 'JR 5/31/2019 21:17:29'!
+!AccountSummary methodsFor: 'value' stamp: 'JR 6/1/2019 18:59:02'!
 value
 
 	| lines |
 
 	lines _ OrderedCollection new.
 
-	asset transactions do: [ :transaction | lines add: (self print: transaction) ].
+	asset transactions do: [ :aTransaction | lines add: (self descriptionFor: aTransaction) ].
 
 	lines add: 'Balance = ', asset balance printString.
 	
 	^ lines! !
 
 
-!AccountSummary methodsFor: 'printing' stamp: 'AB 6/1/2019 16:59:01'!
-print: aTransaction
+!AccountSummary methodsFor: 'descriptions' stamp: 'JR 6/1/2019 18:59:02'!
+descriptionFor: aTransaction
 
-	^ (TransactionDescriptionPrinter for: aTransaction) printFor: self
-! !
+	^ (TransactionReportDispatcher 
+		for: aTransaction
+		with: [ self descriptionForADeposit: aTransaction ]
+		with: [ self descriptionForAWithdraw: aTransaction ]
+		with: [ self descriptionForATransferenceDeposit: aTransaction ]
+		with: [ self descriptionForATransferenceWithdraw: aTransaction ]) execute 
+	! !
 
-!AccountSummary methodsFor: 'printing' stamp: 'AB 6/1/2019 16:23:45'!
-printDescriptionForADeposit: aDeposit
+!AccountSummary methodsFor: 'descriptions' stamp: 'JR 6/1/2019 18:54:08'!
+descriptionForADeposit: aDeposit
 
 	^ 'Depósito por ', aDeposit value printString, '.'! !
 
-!AccountSummary methodsFor: 'printing' stamp: 'AB 6/1/2019 16:23:41'!
-printDescriptionForATransferenceDeposit: aTransferenceDeposit
+!AccountSummary methodsFor: 'descriptions' stamp: 'JR 6/1/2019 18:54:15'!
+descriptionForATransferenceDeposit: aTransferenceDeposit
 
 	^ 'Entrada por transferencia de ', aTransferenceDeposit value printString, '.'! !
 
-!AccountSummary methodsFor: 'printing' stamp: 'AB 6/1/2019 16:23:38'!
-printDescriptionForATransferenceWithdraw: aTransferenceWithdraw
+!AccountSummary methodsFor: 'descriptions' stamp: 'JR 6/1/2019 18:54:24'!
+descriptionForATransferenceWithdraw: aTransferenceWithdraw
 
 	^ 'Salida por transferencia de ', aTransferenceWithdraw value printString, '.'! !
 
-!AccountSummary methodsFor: 'printing' stamp: 'AB 6/1/2019 16:23:32'!
-printDescriptionForAWithdraw: aWithdraw
+!AccountSummary methodsFor: 'descriptions' stamp: 'JR 6/1/2019 18:54:31'!
+descriptionForAWithdraw: aWithdraw
 	
 	^ 'Extracción por ', aWithdraw value printString, '.'! !
 
@@ -581,41 +586,47 @@ AccountReport subclass: #TransferNet
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
-!TransferNet methodsFor: 'value' stamp: 'JR 5/31/2019 22:34:42'!
+!TransferNet methodsFor: 'value' stamp: 'JR 6/1/2019 19:01:45'!
 value
 
 	| lines transferNet |
 
 	lines _ OrderedCollection new.
 
-	transferNet _ asset transactions inject: 0 into: [ :currentNet :transaction | self affectNet: currentNet withTransaction: transaction ].
+	transferNet _ asset transactions inject: 0 into: [ :currentNet :aTransaction | self affectTransferNet: currentNet using: aTransaction ].
 
 	lines add: transferNet printString.
 	
 	^ lines! !
 
 
-!TransferNet methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:06:18'!
-affectNet: aTransferNet withTransaction: aTransaction
-	
-	^ (TransactionTransferNetValue for: aTransaction) printFor: self affecting: aTransferNet! !
+!TransferNet methodsFor: 'affect transfer net' stamp: 'JR 6/1/2019 19:05:22'!
+affectTransferNet: aTransferNet using: aTransaction 
 
-!TransferNet methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:04:24'!
+	^ (TransactionReportDispatcher 
+		for: aTransaction
+		with: [ self affectTransferWith: aTransferNet forDeposit: aTransaction ]
+		with: [ self affectTransferWith: aTransferNet forWithdraw: aTransaction ]
+		with: [ self affectTransferWith: aTransferNet forTransferenceDeposit: aTransaction ]
+		with: [ self affectTransferWith: aTransferNet forTransferenceWithdraw: aTransaction ]) execute 
+	! !
+
+!TransferNet methodsFor: 'affect transfer net' stamp: 'JR 6/1/2019 19:05:22'!
 affectTransferWith: aTransferNet forDeposit: aDeposit
 	
 	^ aTransferNet! !
 
-!TransferNet methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:05:44'!
+!TransferNet methodsFor: 'affect transfer net' stamp: 'JR 6/1/2019 18:05:44'!
 affectTransferWith: aTransferNet forTransferenceDeposit: aTransferenceDeposit
 	
 	^ aTransferNet + aTransferenceDeposit value! !
 
-!TransferNet methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:06:11'!
+!TransferNet methodsFor: 'affect transfer net' stamp: 'JR 6/1/2019 18:06:11'!
 affectTransferWith: aTransferNet forTransferenceWithdraw: aTransferenceWithdraw
 	
 	^ aTransferNet - aTransferenceWithdraw value! !
 
-!TransferNet methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:05:02'!
+!TransferNet methodsFor: 'affect transfer net' stamp: 'JR 6/1/2019 18:05:02'!
 affectTransferWith: aTransferNet forWithdraw: aWithdraw
 
 	^ aTransferNet! !
@@ -1093,253 +1104,130 @@ addedTo: aPortfolio
 	! !
 
 
-!classDefinition: #TransactionDescriptionPrinter category: #PortfolioTreePrinter!
-Object subclass: #TransactionDescriptionPrinter
-	instanceVariableNames: 'transaction'
+!classDefinition: #TransactionReportDispatcher category: #PortfolioTreePrinter!
+Object subclass: #TransactionReportDispatcher
+	instanceVariableNames: 'transaction block'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
-!TransactionDescriptionPrinter methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:48:19'!
-initializeWith: aTransaction
+!TransactionReportDispatcher methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:38:09'!
+execute
 
-	transaction _ aTransaction! !
+	^ block value.! !
 
-!TransactionDescriptionPrinter methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:53:33'!
-printFor: aReport
+!TransactionReportDispatcher methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:50:32'!
+initializeWith: aTransaction with: aDepositBlock with: aWithdrawBlock with: aTransferenceDepositBlock with: aTransferenceWithdrawBlock
 
 	self subclassResponsibility ! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-!classDefinition: 'TransactionDescriptionPrinter class' category: #PortfolioTreePrinter!
-TransactionDescriptionPrinter class
+!classDefinition: 'TransactionReportDispatcher class' category: #PortfolioTreePrinter!
+TransactionReportDispatcher class
 	instanceVariableNames: ''!
 
-!TransactionDescriptionPrinter class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 17:11:24'!
-for: aTransaction
+!TransactionReportDispatcher class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:50:23'!
+for: aTransaction with: aDepositBlock with: aWithdrawBlock with: aTransferenceDepositBlock with: aTransferenceWithdrawBlock
 
 	^ (self subclasses
-		detect: [ :aTransactionDescriptionPrinter |
-			aTransactionDescriptionPrinter knowsHowToPrintADescriptionFor: aTransaction ]
-		ifNone: [ self error: 'No transaction description printer available' ]) new initializeWith: aTransaction.! !
+		detect: [ :aTransactionDispatcher |
+			aTransactionDispatcher handles: aTransaction ]
+		ifNone: [ self error: 'No transaction transfer net available' ]) new initializeWith: aTransaction with: aDepositBlock with: aWithdrawBlock with: aTransferenceDepositBlock with: aTransferenceWithdrawBlock! !
 
 
-!classDefinition: #DepositDescriptionPrinter category: #PortfolioTreePrinter!
-TransactionDescriptionPrinter subclass: #DepositDescriptionPrinter
+!classDefinition: #DepositReportDispatcher category: #PortfolioTreePrinter!
+TransactionReportDispatcher subclass: #DepositReportDispatcher
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
-!DepositDescriptionPrinter methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:59:38'!
-printFor: aReport
+!DepositReportDispatcher methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:50:23'!
+initializeWith: aTransaction with: aDepositBlock with: aWithdrawBlock with: transferenceDepositBlock with: transferenceWithdrawBlock
 
-	^ aReport printDescriptionForADeposit: transaction! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'DepositDescriptionPrinter class' category: #PortfolioTreePrinter!
-DepositDescriptionPrinter class
-	instanceVariableNames: ''!
-
-!DepositDescriptionPrinter class methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:45:49'!
-knowsHowToPrintADescriptionFor: aTransaction
-
-	^ aTransaction isDeposit! !
-
-
-!classDefinition: #TransferenceDepositDescriptionPrinter category: #PortfolioTreePrinter!
-TransactionDescriptionPrinter subclass: #TransferenceDepositDescriptionPrinter
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PortfolioTreePrinter'!
-
-!TransferenceDepositDescriptionPrinter methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:59:47'!
-printFor: aReport
-
-	^ aReport printDescriptionForATransferenceDeposit: transaction! !
+	block _ aDepositBlock ! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-!classDefinition: 'TransferenceDepositDescriptionPrinter class' category: #PortfolioTreePrinter!
-TransferenceDepositDescriptionPrinter class
+!classDefinition: 'DepositReportDispatcher class' category: #PortfolioTreePrinter!
+DepositReportDispatcher class
 	instanceVariableNames: ''!
 
-!TransferenceDepositDescriptionPrinter class methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:46:04'!
-knowsHowToPrintADescriptionFor: aTransaction
-
-	^ aTransaction isTransferenceDeposit! !
-
-
-!classDefinition: #TransferenceWithdrawDescriptionPrinter category: #PortfolioTreePrinter!
-TransactionDescriptionPrinter subclass: #TransferenceWithdrawDescriptionPrinter
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PortfolioTreePrinter'!
-
-!TransferenceWithdrawDescriptionPrinter methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:59:53'!
-printFor: aReport
-
-	^ aReport printDescriptionForATransferenceWithdraw: transaction! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'TransferenceWithdrawDescriptionPrinter class' category: #PortfolioTreePrinter!
-TransferenceWithdrawDescriptionPrinter class
-	instanceVariableNames: ''!
-
-!TransferenceWithdrawDescriptionPrinter class methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:46:19'!
-knowsHowToPrintADescriptionFor: aTransaction
-
-	^ aTransaction isTransferenceWithdraw! !
-
-
-!classDefinition: #WithdrawDescriptionPrinter category: #PortfolioTreePrinter!
-TransactionDescriptionPrinter subclass: #WithdrawDescriptionPrinter
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PortfolioTreePrinter'!
-
-!WithdrawDescriptionPrinter methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:59:59'!
-printFor: aReport
-
-	^ aReport printDescriptionForAWithdraw: transaction! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'WithdrawDescriptionPrinter class' category: #PortfolioTreePrinter!
-WithdrawDescriptionPrinter class
-	instanceVariableNames: ''!
-
-!WithdrawDescriptionPrinter class methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:46:28'!
-knowsHowToPrintADescriptionFor: aTransaction
-
-	^ aTransaction isWithdraw! !
-
-
-!classDefinition: #TransactionTransferNetValue category: #PortfolioTreePrinter!
-Object subclass: #TransactionTransferNetValue
-	instanceVariableNames: 'transaction'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PortfolioTreePrinter'!
-
-!TransactionTransferNetValue methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 17:54:56'!
-initializeWith: aTransaction
-
-	transaction _ aTransaction! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'TransactionTransferNetValue class' category: #PortfolioTreePrinter!
-TransactionTransferNetValue class
-	instanceVariableNames: ''!
-
-!TransactionTransferNetValue class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 17:54:41'!
-for: aTransaction
-
-	^ (self subclasses
-		detect: [ :aTransactionTransferNetValue |
-			aTransactionTransferNetValue knowsHowToPrintADescriptionFor: aTransaction ]
-		ifNone: [ self error: 'No transaction transfer net available' ]) new initializeWith: aTransaction.! !
-
-
-!classDefinition: #DepositTransferNet category: #PortfolioTreePrinter!
-TransactionTransferNetValue subclass: #DepositTransferNet
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PortfolioTreePrinter'!
-
-!DepositTransferNet methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:07:38'!
-printFor: aReport affecting: aTransferNet
-
-	^ aReport affectTransferWith: aTransferNet forDeposit: transaction! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'DepositTransferNet class' category: #PortfolioTreePrinter!
-DepositTransferNet class
-	instanceVariableNames: ''!
-
-!DepositTransferNet class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 17:58:19'!
-knowsHowToPrintADescriptionFor: aTransaction
+!DepositReportDispatcher class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:47:16'!
+handles: aTransaction
 
 	^ aTransaction isDeposit ! !
 
 
-!classDefinition: #TransferenceDepositTransferNet category: #PortfolioTreePrinter!
-TransactionTransferNetValue subclass: #TransferenceDepositTransferNet
+!classDefinition: #TransferenceDepositReportDispatcher category: #PortfolioTreePrinter!
+TransactionReportDispatcher subclass: #TransferenceDepositReportDispatcher
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
-!TransferenceDepositTransferNet methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:07:56'!
-printFor: aReport affecting: aTransferNet
+!TransferenceDepositReportDispatcher methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:50:23'!
+initializeWith: aTransaction with: aDepositBlock with: aWithdrawBlock with: transferenceDepositBlock with: transferenceWithdrawBlock
 
-	^ aReport affectTransferWith: aTransferNet forTransferenceDeposit: transaction! !
+	block _ transferenceDepositBlock ! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-!classDefinition: 'TransferenceDepositTransferNet class' category: #PortfolioTreePrinter!
-TransferenceDepositTransferNet class
+!classDefinition: 'TransferenceDepositReportDispatcher class' category: #PortfolioTreePrinter!
+TransferenceDepositReportDispatcher class
 	instanceVariableNames: ''!
 
-!TransferenceDepositTransferNet class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 17:58:34'!
-knowsHowToPrintADescriptionFor: aTransaction
+!TransferenceDepositReportDispatcher class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:47:16'!
+handles: aTransaction
 
 	^ aTransaction isTransferenceDeposit ! !
 
 
-!classDefinition: #TransferenceWithdrawTransferNet category: #PortfolioTreePrinter!
-TransactionTransferNetValue subclass: #TransferenceWithdrawTransferNet
+!classDefinition: #TransferenceWithdrawReportDispatcher category: #PortfolioTreePrinter!
+TransactionReportDispatcher subclass: #TransferenceWithdrawReportDispatcher
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
-!TransferenceWithdrawTransferNet methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:08:06'!
-printFor: aReport affecting: aTransferNet
+!TransferenceWithdrawReportDispatcher methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:50:23'!
+initializeWith: aTransaction with: aDepositBlock with: aWithdrawBlock with: transferenceDepositBlock with: transferenceWithdrawBlock
 
-	^ aReport affectTransferWith: aTransferNet forTransferenceWithdraw: transaction! !
+	block _ transferenceWithdrawBlock ! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-!classDefinition: 'TransferenceWithdrawTransferNet class' category: #PortfolioTreePrinter!
-TransferenceWithdrawTransferNet class
+!classDefinition: 'TransferenceWithdrawReportDispatcher class' category: #PortfolioTreePrinter!
+TransferenceWithdrawReportDispatcher class
 	instanceVariableNames: ''!
 
-!TransferenceWithdrawTransferNet class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 17:58:41'!
-knowsHowToPrintADescriptionFor: aTransaction
+!TransferenceWithdrawReportDispatcher class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:47:16'!
+handles: aTransaction
 
 	^ aTransaction isTransferenceWithdraw ! !
 
 
-!classDefinition: #WithdrawTransferNet category: #PortfolioTreePrinter!
-TransactionTransferNetValue subclass: #WithdrawTransferNet
+!classDefinition: #WithdrawReportDispatcher category: #PortfolioTreePrinter!
+TransactionReportDispatcher subclass: #WithdrawReportDispatcher
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
-!WithdrawTransferNet methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:08:17'!
-printFor: aReport affecting: aTransferNet
+!WithdrawReportDispatcher methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:50:23'!
+initializeWith: aTransaction with: aDepositBlock with: aWithdrawBlock with: transferenceDepositBlock with: transferenceWithdrawBlock
 
-	^ aReport affectTransferWith: aTransferNet forWithdraw: transaction! !
+	block _ aWithdrawBlock ! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-!classDefinition: 'WithdrawTransferNet class' category: #PortfolioTreePrinter!
-WithdrawTransferNet class
+!classDefinition: 'WithdrawReportDispatcher class' category: #PortfolioTreePrinter!
+WithdrawReportDispatcher class
 	instanceVariableNames: ''!
 
-!WithdrawTransferNet class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 17:58:51'!
-knowsHowToPrintADescriptionFor: aTransaction
+!WithdrawReportDispatcher class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:47:16'!
+handles: aTransaction
 
 	^ aTransaction isWithdraw! !
 
