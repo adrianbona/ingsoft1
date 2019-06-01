@@ -547,13 +547,31 @@ value
 	^ lines! !
 
 
-!AccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 5/31/2019 21:24:08'!
+!AccountSummary methodsFor: 'printing' stamp: 'AB 6/1/2019 16:59:01'!
 print: aTransaction
+
+	^ (TransactionDescriptionPrinter for: aTransaction) printFor: self
+! !
+
+!AccountSummary methodsFor: 'printing' stamp: 'AB 6/1/2019 16:23:45'!
+printDescriptionForADeposit: aDeposit
+
+	^ 'Depósito por ', aDeposit value printString, '.'! !
+
+!AccountSummary methodsFor: 'printing' stamp: 'AB 6/1/2019 16:23:41'!
+printDescriptionForATransferenceDeposit: aTransferenceDeposit
+
+	^ 'Entrada por transferencia de ', aTransferenceDeposit value printString, '.'! !
+
+!AccountSummary methodsFor: 'printing' stamp: 'AB 6/1/2019 16:23:38'!
+printDescriptionForATransferenceWithdraw: aTransferenceWithdraw
+
+	^ 'Salida por transferencia de ', aTransferenceWithdraw value printString, '.'! !
+
+!AccountSummary methodsFor: 'printing' stamp: 'AB 6/1/2019 16:23:32'!
+printDescriptionForAWithdraw: aWithdraw
 	
-	(aTransaction isKindOf: Deposit ) ifTrue: [^ 'Depósito por ', aTransaction value printString, '.'].
-	(aTransaction isKindOf: TransferenceDeposit ) ifTrue: [^ 'Entrada por transferencia de ', aTransaction value printString, '.'].
-	(aTransaction isKindOf: TransferenceWithdraw ) ifTrue: [^ 'Salida por transferencia de ', aTransaction value printString, '.'].
-	(aTransaction isKindOf: Withdraw ) ifTrue: [^ 'Extracción por ', aTransaction value printString, '.'].! !
+	^ 'Extracción por ', aWithdraw value printString, '.'! !
 
 
 !classDefinition: #TransferNet category: #PortfolioTreePrinter!
@@ -604,11 +622,26 @@ affectBalance: aBalance
 
 	self subclassResponsibility ! !
 
-!AccountTransaction methodsFor: 'balance' stamp: 'AB 5/28/2019 20:05:27'!
-affectTransferNet: aTransferNet
 
-	self subclassResponsibility ! !
+!AccountTransaction methodsFor: 'comparing' stamp: 'AB 6/1/2019 16:37:23'!
+isDeposit
 
+	^ false! !
+
+!AccountTransaction methodsFor: 'comparing' stamp: 'AB 6/1/2019 16:37:42'!
+isTransferenceDeposit
+
+	^ false! !
+
+!AccountTransaction methodsFor: 'comparing' stamp: 'AB 6/1/2019 16:37:49'!
+isTransferenceWithdraw
+
+	^ false! !
+
+!AccountTransaction methodsFor: 'comparing' stamp: 'AB 6/1/2019 16:37:30'!
+isWithdraw
+
+	^ false! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -651,6 +684,11 @@ affectBalance: aBalance
 
 	^ aBalance + value! !
 
+
+!Deposit methodsFor: 'comparing' stamp: 'AB 6/1/2019 16:38:03'!
+isDeposit
+
+	^ true! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -695,6 +733,11 @@ transference
 	^ transference! !
 
 
+!TransferenceDeposit methodsFor: 'comparing' stamp: 'AB 6/1/2019 16:38:29'!
+isTransferenceDeposit
+
+	^ true! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'TransferenceDeposit class' category: #PortfolioTreePrinter!
@@ -732,11 +775,16 @@ transference
 	^ transference! !
 
 
+!TransferenceWithdraw methodsFor: 'comparing' stamp: 'AB 6/1/2019 16:39:22'!
+isTransferenceWithdraw
+
+	^ true! !
+
+
 !TransferenceWithdraw methodsFor: 'value' stamp: 'AB 5/28/2019 16:43:24'!
 value
 
 	^ transference value! !
-
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -774,6 +822,11 @@ affectBalance: aBalance
 
 	^ aBalance - value! !
 
+
+!Withdraw methodsFor: 'comparing' stamp: 'AB 6/1/2019 16:39:37'!
+isWithdraw
+
+	^ true! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1021,6 +1074,134 @@ isComposedBy: anAccount
 addedTo: aPortfolio 
 	
 	! !
+
+
+!classDefinition: #TransactionDescriptionPrinter category: #PortfolioTreePrinter!
+Object subclass: #TransactionDescriptionPrinter
+	instanceVariableNames: 'transaction'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!TransactionDescriptionPrinter methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:48:19'!
+initializeWith: aTransaction
+
+	transaction _ aTransaction! !
+
+!TransactionDescriptionPrinter methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:53:33'!
+printFor: aReport
+
+	self subclassResponsibility ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TransactionDescriptionPrinter class' category: #PortfolioTreePrinter!
+TransactionDescriptionPrinter class
+	instanceVariableNames: ''!
+
+!TransactionDescriptionPrinter class methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:58:26'!
+for: aTransaction
+
+	^ (self subclasses
+		detect: [ :aTransactionDescriptionPrinter |
+			aTransactionDescriptionPrinter knowsHowToPrintADescriptionFor: aTransaction ]
+		ifNone: [ self error: 'No transaction description printer available' ]) new! !
+
+
+!classDefinition: #DepositDescriptionPrinter category: #PortfolioTreePrinter!
+TransactionDescriptionPrinter subclass: #DepositDescriptionPrinter
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!DepositDescriptionPrinter methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:59:38'!
+printFor: aReport
+
+	^ aReport printDescriptionForADeposit: transaction! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'DepositDescriptionPrinter class' category: #PortfolioTreePrinter!
+DepositDescriptionPrinter class
+	instanceVariableNames: ''!
+
+!DepositDescriptionPrinter class methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:45:49'!
+knowsHowToPrintADescriptionFor: aTransaction
+
+	^ aTransaction isDeposit! !
+
+
+!classDefinition: #TransferenceDepositDescriptionPrinter category: #PortfolioTreePrinter!
+TransactionDescriptionPrinter subclass: #TransferenceDepositDescriptionPrinter
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!TransferenceDepositDescriptionPrinter methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:59:47'!
+printFor: aReport
+
+	^ aReport printDescriptionForATransferenceDeposit: transaction! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TransferenceDepositDescriptionPrinter class' category: #PortfolioTreePrinter!
+TransferenceDepositDescriptionPrinter class
+	instanceVariableNames: ''!
+
+!TransferenceDepositDescriptionPrinter class methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:46:04'!
+knowsHowToPrintADescriptionFor: aTransaction
+
+	^ aTransaction isTransferenceDeposit! !
+
+
+!classDefinition: #TransferenceWithdrawDescriptionPrinter category: #PortfolioTreePrinter!
+TransactionDescriptionPrinter subclass: #TransferenceWithdrawDescriptionPrinter
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!TransferenceWithdrawDescriptionPrinter methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:59:53'!
+printFor: aReport
+
+	^ aReport printDescriptionForATransferenceWithdraw: transaction! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TransferenceWithdrawDescriptionPrinter class' category: #PortfolioTreePrinter!
+TransferenceWithdrawDescriptionPrinter class
+	instanceVariableNames: ''!
+
+!TransferenceWithdrawDescriptionPrinter class methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:46:19'!
+knowsHowToPrintADescriptionFor: aTransaction
+
+	^ aTransaction isTransferenceWithdraw! !
+
+
+!classDefinition: #WithdrawDescriptionPrinter category: #PortfolioTreePrinter!
+TransactionDescriptionPrinter subclass: #WithdrawDescriptionPrinter
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!WithdrawDescriptionPrinter methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:59:59'!
+printFor: aReport
+
+	^ aReport printDescriptionForAWithdraw: transaction! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'WithdrawDescriptionPrinter class' category: #PortfolioTreePrinter!
+WithdrawDescriptionPrinter class
+	instanceVariableNames: ''!
+
+!WithdrawDescriptionPrinter class methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:46:28'!
+knowsHowToPrintADescriptionFor: aTransaction
+
+	^ aTransaction isWithdraw! !
 
 
 !classDefinition: #Transference category: #PortfolioTreePrinter!
