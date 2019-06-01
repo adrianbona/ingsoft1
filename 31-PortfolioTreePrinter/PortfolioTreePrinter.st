@@ -142,6 +142,69 @@ test08PrintsTransferNetWhenHavingATransferenceFromTheAccount
 	self assert: -50 printString equals: lines next.
 	self assert: 0 equals: anAccount balance! !
 
+!AccountReportTest methodsFor: 'testing' stamp: 'JR 6/1/2019 19:10:50'!
+test09PrintAPortfolioWithADepositOf50
+
+	| anAccount lines aReport value aPortfolio |
+	
+	value _ 50.
+	anAccount _ ReceptiveAccount new.
+	Deposit register: value on: anAccount.
+	aPortfolio _ Portfolio with: anAccount.
+	aReport _ AccountSummary for: aPortfolio.
+	
+	lines _ ReadStream on: aReport value.
+	
+	self assert: 'Depósito por ', value printString, '.' equals: lines next! !
+
+!AccountReportTest methodsFor: 'testing' stamp: 'JR 6/1/2019 19:12:24'!
+test10PrintsTransferNetWhenHavingATransferenceFromTheAccount
+
+	| aValue anAccount anotherAccount lines aReport aPortfolio |
+	
+	anAccount _ ReceptiveAccount new.
+	anotherAccount _ ReceptiveAccount new.
+	
+	aValue _ 50.
+	Deposit register: aValue on: anAccount.
+	Transference register: aValue from: anAccount to: anotherAccount.
+	aPortfolio _ Portfolio with: anAccount.
+	aReport _ TransferNet for: aPortfolio.
+	lines _ ReadStream on: aReport value.
+	
+	self assert: -50 printString equals: lines next.
+	self assert: 0 equals: aPortfolio balance! !
+
+!AccountReportTest methodsFor: 'testing' stamp: 'JR 6/1/2019 19:47:27'!
+test11PrintsTreeStructureWithOneLevel
+
+	| familyPortfolio aReport lines |
+
+	familyPortfolio _ Portfolio named: 'Portfolio de la familia'.
+
+	aReport _ TreeAccountSummary for: familyPortfolio.
+
+	lines _ ReadStream on: aReport value.
+	
+	self assert: 'Portfolio de la familia' equals: lines next.! !
+
+!AccountReportTest methodsFor: 'testing' stamp: 'JR 6/1/2019 20:40:24'!
+test12PrintsTreeStructureWithTwoLevels
+
+	| childrenPortfolio familyPortfolio aReport lines myAccount |
+	
+	childrenPortfolio _ Portfolio named: 'Portfolio de hijos'.
+	myAccount _ ReceptiveAccount named: 'Cuenta mia'.
+	familyPortfolio _ Portfolio named: 'Portfolio de la familia' with: myAccount with: childrenPortfolio.
+	
+	aReport _ TreeAccountSummary for: familyPortfolio.
+
+	lines _ ReadStream on: aReport value.
+	
+	self assert: 'Portfolio de la familia' equals: lines next.
+	self assert: '    Cuenta mia' equals: lines next.
+	self assert: '    Portfolio de hijos' equals: lines next.! !
+
 
 !classDefinition: #PortfolioTest category: #PortfolioTreePrinter!
 TestCase subclass: #PortfolioTest
@@ -357,6 +420,24 @@ test15PortfolioCanNotIncludeAnyOfTheComposedAccountOfPortfolioToAdd
 		withExceptionDo: [ :anError | 
 			self assert: Portfolio canNotAddAccountErrorMessage equals: anError messageText.
 			self assert: portfolioToModify accountsIsEmpty ]! !
+
+!PortfolioTest methodsFor: 'tests' stamp: 'JR 6/1/2019 19:18:28'!
+test16NewPortfolioHasEmptyStringAsName
+
+	| aPortfolio |
+	
+	aPortfolio _ Portfolio new.
+	
+	self assert: '' equals: aPortfolio named.! !
+
+!PortfolioTest methodsFor: 'tests' stamp: 'JR 6/1/2019 19:20:17'!
+test17NewPortfolioHasNameIfGivenAsParameterInInstantiation
+
+	| aPortfolio |
+	
+	aPortfolio _ Portfolio named: 'Cuenta de Juan'.
+	
+	self assert: 'Cuenta de Juan' equals: aPortfolio named.! !
 
 
 !classDefinition: #ReceptiveAccountTest category: #PortfolioTreePrinter!
@@ -630,6 +711,55 @@ affectTransferWith: aTransferNet forTransferenceWithdraw: aTransferenceWithdraw
 affectTransferWith: aTransferNet forWithdraw: aWithdraw
 
 	^ aTransferNet! !
+
+
+!classDefinition: #TreeAccountSummary category: #PortfolioTreePrinter!
+AccountReport subclass: #TreeAccountSummary
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!TreeAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:32:23'!
+treeLevel: aFinancialAsset
+
+	^ (FinancialAssetReportDispatcher	
+		for: aFinancialAsset 
+		with: [ ^ self treeLevelPortfolioFor: aFinancialAsset ]
+		with: [ ^ self treeLevelReceptiveAccountFor: aFinancialAsset ]) execute
+! !
+
+!TreeAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:38:36'!
+treeLevel: aFinancialAsset indentationLevel: anIndentation
+
+	^ anIndentation, (FinancialAssetReportDispatcher	
+		for: aFinancialAsset 
+		with: [ self treeLevelPortfolioFor: aFinancialAsset ]
+		with: [ self treeLevelReceptiveAccountFor: aFinancialAsset ]) execute
+! !
+
+!TreeAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:30:10'!
+treeLevelPortfolioFor: aPortfolio
+
+	^ aPortfolio named.! !
+
+!TreeAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:29:28'!
+treeLevelReceptiveAccountFor: aReceptiveAccount
+
+	^ aReceptiveAccount named.! !
+
+!TreeAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:36:32'!
+value
+
+	| lines |
+
+	lines _ OrderedCollection new.
+	
+	lines add: asset named.
+
+	asset accounts do: [ :anAccount | lines add: (self treeLevel: anAccount indentationLevel: '    ') ].
+
+	^ lines! !
 
 
 !classDefinition: #AccountTransaction category: #PortfolioTreePrinter!
@@ -908,13 +1038,29 @@ addedTo: aPortfolio
 
 	self subclassResponsibility ! !
 
+
+!FinancialAsset methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:27:10'!
+isPortfolio
+
+	^ false! !
+
+!FinancialAsset methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:27:22'!
+isReceptiveAccount
+
+	^ false! !
+
 
 !classDefinition: #Portfolio category: #PortfolioTreePrinter!
 FinancialAsset subclass: #Portfolio
-	instanceVariableNames: 'accounts parents'
+	instanceVariableNames: 'accounts parents name'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
+
+!Portfolio methodsFor: 'accounts management' stamp: 'JR 6/1/2019 19:54:49'!
+accounts 
+
+	^ accounts copy! !
 
 !Portfolio methodsFor: 'accounts management' stamp: 'HAW 5/25/2019 11:49:20'!
 accountsIncludes: anAccount
@@ -951,11 +1097,12 @@ rootParents
 	^ rootParents! !
 
 
-!Portfolio methodsFor: 'initialization' stamp: 'HAW 5/25/2019 12:03:18'!
+!Portfolio methodsFor: 'initialization' stamp: 'JR 6/1/2019 19:25:03'!
 initialize
 
-	accounts := OrderedCollection new.
-	parents := OrderedCollection new.! !
+	accounts _ OrderedCollection new.
+	parents _ OrderedCollection new.
+	name _ ''! !
 
 
 !Portfolio methodsFor: 'balance' stamp: 'HAW 5/25/2019 11:19:36'!
@@ -1020,6 +1167,23 @@ signalCanNotAddAccount
 	
 	self error: self class canNotAddAccountErrorMessage! !
 
+
+!Portfolio methodsFor: 'naming' stamp: 'JR 6/1/2019 19:24:23'!
+named
+
+	^ name! !
+
+!Portfolio methodsFor: 'naming' stamp: 'JR 6/1/2019 19:23:06'!
+named: aName
+
+	name _ aName! !
+
+
+!Portfolio methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:27:51'!
+isPortfolio
+
+	^ true! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'Portfolio class' category: #PortfolioTreePrinter!
@@ -1030,6 +1194,30 @@ Portfolio class
 canNotAddAccountErrorMessage
 	
 	^'Can not add repeated account to a portfolio'! !
+
+!Portfolio class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 19:22:33'!
+named: aName
+
+	^self new 
+		named: aName;
+		yourself! !
+
+!Portfolio class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 19:52:04'!
+named: aName with: anAccount
+
+	^ self new
+		named: aName;
+		add: anAccount;
+		yourself! !
+
+!Portfolio class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 19:27:46'!
+named: aName with: anAccount with: anotherAccount
+
+	^ self new
+		named: aName;
+		add: anAccount;
+		add: anotherAccount;
+		yourself! !
 
 !Portfolio class methodsFor: 'as yet unclassified' stamp: 'HAW 5/25/2019 11:18:21'!
 with: anAccount
@@ -1049,7 +1237,7 @@ with: anAccount with: anotherAccount
 
 !classDefinition: #ReceptiveAccount category: #PortfolioTreePrinter!
 FinancialAsset subclass: #ReceptiveAccount
-	instanceVariableNames: 'transactions'
+	instanceVariableNames: 'transactions name'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
@@ -1102,6 +1290,116 @@ isComposedBy: anAccount
 addedTo: aPortfolio 
 	
 	! !
+
+
+!ReceptiveAccount methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:28:01'!
+isReceptiveAccount
+
+	^ true! !
+
+!ReceptiveAccount methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:41:52'!
+named
+
+	^ name ! !
+
+!ReceptiveAccount methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:41:29'!
+named: aName
+
+	name _ aName ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'ReceptiveAccount class' category: #PortfolioTreePrinter!
+ReceptiveAccount class
+	instanceVariableNames: ''!
+
+!ReceptiveAccount class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:41:12'!
+named: aName
+
+	^self new 
+		named: aName;
+		yourself! !
+
+
+!classDefinition: #FinancialAssetReportDispatcher category: #PortfolioTreePrinter!
+Object subclass: #FinancialAssetReportDispatcher
+	instanceVariableNames: 'asset block'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!FinancialAssetReportDispatcher methodsFor: 'initialization' stamp: 'JR 6/1/2019 20:13:35'!
+initializeWith: aFinancialAsset with: aReceptiveAccountBlock with: aPortfolioBlock
+
+	self subclassResponsibility ! !
+
+
+!FinancialAssetReportDispatcher methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:14:40'!
+execute
+
+	^ block value.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'FinancialAssetReportDispatcher class' category: #PortfolioTreePrinter!
+FinancialAssetReportDispatcher class
+	instanceVariableNames: ''!
+
+!FinancialAssetReportDispatcher class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:12:52'!
+for: aFinancialAsset with: aReceptiveAccountBlock with: aPortfolioBlock
+
+	^ (self subclasses
+		detect: [ :aFinancialAssetDispatcher |
+			aFinancialAssetDispatcher handles: aFinancialAsset ]
+		ifNone: [ self error: 'No financial asset available' ]) new initializeWith: aFinancialAsset with: aReceptiveAccountBlock with: aPortfolioBlock! !
+
+
+!classDefinition: #PortfolioReportDispatcher category: #PortfolioTreePrinter!
+FinancialAssetReportDispatcher subclass: #PortfolioReportDispatcher
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!PortfolioReportDispatcher methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:14:18'!
+initializeWith: aFinancialAsset with: aReceptiveAccountBlock with: aPortfolioBlock
+
+	block _ aPortfolioBlock ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'PortfolioReportDispatcher class' category: #PortfolioTreePrinter!
+PortfolioReportDispatcher class
+	instanceVariableNames: ''!
+
+!PortfolioReportDispatcher class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:26:08'!
+handles: aFinancialAsset
+
+	^ aFinancialAsset isPortfolio! !
+
+
+!classDefinition: #ReceptiveAccountReportDispatcher category: #PortfolioTreePrinter!
+FinancialAssetReportDispatcher subclass: #ReceptiveAccountReportDispatcher
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!ReceptiveAccountReportDispatcher methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:14:27'!
+initializeWith: aFinancialAsset with: aReceptiveAccountBlock with: aPortfolioBlock
+
+	block _ aReceptiveAccountBlock ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'ReceptiveAccountReportDispatcher class' category: #PortfolioTreePrinter!
+ReceptiveAccountReportDispatcher class
+	instanceVariableNames: ''!
+
+!ReceptiveAccountReportDispatcher class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:26:18'!
+handles: aFinancialAsset
+
+	^ aFinancialAsset isReceptiveAccount! !
 
 
 !classDefinition: #TransactionReportDispatcher category: #PortfolioTreePrinter!
