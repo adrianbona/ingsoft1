@@ -1099,13 +1099,13 @@ printFor: aReport
 TransactionDescriptionPrinter class
 	instanceVariableNames: ''!
 
-!TransactionDescriptionPrinter class methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:58:26'!
+!TransactionDescriptionPrinter class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 17:11:24'!
 for: aTransaction
 
 	^ (self subclasses
 		detect: [ :aTransactionDescriptionPrinter |
 			aTransactionDescriptionPrinter knowsHowToPrintADescriptionFor: aTransaction ]
-		ifNone: [ self error: 'No transaction description printer available' ]) new! !
+		ifNone: [ self error: 'No transaction description printer available' ]) new initializeWith: aTransaction.! !
 
 
 !classDefinition: #DepositDescriptionPrinter category: #PortfolioTreePrinter!
