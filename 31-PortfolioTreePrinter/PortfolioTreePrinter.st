@@ -595,13 +595,30 @@ value
 	^ lines! !
 
 
-!TransferNet methodsFor: 'as yet unclassified' stamp: 'JR 5/31/2019 22:37:02'!
+!TransferNet methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:06:18'!
 affectNet: aTransferNet withTransaction: aTransaction
 	
-	(aTransaction isKindOf: Deposit ) ifTrue: [^ aTransferNet ].
-	(aTransaction isKindOf: TransferenceDeposit ) ifTrue: [^ aTransferNet + aTransaction value].
-	(aTransaction isKindOf: TransferenceWithdraw ) ifTrue: [^ aTransferNet - aTransaction value ].
-	(aTransaction isKindOf: Withdraw ) ifTrue: [^ aTransferNet ].! !
+	^ (TransactionTransferNetValue for: aTransaction) printFor: self affecting: aTransferNet! !
+
+!TransferNet methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:04:24'!
+affectTransferWith: aTransferNet forDeposit: aDeposit
+	
+	^ aTransferNet! !
+
+!TransferNet methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:05:44'!
+affectTransferWith: aTransferNet forTransferenceDeposit: aTransferenceDeposit
+	
+	^ aTransferNet + aTransferenceDeposit value! !
+
+!TransferNet methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:06:11'!
+affectTransferWith: aTransferNet forTransferenceWithdraw: aTransferenceWithdraw
+	
+	^ aTransferNet - aTransferenceWithdraw value! !
+
+!TransferNet methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:05:02'!
+affectTransferWith: aTransferNet forWithdraw: aWithdraw
+
+	^ aTransferNet! !
 
 
 !classDefinition: #AccountTransaction category: #PortfolioTreePrinter!
@@ -1199,6 +1216,129 @@ WithdrawDescriptionPrinter class
 	instanceVariableNames: ''!
 
 !WithdrawDescriptionPrinter class methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:46:28'!
+knowsHowToPrintADescriptionFor: aTransaction
+
+	^ aTransaction isWithdraw! !
+
+
+!classDefinition: #TransactionTransferNetValue category: #PortfolioTreePrinter!
+Object subclass: #TransactionTransferNetValue
+	instanceVariableNames: 'transaction'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!TransactionTransferNetValue methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 17:54:56'!
+initializeWith: aTransaction
+
+	transaction _ aTransaction! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TransactionTransferNetValue class' category: #PortfolioTreePrinter!
+TransactionTransferNetValue class
+	instanceVariableNames: ''!
+
+!TransactionTransferNetValue class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 17:54:41'!
+for: aTransaction
+
+	^ (self subclasses
+		detect: [ :aTransactionTransferNetValue |
+			aTransactionTransferNetValue knowsHowToPrintADescriptionFor: aTransaction ]
+		ifNone: [ self error: 'No transaction transfer net available' ]) new initializeWith: aTransaction.! !
+
+
+!classDefinition: #DepositTransferNet category: #PortfolioTreePrinter!
+TransactionTransferNetValue subclass: #DepositTransferNet
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!DepositTransferNet methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:07:38'!
+printFor: aReport affecting: aTransferNet
+
+	^ aReport affectTransferWith: aTransferNet forDeposit: transaction! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'DepositTransferNet class' category: #PortfolioTreePrinter!
+DepositTransferNet class
+	instanceVariableNames: ''!
+
+!DepositTransferNet class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 17:58:19'!
+knowsHowToPrintADescriptionFor: aTransaction
+
+	^ aTransaction isDeposit ! !
+
+
+!classDefinition: #TransferenceDepositTransferNet category: #PortfolioTreePrinter!
+TransactionTransferNetValue subclass: #TransferenceDepositTransferNet
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!TransferenceDepositTransferNet methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:07:56'!
+printFor: aReport affecting: aTransferNet
+
+	^ aReport affectTransferWith: aTransferNet forTransferenceDeposit: transaction! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TransferenceDepositTransferNet class' category: #PortfolioTreePrinter!
+TransferenceDepositTransferNet class
+	instanceVariableNames: ''!
+
+!TransferenceDepositTransferNet class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 17:58:34'!
+knowsHowToPrintADescriptionFor: aTransaction
+
+	^ aTransaction isTransferenceDeposit ! !
+
+
+!classDefinition: #TransferenceWithdrawTransferNet category: #PortfolioTreePrinter!
+TransactionTransferNetValue subclass: #TransferenceWithdrawTransferNet
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!TransferenceWithdrawTransferNet methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:08:06'!
+printFor: aReport affecting: aTransferNet
+
+	^ aReport affectTransferWith: aTransferNet forTransferenceWithdraw: transaction! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TransferenceWithdrawTransferNet class' category: #PortfolioTreePrinter!
+TransferenceWithdrawTransferNet class
+	instanceVariableNames: ''!
+
+!TransferenceWithdrawTransferNet class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 17:58:41'!
+knowsHowToPrintADescriptionFor: aTransaction
+
+	^ aTransaction isTransferenceWithdraw ! !
+
+
+!classDefinition: #WithdrawTransferNet category: #PortfolioTreePrinter!
+TransactionTransferNetValue subclass: #WithdrawTransferNet
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!WithdrawTransferNet methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:08:17'!
+printFor: aReport affecting: aTransferNet
+
+	^ aReport affectTransferWith: aTransferNet forWithdraw: transaction! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'WithdrawTransferNet class' category: #PortfolioTreePrinter!
+WithdrawTransferNet class
+	instanceVariableNames: ''!
+
+!WithdrawTransferNet class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 17:58:51'!
 knowsHowToPrintADescriptionFor: aTransaction
 
 	^ aTransaction isWithdraw! !
