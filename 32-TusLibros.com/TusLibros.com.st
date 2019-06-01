@@ -1,6 +1,6 @@
 !classDefinition: #ShoppingCartTest category: #'TusLibros.com'!
 TestCase subclass: #ShoppingCartTest
-	instanceVariableNames: ''
+	instanceVariableNames: 'emptyCatalogue threeBooksCatalogue'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
@@ -107,6 +107,54 @@ test08AShoppingCartReturnsCollectionWithTheBooksItContains
 	self assert: (items includes: #book2).
 	self assert: (items includes: #book3)! !
 
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/1/2019 15:29:13'!
+test09CanNotAddANotIntegerQuantityOfBooksToCart
+
+	| shoppingCart |
+	
+	shoppingCart _ ShoppingCart new.
+	
+	self should: [shoppingCart add: #book quantity: 2.5]
+	raise: Error
+	withExceptionDo: [ :anError |
+		self assert: anError messageText = ShoppingCart quantityMustBeAnIntegerValue.
+		self assert: shoppingCart isEmpty.
+		].! !
+
+
+!ShoppingCartTest methodsFor: 'setUp' stamp: 'AB 6/1/2019 15:26:26'!
+setUp
+
+	emptyCatalogue _ Catalogue new.
+	
+	threeBooksCatalogue _ Catalogue new.
+	threeBooksCatalogue add: #book1 ; add: #book2; add: #book3.! !
+
+
+!classDefinition: #Catalogue category: #'TusLibros.com'!
+Object subclass: #Catalogue
+	instanceVariableNames: 'books'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!Catalogue methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 15:23:31'!
+add: aBook
+
+	books add: aBook.
+! !
+
+!Catalogue methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 15:24:01'!
+includes: aBook
+
+	^ books includes: aBook! !
+
+!Catalogue methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 15:23:43'!
+initialize
+
+	books _ Set new.
+	super initialize! !
+
 
 !classDefinition: #ShoppingCart category: #'TusLibros.com'!
 Object subclass: #ShoppingCart
@@ -126,10 +174,12 @@ add: anItem
 
 	^ items add: anItem! !
 
-!ShoppingCart methodsFor: 'adding' stamp: 'JR 5/31/2019 19:43:23'!
+!ShoppingCart methodsFor: 'adding' stamp: 'AB 6/1/2019 15:30:36'!
 add: anItem quantity: aQuantity
 
-	(aQuantity < 1) ifTrue: [ self error: ShoppingCart quantityMustBeBiggerThanOneError].
+	(aQuantity < 1) ifTrue: [ self error: ShoppingCart quantityMustBeBiggerThanOneError ].
+
+	(aQuantity isInteger) ifFalse: [ self error: ShoppingCart quantityMustBeAnIntegerValue ].
 	
 	^ aQuantity timesRepeat: [ self add: anItem ]! !
 
@@ -166,6 +216,11 @@ initialize
 !classDefinition: 'ShoppingCart class' category: #'TusLibros.com'!
 ShoppingCart class
 	instanceVariableNames: ''!
+
+!ShoppingCart class methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 15:29:39'!
+quantityMustBeAnIntegerValue
+	
+	^ 'Quantity must be an integer value.'! !
 
 !ShoppingCart class methodsFor: 'as yet unclassified' stamp: 'JR 5/31/2019 19:09:34'!
 quantityMustBeBiggerThanOneError
