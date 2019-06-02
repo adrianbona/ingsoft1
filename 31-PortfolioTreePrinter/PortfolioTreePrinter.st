@@ -231,13 +231,13 @@ test13PrintsTreeStructureWithThreeLevels
 	self assert: '        Cuenta de Angeles' equals: lines next.
 	self assert: lines atEnd! !
 
-!AccountReportTest methodsFor: 'testing' stamp: 'JR 6/2/2019 18:39:33'!
+!AccountReportTest methodsFor: 'testing' stamp: 'AB 6/2/2019 19:57:43'!
 test14PrintsSpecialAccountSummaryOnePortfolioOneAccountOneDeposit
 
 	| familyPortfolio aReport lines myAccount value|
 	
 	value _ 50.
-	myAccount _ ReceptiveAccount named: 'Cuenta mia'.	
+	myAccount _ ReceptiveAccount named: 'Cuenta mía'.	
 	Deposit register: value on: myAccount.
 	familyPortfolio _ Portfolio named: 'Portfolio de la familia' with: myAccount.
 	
@@ -246,7 +246,7 @@ test14PrintsSpecialAccountSummaryOnePortfolioOneAccountOneDeposit
 	lines _ ReadStream on: aReport value.
 	
 	self assert: 'Portfolio de la familia' equals: lines next.
-	self assert: '    Cuenta mia' equals: lines next.
+	self assert: '    Cuenta mía' equals: lines next.
 	self assert: '        Depósito por ', value printString equals: lines next.
 	self assert: '        Balance = ', value printString equals: lines next.
 	self assert: '    Balance = ', value printString equals: lines next.
@@ -754,11 +754,6 @@ AccountReport subclass: #SpecialAccountSummary
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
-!SpecialAccountSummary methodsFor: 'value' stamp: 'JR 6/2/2019 18:39:09'!
-descriptionForATransferenceDeposit: aTransferenceDeposit
-
-	^ 'Entrada por deposito de ', aTransferenceDeposit value printString! !
-
 !SpecialAccountSummary methodsFor: 'value' stamp: 'AB 6/2/2019 19:28:03'!
 value
 
@@ -771,67 +766,71 @@ value
 	^ lines! !
 
 
-!SpecialAccountSummary methodsFor: 'transaction description' stamp: 'AB 6/2/2019 19:18:07'!
+!SpecialAccountSummary methodsFor: 'transaction description' stamp: 'AB 6/2/2019 19:49:25'!
 addDescriptionFor: aTransaction indentationLevel: anIndentation to: aStream
-
-	| tabSpace |
-	
-	tabSpace _ ''.
-	
-	anIndentation timesRepeat: [ tabSpace _ tabSpace , '    ' ].
 
 	(BlockDispatcherToTransaction 
 		for: aTransaction
-		withDepositBlock: [ aStream add: tabSpace, (self descriptionForADeposit: aTransaction) ]
-		withWithdrawBlock: [ aStream add:  tabSpace, (self descriptionForAWithdraw: aTransaction) ]
-		withTransferenceDepositBlock: [ aStream add:  tabSpace, (self descriptionForATransferenceDeposit: aTransaction) ]
-		withTransferenceWithdrawBlock: [ aStream add:  tabSpace, (self descriptionForATransferenceWithdraw: aTransaction) ]) execute! !
+		withDepositBlock: [ self descriptionForADeposit: aTransaction usingIndentationLevel: anIndentation to: aStream ]
+		withWithdrawBlock: [ self descriptionForAWithdraw: aTransaction usingIndentationLevel: anIndentation to: aStream ]
+		withTransferenceDepositBlock: [ self descriptionForATransferenceDeposit: aTransaction usingIndentationLevel: anIndentation to: aStream ]
+		withTransferenceWithdrawBlock: [ self descriptionForATransferenceWithdraw: aTransaction  usingIndentationLevel: anIndentation to: aStream ]) execute! !
 
-!SpecialAccountSummary methodsFor: 'transaction description' stamp: 'JR 6/2/2019 18:39:14'!
-descriptionForADeposit: aDeposit
+!SpecialAccountSummary methodsFor: 'transaction description' stamp: 'AB 6/2/2019 19:56:30'!
+descriptionForADeposit: aDeposit usingIndentationLevel: anIndentation to: aStream
 
-	^ 'Depósito por ', aDeposit value printString! !
+	aStream add: (self spaceIndentationOfSize: anIndentation), 'Depósito por ', aDeposit value printString! !
 
-!SpecialAccountSummary methodsFor: 'transaction description' stamp: 'JR 6/2/2019 18:39:01'!
-descriptionForATransferenceWithdraw: aTransferenceWithdraw
+!SpecialAccountSummary methodsFor: 'transaction description' stamp: 'AB 6/2/2019 19:56:36'!
+descriptionForATransferenceDeposit: aTransferenceDeposit usingIndentationLevel: anIndentation to: aStream
 
-	^ 'Salida por extracción de ', aTransferenceWithdraw value printString! !
+	aStream add: (self spaceIndentationOfSize: anIndentation), 'Entrada por déposito de ', aTransferenceDeposit value printString! !
 
-!SpecialAccountSummary methodsFor: 'transaction description' stamp: 'JR 6/2/2019 18:39:17'!
-descriptionForAWithdraw: aWithdraw
+!SpecialAccountSummary methodsFor: 'transaction description' stamp: 'AB 6/2/2019 19:55:03'!
+descriptionForATransferenceWithdraw: aTransferenceWithdraw usingIndentationLevel: anIndentation to: aStream
+
+	aStream add: (self spaceIndentationOfSize: anIndentation), 'Salida por extracción de ', aTransferenceWithdraw value printString! !
+
+!SpecialAccountSummary methodsFor: 'transaction description' stamp: 'AB 6/2/2019 19:54:43'!
+descriptionForAWithdraw: aWithdraw usingIndentationLevel: anIndentation to: aStream
 	
-	^ 'Extracción por ', aWithdraw value printString! !
+	aStream add: (self spaceIndentationOfSize: anIndentation), 'Extracción por ', aWithdraw value printString! !
 
 
-!SpecialAccountSummary methodsFor: 'asset description' stamp: 'AB 6/2/2019 19:31:00'!
+!SpecialAccountSummary methodsFor: 'asset description' stamp: 'AB 6/2/2019 19:59:49'!
+printBalanceFrom: anAsset usingIndentationLevel: anIndentation to: aStream
+
+	| indentation |
+	
+	indentation _ self spaceIndentationOfSize: anIndentation.
+	
+	aStream add: indentation, '    Balance = ', anAsset balance printString! !
+
+!SpecialAccountSummary methodsFor: 'asset description' stamp: 'AB 6/2/2019 20:00:30'!
 printPortfolioLevelFrom: aPortfolio usingIndentationLevel: anIndentation to: aStream
 
-	| tabSpace |
+	| indentation |
 	
-	tabSpace _ ''.
-	
-	anIndentation timesRepeat: [ tabSpace _ tabSpace , '    ' ].
+	indentation _ self spaceIndentationOfSize: anIndentation.
 
-	aStream add: tabSpace, aPortfolio named.
+	aStream add: indentation, aPortfolio named.
 	
 	aPortfolio accounts do: [ :anAsset | self printTreeStructuredSummary: anAsset usingIndentationLevel: (anIndentation + 1) to: aStream ].
 	
-	aStream add: tabSpace, '    Balance = ', aPortfolio balance printString.! !
+	self printBalanceFrom: aPortfolio usingIndentationLevel: anIndentation to: aStream! !
 
-!SpecialAccountSummary methodsFor: 'asset description' stamp: 'AB 6/2/2019 19:30:47'!
+!SpecialAccountSummary methodsFor: 'asset description' stamp: 'AB 6/2/2019 20:00:39'!
 printReceptiveAccountLevelFrom: aReceptiveAccount usingIndentationLevel: anIndentation to: aStream
 
-	| tabSpace |
+	| indentation |
 	
-	tabSpace _ ''.
-	
-	anIndentation timesRepeat: [ tabSpace _ tabSpace , '    ' ].
+	indentation _ self spaceIndentationOfSize: anIndentation.
 
-	aStream add: tabSpace, aReceptiveAccount named.
+	aStream add: indentation, aReceptiveAccount named.
 	
 	aReceptiveAccount transactions do: [ :aTransaction | self addDescriptionFor: aTransaction indentationLevel: (anIndentation + 1) to: aStream ].
 	
-	aStream add: tabSpace, '    Balance = ', aReceptiveAccount balance printString.! !
+	self printBalanceFrom: aReceptiveAccount usingIndentationLevel: anIndentation to: aStream! !
 
 !SpecialAccountSummary methodsFor: 'asset description' stamp: 'AB 6/2/2019 19:31:01'!
 printTreeStructuredSummary: aFinancialAsset usingIndentationLevel: anIndentation to: aStream
@@ -841,6 +840,18 @@ printTreeStructuredSummary: aFinancialAsset usingIndentationLevel: anIndentation
 		withReceptiveAccountBlock: [ self printReceptiveAccountLevelFrom: aFinancialAsset usingIndentationLevel: anIndentation to: aStream ]
 		withPortfolioBlock: [ self printPortfolioLevelFrom: aFinancialAsset usingIndentationLevel: anIndentation to: aStream ]) execute
 ! !
+
+
+!SpecialAccountSummary methodsFor: 'indentation' stamp: 'AB 6/2/2019 19:42:08'!
+spaceIndentationOfSize: aNumberOfSpacesToIndent
+
+	| indentation |
+	
+	indentation _ ''.
+	
+	aNumberOfSpacesToIndent timesRepeat: [ indentation _ indentation , '    ' ].
+
+	^ indentation ! !
 
 
 !classDefinition: #TransferNet category: #PortfolioTreePrinter!
@@ -903,31 +914,19 @@ AccountReport subclass: #TreeStructured
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
-!TreeStructured methodsFor: 'asset printing' stamp: 'AB 6/2/2019 19:29:45'!
+!TreeStructured methodsFor: 'asset printing' stamp: 'AB 6/2/2019 19:45:13'!
 printPortfolioLevelFrom: aPortfolio usingIndentationLevel: anIndentation to: aStream
 
-	| tabSpace |
-	
-	tabSpace _ ''.
-	
-	anIndentation timesRepeat: [ tabSpace _ tabSpace , '    ' ].
-
-	aStream add: tabSpace, aPortfolio named.
+	aStream add: (self spaceIndentationOfSize: anIndentation), aPortfolio named.
 	
 	aPortfolio accounts do: [ :anAsset | self printTreeStructured: anAsset usingIndentationLevel: (anIndentation + 1) to: aStream ]! !
 
-!TreeStructured methodsFor: 'asset printing' stamp: 'AB 6/2/2019 19:30:03'!
+!TreeStructured methodsFor: 'asset printing' stamp: 'AB 6/2/2019 19:44:47'!
 printReceptiveAccountLevelFrom: aReceptiveAccount usingIndentationLevel: anIndentation to: aStream
 
-	| tabSpace |
-	
-	tabSpace _ ''.
-	
-	anIndentation timesRepeat: [ tabSpace _ tabSpace , '    ' ].
+	aStream add: (self spaceIndentationOfSize: anIndentation), aReceptiveAccount named! !
 
-	aStream add: tabSpace, aReceptiveAccount named! !
-
-!TreeStructured methodsFor: 'asset printing' stamp: 'AB 6/2/2019 19:30:03'!
+!TreeStructured methodsFor: 'asset printing' stamp: 'AB 6/2/2019 19:43:26'!
 printTreeStructured: aFinancialAsset usingIndentationLevel: anIndentation to: aStream
 
 	(BlockDispatcherToFinancialAsset
@@ -947,6 +946,18 @@ value
 	self printTreeStructured: asset usingIndentationLevel: 0 to: lines.
 
 	^ lines! !
+
+
+!TreeStructured methodsFor: 'indentation' stamp: 'AB 6/2/2019 19:42:31'!
+spaceIndentationOfSize: aNumberOfSpacesToIndent
+
+	| indentation |
+	
+	indentation _ ''.
+	
+	aNumberOfSpacesToIndent timesRepeat: [ indentation _ indentation , '    ' ].
+
+	^ indentation ! !
 
 
 !classDefinition: #AccountTransaction category: #PortfolioTreePrinter!
