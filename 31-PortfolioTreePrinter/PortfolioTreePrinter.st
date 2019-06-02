@@ -253,10 +253,10 @@ test14PrintsSpecialAccountSummaryOnePortfolioOneAccountOneDeposit
 	self assert: lines atEnd
 	! !
 
-!AccountReportTest methodsFor: 'testing' stamp: 'JR 6/2/2019 18:40:07'!
+!AccountReportTest methodsFor: 'testing' stamp: 'AB 6/2/2019 19:04:40'!
 test15PrintsSpecialAccountSummary
 
-	| childrenPortfolio familyPortfolio aReport lines myAccount angiesAccount johnsAccount nnn qqq xxx yyy zzz georgiesAccount |
+	| childrenPortfolio familyPortfolio aReport lines myAccount angiesAccount johnsAccount georgiesAccount aDepositOf100 aDepositOf50 aTransferenceOf150 aWithdrawOf25 aWithdrawOf75 |
 	
 	johnsAccount _ ReceptiveAccount named: 'Cuenta de Juan'.
 	georgiesAccount _ ReceptiveAccount named: 'Cuenta de Angeles'.
@@ -265,16 +265,11 @@ test15PrintsSpecialAccountSummary
 	myAccount _ ReceptiveAccount named: 'Cuenta mia'.
 	familyPortfolio _ Portfolio named: 'Portfolio de la familia' with: myAccount with: childrenPortfolio.
 	
-	xxx _ 50.
-	Deposit register: xxx on: myAccount.
-	yyy _ 25.
-	Withdraw register: yyy on: myAccount.
-	zzz _ 100.
-	Deposit register: zzz on: johnsAccount.
-	nnn _ 75.
-	Withdraw register: nnn on: johnsAccount.
-	qqq _ 150.
-	Transference register: qqq from: angiesAccount to: georgiesAccount.
+	aDepositOf50 _ Deposit register: 50 on: myAccount.
+	aWithdrawOf25 _ Withdraw register: 25 on: myAccount.
+	aDepositOf100 _ Deposit register: 100 on: johnsAccount.
+	aWithdrawOf75 _ Withdraw register: 75 on: johnsAccount.
+	aTransferenceOf150 _ Transference register: 150 from: angiesAccount to: georgiesAccount.
 	
 	aReport _ SpecialAccountSummary for: familyPortfolio.
 
@@ -282,19 +277,19 @@ test15PrintsSpecialAccountSummary
 	
 	self assert: 'Portfolio de la familia' equals: lines next.
 	self assert: '    Cuenta mia' equals: lines next.
-	self assert: '        Depósito por ', xxx printString equals: lines next.
-	self assert: '        Extracción por ', yyy printString equals: lines next.
-	self assert: '        Balance = ', (xxx - yyy) printString equals: lines next.
+	self assert: '        Depósito por ', aDepositOf50 value printString equals: lines next.
+	self assert: '        Extracción por ', aWithdrawOf25 value printString equals: lines next.
+	self assert: '        Balance = ', myAccount balance printString equals: lines next.
 	self assert: '    Portfolio de hijos' equals: lines next.
 	self assert: '        Cuenta de Juan' equals: lines next.
-	self assert: '            Depósito por ', zzz printString equals: lines next.
-	self assert: '            Extracción por ', nnn printString equals: lines next.
-	self assert: '            Balance = ', (zzz - nnn) printString equals: lines next.
+	self assert: '            Depósito por ', aDepositOf100 value printString equals: lines next.
+	self assert: '            Extracción por ', aWithdrawOf75 value printString equals: lines next.
+	self assert: '            Balance = ', johnsAccount balance printString equals: lines next.
 	self assert: '        Cuenta de Angeles' equals: lines next.
-	self assert: '            Salida por extracción de ', qqq printString equals: lines next.
-	self assert: '            Balance = ', (qqq negated) printString equals: lines next.
-	self assert: '        Balance = ', (-125) printString equals: lines next.
-	self assert: '    Balance = ', (-100) printString equals: lines next.
+	self assert: '            Salida por extracción de ', aTransferenceOf150 value printString equals: lines next.
+	self assert: '            Balance = ', angiesAccount balance printString equals: lines next.
+	self assert: '        Balance = ', childrenPortfolio balance printString equals: lines next.
+	self assert: '    Balance = ', familyPortfolio balance printString equals: lines next.
 	self assert: lines atEnd! !
 
 
@@ -720,33 +715,33 @@ value
 	^ lines! !
 
 
-!AccountSummary methodsFor: 'descriptions' stamp: 'JR 6/1/2019 18:59:02'!
+!AccountSummary methodsFor: 'transaction description' stamp: 'AB 6/2/2019 19:18:07'!
 descriptionFor: aTransaction
 
-	^ (TransactionReportDispatcher 
+	^ (BlockDispatcherToTransaction 
 		for: aTransaction
-		with: [ self descriptionForADeposit: aTransaction ]
-		with: [ self descriptionForAWithdraw: aTransaction ]
-		with: [ self descriptionForATransferenceDeposit: aTransaction ]
-		with: [ self descriptionForATransferenceWithdraw: aTransaction ]) execute 
+		withDepositBlock: [ self descriptionForADeposit: aTransaction ]
+		withWithdrawBlock: [ self descriptionForAWithdraw: aTransaction ]
+		withTransferenceDepositBlock: [ self descriptionForATransferenceDeposit: aTransaction ]
+		withTransferenceWithdrawBlock: [ self descriptionForATransferenceWithdraw: aTransaction ]) execute 
 	! !
 
-!AccountSummary methodsFor: 'descriptions' stamp: 'JR 6/1/2019 18:54:08'!
+!AccountSummary methodsFor: 'transaction description' stamp: 'JR 6/1/2019 18:54:08'!
 descriptionForADeposit: aDeposit
 
 	^ 'Depósito por ', aDeposit value printString, '.'! !
 
-!AccountSummary methodsFor: 'descriptions' stamp: 'JR 6/1/2019 18:54:15'!
+!AccountSummary methodsFor: 'transaction description' stamp: 'JR 6/1/2019 18:54:15'!
 descriptionForATransferenceDeposit: aTransferenceDeposit
 
 	^ 'Entrada por transferencia de ', aTransferenceDeposit value printString, '.'! !
 
-!AccountSummary methodsFor: 'descriptions' stamp: 'JR 6/1/2019 18:54:24'!
+!AccountSummary methodsFor: 'transaction description' stamp: 'JR 6/1/2019 18:54:24'!
 descriptionForATransferenceWithdraw: aTransferenceWithdraw
 
 	^ 'Salida por transferencia de ', aTransferenceWithdraw value printString, '.'! !
 
-!AccountSummary methodsFor: 'descriptions' stamp: 'JR 6/1/2019 18:54:31'!
+!AccountSummary methodsFor: 'transaction description' stamp: 'JR 6/1/2019 18:54:31'!
 descriptionForAWithdraw: aWithdraw
 	
 	^ 'Extracción por ', aWithdraw value printString, '.'! !
@@ -759,7 +754,24 @@ AccountReport subclass: #SpecialAccountSummary
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
-!SpecialAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/2/2019 18:37:21'!
+!SpecialAccountSummary methodsFor: 'value' stamp: 'JR 6/2/2019 18:39:09'!
+descriptionForATransferenceDeposit: aTransferenceDeposit
+
+	^ 'Entrada por deposito de ', aTransferenceDeposit value printString! !
+
+!SpecialAccountSummary methodsFor: 'value' stamp: 'AB 6/2/2019 19:28:03'!
+value
+
+	| lines |
+
+	lines _ OrderedCollection new.
+	
+	self printTreeStructuredSummary: asset usingIndentationLevel: 0 to: lines.
+
+	^ lines! !
+
+
+!SpecialAccountSummary methodsFor: 'transaction description' stamp: 'AB 6/2/2019 19:18:07'!
 addDescriptionFor: aTransaction indentationLevel: anIndentation to: aStream
 
 	| tabSpace |
@@ -768,24 +780,31 @@ addDescriptionFor: aTransaction indentationLevel: anIndentation to: aStream
 	
 	anIndentation timesRepeat: [ tabSpace _ tabSpace , '    ' ].
 
-	(TransactionReportDispatcher 
+	(BlockDispatcherToTransaction 
 		for: aTransaction
-		with: [ aStream add: tabSpace, (self descriptionForADeposit: aTransaction) ]
-		with: [ aStream add:  tabSpace, (self descriptionForAWithdraw: aTransaction) ]
-		with: [ aStream add:  tabSpace, (self descriptionForATransferenceDeposit: aTransaction) ]
-		with: [ aStream add:  tabSpace, (self descriptionForATransferenceWithdraw: aTransaction) ]) execute! !
+		withDepositBlock: [ aStream add: tabSpace, (self descriptionForADeposit: aTransaction) ]
+		withWithdrawBlock: [ aStream add:  tabSpace, (self descriptionForAWithdraw: aTransaction) ]
+		withTransferenceDepositBlock: [ aStream add:  tabSpace, (self descriptionForATransferenceDeposit: aTransaction) ]
+		withTransferenceWithdrawBlock: [ aStream add:  tabSpace, (self descriptionForATransferenceWithdraw: aTransaction) ]) execute! !
 
-!SpecialAccountSummary methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 12:05:10'!
-addTreeLevel: aFinancialAsset indentationLevel: anIndentation to: aStream
+!SpecialAccountSummary methodsFor: 'transaction description' stamp: 'JR 6/2/2019 18:39:14'!
+descriptionForADeposit: aDeposit
 
-	(FinancialAssetReportDispatcher
-		for: aFinancialAsset 
-		with: [ self addTreeLevelReceptiveAccountFor: aFinancialAsset indentationLevel: anIndentation to: aStream ]
-		with: [ self addTreeLevelPortfolioFor: aFinancialAsset indentationLevel: anIndentation to: aStream ]) execute
-! !
+	^ 'Depósito por ', aDeposit value printString! !
 
-!SpecialAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/2/2019 18:09:45'!
-addTreeLevelPortfolioFor: aPortfolio indentationLevel: anIndentation to: aStream
+!SpecialAccountSummary methodsFor: 'transaction description' stamp: 'JR 6/2/2019 18:39:01'!
+descriptionForATransferenceWithdraw: aTransferenceWithdraw
+
+	^ 'Salida por extracción de ', aTransferenceWithdraw value printString! !
+
+!SpecialAccountSummary methodsFor: 'transaction description' stamp: 'JR 6/2/2019 18:39:17'!
+descriptionForAWithdraw: aWithdraw
+	
+	^ 'Extracción por ', aWithdraw value printString! !
+
+
+!SpecialAccountSummary methodsFor: 'asset description' stamp: 'AB 6/2/2019 19:31:00'!
+printPortfolioLevelFrom: aPortfolio usingIndentationLevel: anIndentation to: aStream
 
 	| tabSpace |
 	
@@ -795,12 +814,12 @@ addTreeLevelPortfolioFor: aPortfolio indentationLevel: anIndentation to: aStream
 
 	aStream add: tabSpace, aPortfolio named.
 	
-	aPortfolio accounts do: [ :anAsset | self addTreeLevel: anAsset indentationLevel: (anIndentation + 1) to: aStream ].
+	aPortfolio accounts do: [ :anAsset | self printTreeStructuredSummary: anAsset usingIndentationLevel: (anIndentation + 1) to: aStream ].
 	
 	aStream add: tabSpace, '    Balance = ', aPortfolio balance printString.! !
 
-!SpecialAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/2/2019 18:38:35'!
-addTreeLevelReceptiveAccountFor: aReceptiveAccount indentationLevel: anIndentation to: aStream
+!SpecialAccountSummary methodsFor: 'asset description' stamp: 'AB 6/2/2019 19:30:47'!
+printReceptiveAccountLevelFrom: aReceptiveAccount usingIndentationLevel: anIndentation to: aStream
 
 	| tabSpace |
 	
@@ -814,36 +833,14 @@ addTreeLevelReceptiveAccountFor: aReceptiveAccount indentationLevel: anIndentati
 	
 	aStream add: tabSpace, '    Balance = ', aReceptiveAccount balance printString.! !
 
-!SpecialAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/2/2019 18:39:14'!
-descriptionForADeposit: aDeposit
+!SpecialAccountSummary methodsFor: 'asset description' stamp: 'AB 6/2/2019 19:31:01'!
+printTreeStructuredSummary: aFinancialAsset usingIndentationLevel: anIndentation to: aStream
 
-	^ 'Depósito por ', aDeposit value printString! !
-
-!SpecialAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/2/2019 18:39:09'!
-descriptionForATransferenceDeposit: aTransferenceDeposit
-
-	^ 'Entrada por deposito de ', aTransferenceDeposit value printString! !
-
-!SpecialAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/2/2019 18:39:01'!
-descriptionForATransferenceWithdraw: aTransferenceWithdraw
-
-	^ 'Salida por extracción de ', aTransferenceWithdraw value printString! !
-
-!SpecialAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/2/2019 18:39:17'!
-descriptionForAWithdraw: aWithdraw
-	
-	^ 'Extracción por ', aWithdraw value printString! !
-
-!SpecialAccountSummary methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 12:05:11'!
-value
-
-	| lines |
-
-	lines _ OrderedCollection new.
-	
-	self addTreeLevel: asset indentationLevel: 0 to: lines.
-
-	^ lines! !
+	(BlockDispatcherToFinancialAsset
+		for: aFinancialAsset 
+		withReceptiveAccountBlock: [ self printReceptiveAccountLevelFrom: aFinancialAsset usingIndentationLevel: anIndentation to: aStream ]
+		withPortfolioBlock: [ self printPortfolioLevelFrom: aFinancialAsset usingIndentationLevel: anIndentation to: aStream ]) execute
+! !
 
 
 !classDefinition: #TransferNet category: #PortfolioTreePrinter!
@@ -867,15 +864,15 @@ value
 	^ lines! !
 
 
-!TransferNet methodsFor: 'affect transfer net' stamp: 'JR 6/1/2019 19:05:22'!
+!TransferNet methodsFor: 'affect transfer net' stamp: 'AB 6/2/2019 19:18:07'!
 affectTransferNet: aTransferNet using: aTransaction 
 
-	^ (TransactionReportDispatcher 
+	^ (BlockDispatcherToTransaction 
 		for: aTransaction
-		with: [ self affectTransferWith: aTransferNet forDeposit: aTransaction ]
-		with: [ self affectTransferWith: aTransferNet forWithdraw: aTransaction ]
-		with: [ self affectTransferWith: aTransferNet forTransferenceDeposit: aTransaction ]
-		with: [ self affectTransferWith: aTransferNet forTransferenceWithdraw: aTransaction ]) execute 
+		withDepositBlock: [ self affectTransferWith: aTransferNet forDeposit: aTransaction ]
+		withWithdrawBlock: [ self affectTransferWith: aTransferNet forWithdraw: aTransaction ]
+		withTransferenceDepositBlock: [ self affectTransferWith: aTransferNet forTransferenceDeposit: aTransaction ]
+		withTransferenceWithdrawBlock: [ self affectTransferWith: aTransferNet forTransferenceWithdraw: aTransaction ]) execute 
 	! !
 
 !TransferNet methodsFor: 'affect transfer net' stamp: 'JR 6/1/2019 19:05:22'!
@@ -906,17 +903,8 @@ AccountReport subclass: #TreeStructured
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
-!TreeStructured methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 11:56:39'!
-addTreeLevel: aFinancialAsset indentationLevel: anIndentation to: aStream
-
-	(FinancialAssetReportDispatcher
-		for: aFinancialAsset 
-		with: [ self addTreeLevelReceptiveAccountFor: aFinancialAsset indentationLevel: anIndentation to: aStream ]
-		with: [ self addTreeLevelPortfolioFor: aFinancialAsset indentationLevel: anIndentation to: aStream ]) execute
-! !
-
-!TreeStructured methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 11:37:44'!
-addTreeLevelPortfolioFor: aPortfolio indentationLevel: anIndentation to: aStream
+!TreeStructured methodsFor: 'asset printing' stamp: 'AB 6/2/2019 19:29:45'!
+printPortfolioLevelFrom: aPortfolio usingIndentationLevel: anIndentation to: aStream
 
 	| tabSpace |
 	
@@ -926,10 +914,10 @@ addTreeLevelPortfolioFor: aPortfolio indentationLevel: anIndentation to: aStream
 
 	aStream add: tabSpace, aPortfolio named.
 	
-	aPortfolio accounts do: [ :anAsset | self addTreeLevel: anAsset indentationLevel: (anIndentation + 1) to: aStream ]! !
+	aPortfolio accounts do: [ :anAsset | self printTreeStructured: anAsset usingIndentationLevel: (anIndentation + 1) to: aStream ]! !
 
-!TreeStructured methodsFor: 'as yet unclassified' stamp: 'JR 6/2/2019 17:37:28'!
-addTreeLevelReceptiveAccountFor: aReceptiveAccount indentationLevel: anIndentation to: aStream
+!TreeStructured methodsFor: 'asset printing' stamp: 'AB 6/2/2019 19:30:03'!
+printReceptiveAccountLevelFrom: aReceptiveAccount usingIndentationLevel: anIndentation to: aStream
 
 	| tabSpace |
 	
@@ -939,14 +927,24 @@ addTreeLevelReceptiveAccountFor: aReceptiveAccount indentationLevel: anIndentati
 
 	aStream add: tabSpace, aReceptiveAccount named! !
 
-!TreeStructured methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 11:25:41'!
+!TreeStructured methodsFor: 'asset printing' stamp: 'AB 6/2/2019 19:30:03'!
+printTreeStructured: aFinancialAsset usingIndentationLevel: anIndentation to: aStream
+
+	(BlockDispatcherToFinancialAsset
+		for: aFinancialAsset 
+		withReceptiveAccountBlock: [ self printReceptiveAccountLevelFrom: aFinancialAsset usingIndentationLevel: anIndentation to: aStream ]
+		withPortfolioBlock: [ self printPortfolioLevelFrom: aFinancialAsset usingIndentationLevel: anIndentation to: aStream ]) execute
+! !
+
+
+!TreeStructured methodsFor: 'value' stamp: 'AB 6/2/2019 19:27:20'!
 value
 
 	| lines |
 
 	lines _ OrderedCollection new.
 	
-	self addTreeLevel: asset indentationLevel: 0 to: lines.
+	self printTreeStructured: asset usingIndentationLevel: 0 to: lines.
 
 	^ lines! !
 
@@ -990,22 +988,6 @@ isWithdraw
 
 	^ false! !
 
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'AccountTransaction class' category: #PortfolioTreePrinter!
-AccountTransaction class
-	instanceVariableNames: ''!
-
-!AccountTransaction class methodsFor: 'instance creation' stamp: 'HernanWilkinson 7/13/2011 18:38'!
-register: aValue on: account
-
-	| withdraw |
-	
-	withdraw := self for: aValue.
-	account register: withdraw.
-		
-	^ withdraw! !
-
 
 !classDefinition: #Deposit category: #PortfolioTreePrinter!
 AccountTransaction subclass: #Deposit
@@ -1047,6 +1029,16 @@ Deposit class
 for: aValue
 
 	^ self new initializeFor: aValue ! !
+
+!Deposit class methodsFor: 'instance creation' stamp: 'AB 6/2/2019 19:08:24'!
+register: aValue on: account
+
+	| withdraw |
+	
+	withdraw := self for: aValue.
+	account register: withdraw.
+		
+	^ withdraw! !
 
 
 !classDefinition: #TransferenceDeposit category: #PortfolioTreePrinter!
@@ -1185,6 +1177,225 @@ Withdraw class
 for: aValue
 
 	^ self new initializeFor: aValue ! !
+
+!Withdraw class methodsFor: 'instance creation' stamp: 'AB 6/2/2019 19:08:32'!
+register: aValue on: account
+
+	| withdraw |
+	
+	withdraw := self for: aValue.
+	account register: withdraw.
+		
+	^ withdraw! !
+
+
+!classDefinition: #BlockDispatcherToFinancialAsset category: #PortfolioTreePrinter!
+Object subclass: #BlockDispatcherToFinancialAsset
+	instanceVariableNames: 'asset block'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!BlockDispatcherToFinancialAsset methodsFor: 'initialization' stamp: 'AB 6/2/2019 19:14:52'!
+initializeFor: aFinancialAsset withReceptiveAccountBlock: aReceptiveAccountBlock withPortofolioBlock: aPortfolioBlock
+
+	self subclassResponsibility ! !
+
+
+!BlockDispatcherToFinancialAsset methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 11:53:14'!
+execute
+
+	block value! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'BlockDispatcherToFinancialAsset class' category: #PortfolioTreePrinter!
+BlockDispatcherToFinancialAsset class
+	instanceVariableNames: ''!
+
+!BlockDispatcherToFinancialAsset class methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 19:15:49'!
+for: aFinancialAsset withReceptiveAccountBlock: aReceptiveAccountBlock withPortfolioBlock: aPortfolioBlock
+
+	^ (self subclasses
+		detect: [ :aFinancialAssetDispatcher |
+			aFinancialAssetDispatcher handles: aFinancialAsset ]
+		ifNone: [ self error: 'No financial asset available' ]) new initializeFor: aFinancialAsset withReceptiveAccountBlock: aReceptiveAccountBlock withPortofolioBlock: aPortfolioBlock! !
+
+
+!classDefinition: #PortfolioReportDispatcher category: #PortfolioTreePrinter!
+BlockDispatcherToFinancialAsset subclass: #PortfolioReportDispatcher
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!PortfolioReportDispatcher methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 19:14:52'!
+initializeFor: aFinancialAsset withReceptiveAccountBlock: aReceptiveAccountBlock withPortofolioBlock: aPortfolioBlock
+
+	block _ aPortfolioBlock ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'PortfolioReportDispatcher class' category: #PortfolioTreePrinter!
+PortfolioReportDispatcher class
+	instanceVariableNames: ''!
+
+!PortfolioReportDispatcher class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:26:08'!
+handles: aFinancialAsset
+
+	^ aFinancialAsset isPortfolio! !
+
+
+!classDefinition: #ReceptiveAccountReportDispatcher category: #PortfolioTreePrinter!
+BlockDispatcherToFinancialAsset subclass: #ReceptiveAccountReportDispatcher
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!ReceptiveAccountReportDispatcher methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 19:14:52'!
+initializeFor: aFinancialAsset withReceptiveAccountBlock: aReceptiveAccountBlock withPortofolioBlock: aPortfolioBlock
+
+	block _ aReceptiveAccountBlock ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'ReceptiveAccountReportDispatcher class' category: #PortfolioTreePrinter!
+ReceptiveAccountReportDispatcher class
+	instanceVariableNames: ''!
+
+!ReceptiveAccountReportDispatcher class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:26:18'!
+handles: aFinancialAsset
+
+	^ aFinancialAsset isReceptiveAccount! !
+
+
+!classDefinition: #BlockDispatcherToTransaction category: #PortfolioTreePrinter!
+Object subclass: #BlockDispatcherToTransaction
+	instanceVariableNames: 'transaction block'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!BlockDispatcherToTransaction methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:38:09'!
+execute
+
+	^ block value.! !
+
+!BlockDispatcherToTransaction methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 19:17:29'!
+initializeFor: aTransaction withDepositBlock: aDepositBlock withWithdrawBlock: aWithdrawBlock withTransferenceDepositBlock: aTransferenceDepositBlock withTransferenceWithdrawBlock: aTransferenceWithdrawBlock
+
+	self subclassResponsibility ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'BlockDispatcherToTransaction class' category: #PortfolioTreePrinter!
+BlockDispatcherToTransaction class
+	instanceVariableNames: ''!
+
+!BlockDispatcherToTransaction class methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 19:18:07'!
+for: aTransaction withDepositBlock: aDepositBlock withWithdrawBlock: aWithdrawBlock withTransferenceDepositBlock: aTransferenceDepositBlock withTransferenceWithdrawBlock: aTransferenceWithdrawBlock
+
+	^ (self subclasses
+		detect: [ :aTransactionDispatcher |
+			aTransactionDispatcher handles: aTransaction ]
+		ifNone: [ self error: 'No transaction transfer net available' ]) new initializeFor: aTransaction withDepositBlock: aDepositBlock withWithdrawBlock: aWithdrawBlock withTransferenceDepositBlock: aTransferenceDepositBlock withTransferenceWithdrawBlock: aTransferenceWithdrawBlock! !
+
+
+!classDefinition: #DepositReportDispatcher category: #PortfolioTreePrinter!
+BlockDispatcherToTransaction subclass: #DepositReportDispatcher
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!DepositReportDispatcher methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 19:17:29'!
+initializeFor: aTransaction withDepositBlock: aDepositBlock withWithdrawBlock: aWithdrawBlock withTransferenceDepositBlock: transferenceDepositBlock withTransferenceWithdrawBlock: transferenceWithdrawBlock
+
+	block _ aDepositBlock ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'DepositReportDispatcher class' category: #PortfolioTreePrinter!
+DepositReportDispatcher class
+	instanceVariableNames: ''!
+
+!DepositReportDispatcher class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:47:16'!
+handles: aTransaction
+
+	^ aTransaction isDeposit ! !
+
+
+!classDefinition: #TransferenceDepositReportDispatcher category: #PortfolioTreePrinter!
+BlockDispatcherToTransaction subclass: #TransferenceDepositReportDispatcher
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!TransferenceDepositReportDispatcher methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 19:17:29'!
+initializeFor: aTransaction withDepositBlock: aDepositBlock withWithdrawBlock: aWithdrawBlock withTransferenceDepositBlock: transferenceDepositBlock withTransferenceWithdrawBlock: transferenceWithdrawBlock
+
+	block _ transferenceDepositBlock ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TransferenceDepositReportDispatcher class' category: #PortfolioTreePrinter!
+TransferenceDepositReportDispatcher class
+	instanceVariableNames: ''!
+
+!TransferenceDepositReportDispatcher class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:47:16'!
+handles: aTransaction
+
+	^ aTransaction isTransferenceDeposit ! !
+
+
+!classDefinition: #TransferenceWithdrawReportDispatcher category: #PortfolioTreePrinter!
+BlockDispatcherToTransaction subclass: #TransferenceWithdrawReportDispatcher
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!TransferenceWithdrawReportDispatcher methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 19:17:29'!
+initializeFor: aTransaction withDepositBlock: aDepositBlock withWithdrawBlock: aWithdrawBlock withTransferenceDepositBlock: transferenceDepositBlock withTransferenceWithdrawBlock: transferenceWithdrawBlock
+
+	block _ transferenceWithdrawBlock ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TransferenceWithdrawReportDispatcher class' category: #PortfolioTreePrinter!
+TransferenceWithdrawReportDispatcher class
+	instanceVariableNames: ''!
+
+!TransferenceWithdrawReportDispatcher class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:47:16'!
+handles: aTransaction
+
+	^ aTransaction isTransferenceWithdraw ! !
+
+
+!classDefinition: #WithdrawReportDispatcher category: #PortfolioTreePrinter!
+BlockDispatcherToTransaction subclass: #WithdrawReportDispatcher
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter'!
+
+!WithdrawReportDispatcher methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 19:17:29'!
+initializeFor: aTransaction withDepositBlock: aDepositBlock withWithdrawBlock: aWithdrawBlock withTransferenceDepositBlock: transferenceDepositBlock withTransferenceWithdrawBlock: transferenceWithdrawBlock
+
+	block _ aWithdrawBlock ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'WithdrawReportDispatcher class' category: #PortfolioTreePrinter!
+WithdrawReportDispatcher class
+	instanceVariableNames: ''!
+
+!WithdrawReportDispatcher class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:47:16'!
+handles: aTransaction
+
+	^ aTransaction isWithdraw! !
 
 
 !classDefinition: #FinancialAsset category: #PortfolioTreePrinter!
@@ -1508,215 +1719,6 @@ named: aName
 	^self new 
 		named: aName;
 		yourself! !
-
-
-!classDefinition: #FinancialAssetReportDispatcher category: #PortfolioTreePrinter!
-Object subclass: #FinancialAssetReportDispatcher
-	instanceVariableNames: 'asset block'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PortfolioTreePrinter'!
-
-!FinancialAssetReportDispatcher methodsFor: 'initialization' stamp: 'JR 6/1/2019 20:13:35'!
-initializeWith: aFinancialAsset with: aReceptiveAccountBlock with: aPortfolioBlock
-
-	self subclassResponsibility ! !
-
-
-!FinancialAssetReportDispatcher methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 11:53:14'!
-execute
-
-	block value! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'FinancialAssetReportDispatcher class' category: #PortfolioTreePrinter!
-FinancialAssetReportDispatcher class
-	instanceVariableNames: ''!
-
-!FinancialAssetReportDispatcher class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:12:52'!
-for: aFinancialAsset with: aReceptiveAccountBlock with: aPortfolioBlock
-
-	^ (self subclasses
-		detect: [ :aFinancialAssetDispatcher |
-			aFinancialAssetDispatcher handles: aFinancialAsset ]
-		ifNone: [ self error: 'No financial asset available' ]) new initializeWith: aFinancialAsset with: aReceptiveAccountBlock with: aPortfolioBlock! !
-
-
-!classDefinition: #PortfolioReportDispatcher category: #PortfolioTreePrinter!
-FinancialAssetReportDispatcher subclass: #PortfolioReportDispatcher
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PortfolioTreePrinter'!
-
-!PortfolioReportDispatcher methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:14:18'!
-initializeWith: aFinancialAsset with: aReceptiveAccountBlock with: aPortfolioBlock
-
-	block _ aPortfolioBlock ! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'PortfolioReportDispatcher class' category: #PortfolioTreePrinter!
-PortfolioReportDispatcher class
-	instanceVariableNames: ''!
-
-!PortfolioReportDispatcher class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:26:08'!
-handles: aFinancialAsset
-
-	^ aFinancialAsset isPortfolio! !
-
-
-!classDefinition: #ReceptiveAccountReportDispatcher category: #PortfolioTreePrinter!
-FinancialAssetReportDispatcher subclass: #ReceptiveAccountReportDispatcher
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PortfolioTreePrinter'!
-
-!ReceptiveAccountReportDispatcher methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:14:27'!
-initializeWith: aFinancialAsset with: aReceptiveAccountBlock with: aPortfolioBlock
-
-	block _ aReceptiveAccountBlock ! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'ReceptiveAccountReportDispatcher class' category: #PortfolioTreePrinter!
-ReceptiveAccountReportDispatcher class
-	instanceVariableNames: ''!
-
-!ReceptiveAccountReportDispatcher class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:26:18'!
-handles: aFinancialAsset
-
-	^ aFinancialAsset isReceptiveAccount! !
-
-
-!classDefinition: #TransactionReportDispatcher category: #PortfolioTreePrinter!
-Object subclass: #TransactionReportDispatcher
-	instanceVariableNames: 'transaction block'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PortfolioTreePrinter'!
-
-!TransactionReportDispatcher methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:38:09'!
-execute
-
-	^ block value.! !
-
-!TransactionReportDispatcher methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:50:32'!
-initializeWith: aTransaction with: aDepositBlock with: aWithdrawBlock with: aTransferenceDepositBlock with: aTransferenceWithdrawBlock
-
-	self subclassResponsibility ! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'TransactionReportDispatcher class' category: #PortfolioTreePrinter!
-TransactionReportDispatcher class
-	instanceVariableNames: ''!
-
-!TransactionReportDispatcher class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:50:23'!
-for: aTransaction with: aDepositBlock with: aWithdrawBlock with: aTransferenceDepositBlock with: aTransferenceWithdrawBlock
-
-	^ (self subclasses
-		detect: [ :aTransactionDispatcher |
-			aTransactionDispatcher handles: aTransaction ]
-		ifNone: [ self error: 'No transaction transfer net available' ]) new initializeWith: aTransaction with: aDepositBlock with: aWithdrawBlock with: aTransferenceDepositBlock with: aTransferenceWithdrawBlock! !
-
-
-!classDefinition: #DepositReportDispatcher category: #PortfolioTreePrinter!
-TransactionReportDispatcher subclass: #DepositReportDispatcher
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PortfolioTreePrinter'!
-
-!DepositReportDispatcher methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:50:23'!
-initializeWith: aTransaction with: aDepositBlock with: aWithdrawBlock with: transferenceDepositBlock with: transferenceWithdrawBlock
-
-	block _ aDepositBlock ! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'DepositReportDispatcher class' category: #PortfolioTreePrinter!
-DepositReportDispatcher class
-	instanceVariableNames: ''!
-
-!DepositReportDispatcher class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:47:16'!
-handles: aTransaction
-
-	^ aTransaction isDeposit ! !
-
-
-!classDefinition: #TransferenceDepositReportDispatcher category: #PortfolioTreePrinter!
-TransactionReportDispatcher subclass: #TransferenceDepositReportDispatcher
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PortfolioTreePrinter'!
-
-!TransferenceDepositReportDispatcher methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:50:23'!
-initializeWith: aTransaction with: aDepositBlock with: aWithdrawBlock with: transferenceDepositBlock with: transferenceWithdrawBlock
-
-	block _ transferenceDepositBlock ! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'TransferenceDepositReportDispatcher class' category: #PortfolioTreePrinter!
-TransferenceDepositReportDispatcher class
-	instanceVariableNames: ''!
-
-!TransferenceDepositReportDispatcher class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:47:16'!
-handles: aTransaction
-
-	^ aTransaction isTransferenceDeposit ! !
-
-
-!classDefinition: #TransferenceWithdrawReportDispatcher category: #PortfolioTreePrinter!
-TransactionReportDispatcher subclass: #TransferenceWithdrawReportDispatcher
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PortfolioTreePrinter'!
-
-!TransferenceWithdrawReportDispatcher methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:50:23'!
-initializeWith: aTransaction with: aDepositBlock with: aWithdrawBlock with: transferenceDepositBlock with: transferenceWithdrawBlock
-
-	block _ transferenceWithdrawBlock ! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'TransferenceWithdrawReportDispatcher class' category: #PortfolioTreePrinter!
-TransferenceWithdrawReportDispatcher class
-	instanceVariableNames: ''!
-
-!TransferenceWithdrawReportDispatcher class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:47:16'!
-handles: aTransaction
-
-	^ aTransaction isTransferenceWithdraw ! !
-
-
-!classDefinition: #WithdrawReportDispatcher category: #PortfolioTreePrinter!
-TransactionReportDispatcher subclass: #WithdrawReportDispatcher
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PortfolioTreePrinter'!
-
-!WithdrawReportDispatcher methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:50:23'!
-initializeWith: aTransaction with: aDepositBlock with: aWithdrawBlock with: transferenceDepositBlock with: transferenceWithdrawBlock
-
-	block _ aWithdrawBlock ! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'WithdrawReportDispatcher class' category: #PortfolioTreePrinter!
-WithdrawReportDispatcher class
-	instanceVariableNames: ''!
-
-!WithdrawReportDispatcher class methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:47:16'!
-handles: aTransaction
-
-	^ aTransaction isWithdraw! !
 
 
 !classDefinition: #Transference category: #PortfolioTreePrinter!
