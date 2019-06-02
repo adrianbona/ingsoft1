@@ -142,7 +142,7 @@ test08PrintsTransferNetWhenHavingATransferenceFromTheAccount
 	self assert: -50 printString equals: lines next.
 	self assert: 0 equals: anAccount balance! !
 
-!AccountReportTest methodsFor: 'testing' stamp: 'JR 6/1/2019 19:10:50'!
+!AccountReportTest methodsFor: 'testing' stamp: 'AB 6/2/2019 12:01:06'!
 test09PrintAPortfolioWithADepositOf50
 
 	| anAccount lines aReport value aPortfolio |
@@ -155,7 +155,9 @@ test09PrintAPortfolioWithADepositOf50
 	
 	lines _ ReadStream on: aReport value.
 	
-	self assert: 'Depósito por ', value printString, '.' equals: lines next! !
+	self assert: 'Depósito por ', value printString, '.' equals: lines next.
+	self assert: 'Balance = ', aPortfolio balance printString equals: lines next.
+	self assert: lines atEnd! !
 
 !AccountReportTest methodsFor: 'testing' stamp: 'JR 6/1/2019 19:12:24'!
 test10PrintsTransferNetWhenHavingATransferenceFromTheAccount
@@ -175,7 +177,7 @@ test10PrintsTransferNetWhenHavingATransferenceFromTheAccount
 	self assert: -50 printString equals: lines next.
 	self assert: 0 equals: aPortfolio balance! !
 
-!AccountReportTest methodsFor: 'testing' stamp: 'JR 6/1/2019 19:47:27'!
+!AccountReportTest methodsFor: 'testing' stamp: 'AB 6/2/2019 11:59:13'!
 test11PrintsTreeStructureWithOneLevel
 
 	| familyPortfolio aReport lines |
@@ -186,9 +188,10 @@ test11PrintsTreeStructureWithOneLevel
 
 	lines _ ReadStream on: aReport value.
 	
-	self assert: 'Portfolio de la familia' equals: lines next.! !
+	self assert: 'Portfolio de la familia' equals: lines next.
+	self assert: lines atEnd! !
 
-!AccountReportTest methodsFor: 'testing' stamp: 'JR 6/1/2019 20:40:24'!
+!AccountReportTest methodsFor: 'testing' stamp: 'AB 6/2/2019 11:59:19'!
 test12PrintsTreeStructureWithTwoLevels
 
 	| childrenPortfolio familyPortfolio aReport lines myAccount |
@@ -203,7 +206,30 @@ test12PrintsTreeStructureWithTwoLevels
 	
 	self assert: 'Portfolio de la familia' equals: lines next.
 	self assert: '    Cuenta mia' equals: lines next.
-	self assert: '    Portfolio de hijos' equals: lines next.! !
+	self assert: '    Portfolio de hijos' equals: lines next.
+	self assert: lines atEnd! !
+
+!AccountReportTest methodsFor: 'testing' stamp: 'AB 6/2/2019 12:01:22'!
+test13PrintsTreeStructureWithThreeLevels
+
+	| childrenPortfolio familyPortfolio aReport lines myAccount angiesAccount johnsAccount |
+	
+	johnsAccount _ ReceptiveAccount named: 'Cuenta de Juan'.
+	angiesAccount _ ReceptiveAccount named: 'Cuenta de Angeles'.
+	childrenPortfolio _ Portfolio named: 'Portfolio de hijos' with: johnsAccount with: angiesAccount.
+	myAccount _ ReceptiveAccount named: 'Cuenta mia'.
+	familyPortfolio _ Portfolio named: 'Portfolio de la familia' with: myAccount with: childrenPortfolio.	
+
+	aReport _ TreeAccountSummary for: familyPortfolio.
+
+	lines _ ReadStream on: aReport value.
+	
+	self assert: 'Portfolio de la familia' equals: lines next.
+	self assert: '    Cuenta mia' equals: lines next.
+	self assert: '    Portfolio de hijos' equals: lines next.
+	self assert: '        Cuenta de Juan' equals: lines next.
+	self assert: '        Cuenta de Angeles' equals: lines next.
+	self assert: lines atEnd! !
 
 
 !classDefinition: #PortfolioTest category: #PortfolioTreePrinter!
@@ -720,44 +746,47 @@ AccountReport subclass: #TreeAccountSummary
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
-!TreeAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:32:23'!
-treeLevel: aFinancialAsset
+!TreeAccountSummary methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 11:56:39'!
+addTreeLevel: aFinancialAsset indentationLevel: anIndentation to: aStream
 
-	^ (FinancialAssetReportDispatcher	
+	(FinancialAssetReportDispatcher
 		for: aFinancialAsset 
-		with: [ ^ self treeLevelPortfolioFor: aFinancialAsset ]
-		with: [ ^ self treeLevelReceptiveAccountFor: aFinancialAsset ]) execute
+		with: [ self addTreeLevelReceptiveAccountFor: aFinancialAsset indentationLevel: anIndentation to: aStream ]
+		with: [ self addTreeLevelPortfolioFor: aFinancialAsset indentationLevel: anIndentation to: aStream ]) execute
 ! !
 
-!TreeAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:38:36'!
-treeLevel: aFinancialAsset indentationLevel: anIndentation
+!TreeAccountSummary methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 11:37:44'!
+addTreeLevelPortfolioFor: aPortfolio indentationLevel: anIndentation to: aStream
 
-	^ anIndentation, (FinancialAssetReportDispatcher	
-		for: aFinancialAsset 
-		with: [ self treeLevelPortfolioFor: aFinancialAsset ]
-		with: [ self treeLevelReceptiveAccountFor: aFinancialAsset ]) execute
-! !
+	| tabSpace |
+	
+	tabSpace _ ''.
+	
+	anIndentation timesRepeat: [ tabSpace _ tabSpace , '    ' ].
 
-!TreeAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:30:10'!
-treeLevelPortfolioFor: aPortfolio
+	aStream add: tabSpace, aPortfolio named.
+	
+	aPortfolio accounts do: [ :anAsset | self addTreeLevel: anAsset indentationLevel: (anIndentation + 1) to: aStream ]! !
 
-	^ aPortfolio named.! !
+!TreeAccountSummary methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 11:56:47'!
+addTreeLevelReceptiveAccountFor: aReceptiveAccount indentationLevel: anIndentation to: aStream
 
-!TreeAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:29:28'!
-treeLevelReceptiveAccountFor: aReceptiveAccount
+	| tabSpace |
+	
+	tabSpace _ ''.
+	
+	anIndentation timesRepeat: [ tabSpace _ tabSpace , '    ' ].
 
-	^ aReceptiveAccount named.! !
+	aStream add: tabSpace, aReceptiveAccount named! !
 
-!TreeAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:36:32'!
+!TreeAccountSummary methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 11:25:41'!
 value
 
 	| lines |
 
 	lines _ OrderedCollection new.
 	
-	lines add: asset named.
-
-	asset accounts do: [ :anAccount | lines add: (self treeLevel: anAccount indentationLevel: '    ') ].
+	self addTreeLevel: asset indentationLevel: 0 to: lines.
 
 	^ lines! !
 
@@ -1334,10 +1363,10 @@ initializeWith: aFinancialAsset with: aReceptiveAccountBlock with: aPortfolioBlo
 	self subclassResponsibility ! !
 
 
-!FinancialAssetReportDispatcher methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:14:40'!
+!FinancialAssetReportDispatcher methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 11:53:14'!
 execute
 
-	^ block value.! !
+	block value! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
