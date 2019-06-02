@@ -231,7 +231,7 @@ test13PrintsTreeStructureWithThreeLevels
 	self assert: '        Cuenta de Angeles' equals: lines next.
 	self assert: lines atEnd! !
 
-!AccountReportTest methodsFor: 'testing' stamp: 'JR 6/2/2019 18:10:01'!
+!AccountReportTest methodsFor: 'testing' stamp: 'JR 6/2/2019 18:39:33'!
 test14PrintsSpecialAccountSummaryOnePortfolioOneAccountOneDeposit
 
 	| familyPortfolio aReport lines myAccount value|
@@ -247,13 +247,13 @@ test14PrintsSpecialAccountSummaryOnePortfolioOneAccountOneDeposit
 	
 	self assert: 'Portfolio de la familia' equals: lines next.
 	self assert: '    Cuenta mia' equals: lines next.
-	self assert: '        Depósito por ', value printString, '.' equals: lines next.
+	self assert: '        Depósito por ', value printString equals: lines next.
 	self assert: '        Balance = ', value printString equals: lines next.
 	self assert: '    Balance = ', value printString equals: lines next.
 	self assert: lines atEnd
 	! !
 
-!AccountReportTest methodsFor: 'testing' stamp: 'JR 6/2/2019 18:09:57'!
+!AccountReportTest methodsFor: 'testing' stamp: 'JR 6/2/2019 18:40:07'!
 test15PrintsSpecialAccountSummary
 
 	| childrenPortfolio familyPortfolio aReport lines myAccount angiesAccount johnsAccount nnn qqq xxx yyy zzz georgiesAccount |
@@ -282,16 +282,16 @@ test15PrintsSpecialAccountSummary
 	
 	self assert: 'Portfolio de la familia' equals: lines next.
 	self assert: '    Cuenta mia' equals: lines next.
-	self assert: '        Depósito por ', xxx printString, '.' equals: lines next.
-	self assert: '        Extracción por ', yyy printString, '.' equals: lines next.
+	self assert: '        Depósito por ', xxx printString equals: lines next.
+	self assert: '        Extracción por ', yyy printString equals: lines next.
 	self assert: '        Balance = ', (xxx - yyy) printString equals: lines next.
 	self assert: '    Portfolio de hijos' equals: lines next.
 	self assert: '        Cuenta de Juan' equals: lines next.
-	self assert: '            Depósito por ', zzz printString, '.' equals: lines next.
-	self assert: '            Extracción por ', nnn printString, '.' equals: lines next.
+	self assert: '            Depósito por ', zzz printString equals: lines next.
+	self assert: '            Extracción por ', nnn printString equals: lines next.
 	self assert: '            Balance = ', (zzz - nnn) printString equals: lines next.
 	self assert: '        Cuenta de Angeles' equals: lines next.
-	self assert: '            Salida por transferencia de ', qqq printString, '.' equals: lines next.
+	self assert: '            Salida por extracción de ', qqq printString equals: lines next.
 	self assert: '            Balance = ', (qqq negated) printString equals: lines next.
 	self assert: '        Balance = ', (-125) printString equals: lines next.
 	self assert: '    Balance = ', (-100) printString equals: lines next.
@@ -759,6 +759,22 @@ AccountReport subclass: #SpecialAccountSummary
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
+!SpecialAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/2/2019 18:37:21'!
+addDescriptionFor: aTransaction indentationLevel: anIndentation to: aStream
+
+	| tabSpace |
+	
+	tabSpace _ ''.
+	
+	anIndentation timesRepeat: [ tabSpace _ tabSpace , '    ' ].
+
+	(TransactionReportDispatcher 
+		for: aTransaction
+		with: [ aStream add: tabSpace, (self descriptionForADeposit: aTransaction) ]
+		with: [ aStream add:  tabSpace, (self descriptionForAWithdraw: aTransaction) ]
+		with: [ aStream add:  tabSpace, (self descriptionForATransferenceDeposit: aTransaction) ]
+		with: [ aStream add:  tabSpace, (self descriptionForATransferenceWithdraw: aTransaction) ]) execute! !
+
 !SpecialAccountSummary methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 12:05:10'!
 addTreeLevel: aFinancialAsset indentationLevel: anIndentation to: aStream
 
@@ -783,10 +799,10 @@ addTreeLevelPortfolioFor: aPortfolio indentationLevel: anIndentation to: aStream
 	
 	aStream add: tabSpace, '    Balance = ', aPortfolio balance printString.! !
 
-!SpecialAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/2/2019 17:47:38'!
+!SpecialAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/2/2019 18:38:35'!
 addTreeLevelReceptiveAccountFor: aReceptiveAccount indentationLevel: anIndentation to: aStream
 
-	| tabSpace aReport lines x |
+	| tabSpace |
 	
 	tabSpace _ ''.
 	
@@ -794,12 +810,29 @@ addTreeLevelReceptiveAccountFor: aReceptiveAccount indentationLevel: anIndentati
 
 	aStream add: tabSpace, aReceptiveAccount named.
 	
-	aReport _ AccountSummary for: aReceptiveAccount.
+	aReceptiveAccount transactions do: [ :aTransaction | self addDescriptionFor: aTransaction indentationLevel: (anIndentation + 1) to: aStream ].
 	
-	lines _ ReadStream on: aReport value.
+	aStream add: tabSpace, '    Balance = ', aReceptiveAccount balance printString.! !
+
+!SpecialAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/2/2019 18:39:14'!
+descriptionForADeposit: aDeposit
+
+	^ 'Depósito por ', aDeposit value printString! !
+
+!SpecialAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/2/2019 18:39:09'!
+descriptionForATransferenceDeposit: aTransferenceDeposit
+
+	^ 'Entrada por deposito de ', aTransferenceDeposit value printString! !
+
+!SpecialAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/2/2019 18:39:01'!
+descriptionForATransferenceWithdraw: aTransferenceWithdraw
+
+	^ 'Salida por extracción de ', aTransferenceWithdraw value printString! !
+
+!SpecialAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/2/2019 18:39:17'!
+descriptionForAWithdraw: aWithdraw
 	
-	[(x _ lines next) notNil]
-		whileTrue: [aStream add: tabSpace, '    ', x]! !
+	^ 'Extracción por ', aWithdraw value printString! !
 
 !SpecialAccountSummary methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 12:05:11'!
 value
