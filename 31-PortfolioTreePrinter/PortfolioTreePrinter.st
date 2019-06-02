@@ -5,7 +5,7 @@ TestCase subclass: #AccountReportTest
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
-!AccountReportTest methodsFor: 'testing' stamp: 'AB 5/28/2019 20:00:08'!
+!AccountReportTest methodsFor: 'testing' stamp: 'JR 6/2/2019 17:43:42'!
 test01PrintAnAccountWithADepositOf50
 
 	| anAccount lines aReport value |
@@ -231,8 +231,29 @@ test13PrintsTreeStructureWithThreeLevels
 	self assert: '        Cuenta de Angeles' equals: lines next.
 	self assert: lines atEnd! !
 
-!AccountReportTest methodsFor: 'testing' stamp: 'AB 6/2/2019 12:07:10'!
-test14PrintsSpecialAccountSummary
+!AccountReportTest methodsFor: 'testing' stamp: 'JR 6/2/2019 17:49:30'!
+test14PrintsSpecialAccountSummaryOnePortfolioOneAccountOneDeposit
+
+	| familyPortfolio aReport lines myAccount value|
+	
+	value _ 50.
+	myAccount _ ReceptiveAccount named: 'Cuenta mia'.	
+	Deposit register: value on: myAccount.
+	familyPortfolio _ Portfolio named: 'Portfolio de la familia' with: myAccount.
+	
+	aReport _ SpecialAccountSummary for: familyPortfolio.
+
+	lines _ ReadStream on: aReport value.
+	
+	self assert: 'Portfolio de la familia' equals: lines next.
+	self assert: '    Cuenta mia' equals: lines next.
+	self assert: '        Depósito por ', value printString, '.' equals: lines next.
+	self assert: '        Balance = ', value printString equals: lines next.
+	self assert: lines atEnd
+	! !
+
+!AccountReportTest methodsFor: 'testing' stamp: 'JR 6/2/2019 17:31:14'!
+test15PrintsSpecialAccountSummary
 
 	| childrenPortfolio familyPortfolio aReport lines myAccount angiesAccount johnsAccount |
 	
@@ -737,10 +758,10 @@ addTreeLevelPortfolioFor: aPortfolio indentationLevel: anIndentation to: aStream
 	
 	aPortfolio accounts do: [ :anAsset | self addTreeLevel: anAsset indentationLevel: (anIndentation + 1) to: aStream ]! !
 
-!SpecialAccountSummary methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 12:09:30'!
+!SpecialAccountSummary methodsFor: 'as yet unclassified' stamp: 'JR 6/2/2019 17:47:38'!
 addTreeLevelReceptiveAccountFor: aReceptiveAccount indentationLevel: anIndentation to: aStream
 
-	| tabSpace |
+	| tabSpace aReport lines x |
 	
 	tabSpace _ ''.
 	
@@ -748,7 +769,12 @@ addTreeLevelReceptiveAccountFor: aReceptiveAccount indentationLevel: anIndentati
 
 	aStream add: tabSpace, aReceptiveAccount named.
 	
-	aReceptiveAccount transactions do: [ :aTransaction | self addTransactionTreeLevel: aTransaction indentationLevel: (anIndentation + 1) to: aStream ]! !
+	aReport _ AccountSummary for: aReceptiveAccount.
+	
+	lines _ ReadStream on: aReport value.
+	
+	[(x _ lines next) notNil]
+		whileTrue: [aStream add: tabSpace, '    ', x]! !
 
 !SpecialAccountSummary methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 12:05:11'!
 value
@@ -844,7 +870,7 @@ addTreeLevelPortfolioFor: aPortfolio indentationLevel: anIndentation to: aStream
 	
 	aPortfolio accounts do: [ :anAsset | self addTreeLevel: anAsset indentationLevel: (anIndentation + 1) to: aStream ]! !
 
-!TreeStructured methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 11:56:47'!
+!TreeStructured methodsFor: 'as yet unclassified' stamp: 'JR 6/2/2019 17:37:28'!
 addTreeLevelReceptiveAccountFor: aReceptiveAccount indentationLevel: anIndentation to: aStream
 
 	| tabSpace |
