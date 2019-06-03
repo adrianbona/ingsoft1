@@ -5,6 +5,18 @@ TestCase subclass: #AccountReportTest
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
+!AccountReportTest methodsFor: 'testing' stamp: 'AB 6/3/2019 19:03:36'!
+test00EmptyAccountOnAccountSummaryTestReturnsBalanceOf0
+
+	| anAccount lines aReport |
+	
+	anAccount _ ReceptiveAccount new.
+	aReport _ AccountSummary for: anAccount.
+
+	lines _ ReadStream on: aReport value.
+	
+	self assert: 'Balance = ', anAccount balance printString equals: lines next! !
+
 !AccountReportTest methodsFor: 'testing' stamp: 'JR 6/2/2019 17:43:42'!
 test01PrintAnAccountWithADepositOf50
 
