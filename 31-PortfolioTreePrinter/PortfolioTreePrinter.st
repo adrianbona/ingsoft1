@@ -231,7 +231,7 @@ test13PrintsTreeStructureWithThreeLevels
 	self assert: '        Cuenta de Angeles' equals: lines next.
 	self assert: lines atEnd! !
 
-!AccountReportTest methodsFor: 'testing' stamp: 'AB 6/2/2019 19:57:43'!
+!AccountReportTest methodsFor: 'testing' stamp: 'AB 6/3/2019 14:24:55'!
 test14PrintsSpecialAccountSummaryOnePortfolioOneAccountOneDeposit
 
 	| familyPortfolio aReport lines myAccount value|
@@ -247,13 +247,13 @@ test14PrintsSpecialAccountSummaryOnePortfolioOneAccountOneDeposit
 	
 	self assert: 'Portfolio de la familia' equals: lines next.
 	self assert: '    Cuenta mía' equals: lines next.
-	self assert: '        Depósito por ', value printString equals: lines next.
+	self assert: '        Depósito por ', value printString, '.' equals: lines next.
 	self assert: '        Balance = ', value printString equals: lines next.
 	self assert: '    Balance = ', value printString equals: lines next.
 	self assert: lines atEnd
 	! !
 
-!AccountReportTest methodsFor: 'testing' stamp: 'AB 6/2/2019 19:04:40'!
+!AccountReportTest methodsFor: 'testing' stamp: 'AB 6/3/2019 14:29:04'!
 test15PrintsSpecialAccountSummary
 
 	| childrenPortfolio familyPortfolio aReport lines myAccount angiesAccount johnsAccount georgiesAccount aDepositOf100 aDepositOf50 aTransferenceOf150 aWithdrawOf25 aWithdrawOf75 |
@@ -277,16 +277,16 @@ test15PrintsSpecialAccountSummary
 	
 	self assert: 'Portfolio de la familia' equals: lines next.
 	self assert: '    Cuenta mia' equals: lines next.
-	self assert: '        Depósito por ', aDepositOf50 value printString equals: lines next.
-	self assert: '        Extracción por ', aWithdrawOf25 value printString equals: lines next.
+	self assert: '        Depósito por ', aDepositOf50 value printString, '.' equals: lines next.
+	self assert: '        Extracción por ', aWithdrawOf25 value printString, '.' equals: lines next.
 	self assert: '        Balance = ', myAccount balance printString equals: lines next.
 	self assert: '    Portfolio de hijos' equals: lines next.
 	self assert: '        Cuenta de Juan' equals: lines next.
-	self assert: '            Depósito por ', aDepositOf100 value printString equals: lines next.
-	self assert: '            Extracción por ', aWithdrawOf75 value printString equals: lines next.
+	self assert: '            Depósito por ', aDepositOf100 value printString, '.' equals: lines next.
+	self assert: '            Extracción por ', aWithdrawOf75 value printString, '.' equals: lines next.
 	self assert: '            Balance = ', johnsAccount balance printString equals: lines next.
 	self assert: '        Cuenta de Angeles' equals: lines next.
-	self assert: '            Salida por extracción de ', aTransferenceOf150 value printString equals: lines next.
+	self assert: '            Salida por transferencia de ', aTransferenceOf150 value printString, '.' equals: lines next.
 	self assert: '            Balance = ', angiesAccount balance printString equals: lines next.
 	self assert: '        Balance = ', childrenPortfolio balance printString equals: lines next.
 	self assert: '    Balance = ', familyPortfolio balance printString equals: lines next.
@@ -701,50 +701,50 @@ AccountReport subclass: #AccountSummary
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
-!AccountSummary methodsFor: 'value' stamp: 'JR 6/1/2019 18:59:02'!
+!AccountSummary methodsFor: 'value' stamp: 'AB 6/3/2019 14:09:03'!
 value
 
 	| lines |
 
 	lines _ OrderedCollection new.
 
-	asset transactions do: [ :aTransaction | lines add: (self descriptionFor: aTransaction) ].
+	asset transactions do: [ :aTransaction | self printDescriptionFor: aTransaction to: lines ].
 
 	lines add: 'Balance = ', asset balance printString.
 	
 	^ lines! !
 
 
-!AccountSummary methodsFor: 'transaction description' stamp: 'AB 6/2/2019 19:18:07'!
-descriptionFor: aTransaction
+!AccountSummary methodsFor: 'transaction description' stamp: 'AB 6/3/2019 14:11:50'!
+printDescriptionFor: aTransaction to: aStream
 
-	^ (BlockDispatcherToTransaction 
+	(BlockDispatcherToTransaction 
 		for: aTransaction
-		withDepositBlock: [ self descriptionForADeposit: aTransaction ]
-		withWithdrawBlock: [ self descriptionForAWithdraw: aTransaction ]
-		withTransferenceDepositBlock: [ self descriptionForATransferenceDeposit: aTransaction ]
-		withTransferenceWithdrawBlock: [ self descriptionForATransferenceWithdraw: aTransaction ]) execute 
+		withDepositBlock: [ self printDescriptionForADeposit: aTransaction to: aStream ]
+		withWithdrawBlock: [ self printDescriptionForAWithdraw: aTransaction to: aStream ]
+		withTransferenceDepositBlock: [ self printDescriptionForATransferenceDeposit: aTransaction to: aStream ]
+		withTransferenceWithdrawBlock: [ self printDescriptionForATransferenceWithdraw: aTransaction to: aStream ]) execute 
 	! !
 
-!AccountSummary methodsFor: 'transaction description' stamp: 'JR 6/1/2019 18:54:08'!
-descriptionForADeposit: aDeposit
+!AccountSummary methodsFor: 'transaction description' stamp: 'AB 6/3/2019 14:10:31'!
+printDescriptionForADeposit: aDeposit to: aStream
 
-	^ 'Depósito por ', aDeposit value printString, '.'! !
+	aStream add: 'Depósito por ', aDeposit value printString, '.'! !
 
-!AccountSummary methodsFor: 'transaction description' stamp: 'JR 6/1/2019 18:54:15'!
-descriptionForATransferenceDeposit: aTransferenceDeposit
+!AccountSummary methodsFor: 'transaction description' stamp: 'AB 6/3/2019 14:11:39'!
+printDescriptionForATransferenceDeposit: aTransferenceDeposit to: aStream
 
-	^ 'Entrada por transferencia de ', aTransferenceDeposit value printString, '.'! !
+	aStream add: 'Entrada por transferencia de ', aTransferenceDeposit value printString, '.'! !
 
-!AccountSummary methodsFor: 'transaction description' stamp: 'JR 6/1/2019 18:54:24'!
-descriptionForATransferenceWithdraw: aTransferenceWithdraw
+!AccountSummary methodsFor: 'transaction description' stamp: 'AB 6/3/2019 14:11:18'!
+printDescriptionForATransferenceWithdraw: aTransferenceWithdraw to: aStream
 
-	^ 'Salida por transferencia de ', aTransferenceWithdraw value printString, '.'! !
+	aStream add: 'Salida por transferencia de ', aTransferenceWithdraw value printString, '.'! !
 
-!AccountSummary methodsFor: 'transaction description' stamp: 'JR 6/1/2019 18:54:31'!
-descriptionForAWithdraw: aWithdraw
+!AccountSummary methodsFor: 'transaction description' stamp: 'AB 6/3/2019 14:10:58'!
+printDescriptionForAWithdraw: aWithdraw to: aStream
 	
-	^ 'Extracción por ', aWithdraw value printString, '.'! !
+	aStream add: 'Extracción por ', aWithdraw value printString, '.'! !
 
 
 !classDefinition: #SpecialAccountSummary category: #PortfolioTreePrinter!
@@ -766,47 +766,16 @@ value
 	^ lines! !
 
 
-!SpecialAccountSummary methodsFor: 'transaction description' stamp: 'AB 6/2/2019 19:49:25'!
-addDescriptionFor: aTransaction indentationLevel: anIndentation to: aStream
-
-	(BlockDispatcherToTransaction 
-		for: aTransaction
-		withDepositBlock: [ self descriptionForADeposit: aTransaction usingIndentationLevel: anIndentation to: aStream ]
-		withWithdrawBlock: [ self descriptionForAWithdraw: aTransaction usingIndentationLevel: anIndentation to: aStream ]
-		withTransferenceDepositBlock: [ self descriptionForATransferenceDeposit: aTransaction usingIndentationLevel: anIndentation to: aStream ]
-		withTransferenceWithdrawBlock: [ self descriptionForATransferenceWithdraw: aTransaction  usingIndentationLevel: anIndentation to: aStream ]) execute! !
-
-!SpecialAccountSummary methodsFor: 'transaction description' stamp: 'AB 6/2/2019 19:56:30'!
-descriptionForADeposit: aDeposit usingIndentationLevel: anIndentation to: aStream
-
-	aStream add: (self spaceIndentationOfSize: anIndentation), 'Depósito por ', aDeposit value printString! !
-
-!SpecialAccountSummary methodsFor: 'transaction description' stamp: 'AB 6/2/2019 19:56:36'!
-descriptionForATransferenceDeposit: aTransferenceDeposit usingIndentationLevel: anIndentation to: aStream
-
-	aStream add: (self spaceIndentationOfSize: anIndentation), 'Entrada por déposito de ', aTransferenceDeposit value printString! !
-
-!SpecialAccountSummary methodsFor: 'transaction description' stamp: 'AB 6/2/2019 19:55:03'!
-descriptionForATransferenceWithdraw: aTransferenceWithdraw usingIndentationLevel: anIndentation to: aStream
-
-	aStream add: (self spaceIndentationOfSize: anIndentation), 'Salida por extracción de ', aTransferenceWithdraw value printString! !
-
-!SpecialAccountSummary methodsFor: 'transaction description' stamp: 'AB 6/2/2019 19:54:43'!
-descriptionForAWithdraw: aWithdraw usingIndentationLevel: anIndentation to: aStream
-	
-	aStream add: (self spaceIndentationOfSize: anIndentation), 'Extracción por ', aWithdraw value printString! !
-
-
-!SpecialAccountSummary methodsFor: 'asset description' stamp: 'AB 6/2/2019 19:59:49'!
+!SpecialAccountSummary methodsFor: 'asset description' stamp: 'AB 6/3/2019 14:30:15'!
 printBalanceFrom: anAsset usingIndentationLevel: anIndentation to: aStream
 
 	| indentation |
 	
 	indentation _ self spaceIndentationOfSize: anIndentation.
 	
-	aStream add: indentation, '    Balance = ', anAsset balance printString! !
+	aStream add: indentation, 'Balance = ', anAsset balance printString! !
 
-!SpecialAccountSummary methodsFor: 'asset description' stamp: 'AB 6/2/2019 20:00:30'!
+!SpecialAccountSummary methodsFor: 'asset description' stamp: 'AB 6/3/2019 14:29:54'!
 printPortfolioLevelFrom: aPortfolio usingIndentationLevel: anIndentation to: aStream
 
 	| indentation |
@@ -817,9 +786,9 @@ printPortfolioLevelFrom: aPortfolio usingIndentationLevel: anIndentation to: aSt
 	
 	aPortfolio accounts do: [ :anAsset | self printTreeStructuredSummary: anAsset usingIndentationLevel: (anIndentation + 1) to: aStream ].
 	
-	self printBalanceFrom: aPortfolio usingIndentationLevel: anIndentation to: aStream! !
+	self printBalanceFrom: aPortfolio usingIndentationLevel: (anIndentation + 1) to: aStream! !
 
-!SpecialAccountSummary methodsFor: 'asset description' stamp: 'AB 6/2/2019 20:00:39'!
+!SpecialAccountSummary methodsFor: 'asset description' stamp: 'AB 6/3/2019 14:29:20'!
 printReceptiveAccountLevelFrom: aReceptiveAccount usingIndentationLevel: anIndentation to: aStream
 
 	| indentation |
@@ -828,9 +797,8 @@ printReceptiveAccountLevelFrom: aReceptiveAccount usingIndentationLevel: anInden
 
 	aStream add: indentation, aReceptiveAccount named.
 	
-	aReceptiveAccount transactions do: [ :aTransaction | self addDescriptionFor: aTransaction indentationLevel: (anIndentation + 1) to: aStream ].
-	
-	self printBalanceFrom: aReceptiveAccount usingIndentationLevel: anIndentation to: aStream! !
+	((AccountSummary for: aReceptiveAccount) value) do: [ :summaryLine | aStream add: (self spaceIndentationOfSize: anIndentation + 1), summaryLine ].
+! !
 
 !SpecialAccountSummary methodsFor: 'asset description' stamp: 'AB 6/2/2019 19:31:01'!
 printTreeStructuredSummary: aFinancialAsset usingIndentationLevel: anIndentation to: aStream
@@ -842,16 +810,10 @@ printTreeStructuredSummary: aFinancialAsset usingIndentationLevel: anIndentation
 ! !
 
 
-!SpecialAccountSummary methodsFor: 'indentation' stamp: 'AB 6/2/2019 19:42:08'!
+!SpecialAccountSummary methodsFor: 'indentation' stamp: 'AB 6/3/2019 14:41:01'!
 spaceIndentationOfSize: aNumberOfSpacesToIndent
 
-	| indentation |
-	
-	indentation _ ''.
-	
-	aNumberOfSpacesToIndent timesRepeat: [ indentation _ indentation , '    ' ].
-
-	^ indentation ! !
+	^ String streamContents: [ :str | aNumberOfSpacesToIndent timesRepeat: [str nextPutAll: '    '] ]! !
 
 
 !classDefinition: #TransferNet category: #PortfolioTreePrinter!
@@ -948,16 +910,10 @@ value
 	^ lines! !
 
 
-!TreeStructured methodsFor: 'indentation' stamp: 'AB 6/2/2019 19:42:31'!
+!TreeStructured methodsFor: 'indentation' stamp: 'AB 6/3/2019 14:40:33'!
 spaceIndentationOfSize: aNumberOfSpacesToIndent
 
-	| indentation |
-	
-	indentation _ ''.
-	
-	aNumberOfSpacesToIndent timesRepeat: [ indentation _ indentation , '    ' ].
-
-	^ indentation ! !
+	^ String streamContents: [ :str | aNumberOfSpacesToIndent timesRepeat: [str nextPutAll: '    '] ]! !
 
 
 !classDefinition: #AccountTransaction category: #PortfolioTreePrinter!
@@ -1213,7 +1169,7 @@ initializeFor: aFinancialAsset withReceptiveAccountBlock: aReceptiveAccountBlock
 	self subclassResponsibility ! !
 
 
-!BlockDispatcherToFinancialAsset methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 11:53:14'!
+!BlockDispatcherToFinancialAsset methodsFor: 'executition' stamp: 'AB 6/2/2019 11:53:14'!
 execute
 
 	block value! !
@@ -1240,7 +1196,7 @@ BlockDispatcherToFinancialAsset subclass: #PortfolioReportDispatcher
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
-!PortfolioReportDispatcher methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 19:14:52'!
+!PortfolioReportDispatcher methodsFor: 'initialization' stamp: 'AB 6/2/2019 19:14:52'!
 initializeFor: aFinancialAsset withReceptiveAccountBlock: aReceptiveAccountBlock withPortofolioBlock: aPortfolioBlock
 
 	block _ aPortfolioBlock ! !
@@ -1264,7 +1220,7 @@ BlockDispatcherToFinancialAsset subclass: #ReceptiveAccountReportDispatcher
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
-!ReceptiveAccountReportDispatcher methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 19:14:52'!
+!ReceptiveAccountReportDispatcher methodsFor: 'initialization' stamp: 'AB 6/2/2019 19:14:52'!
 initializeFor: aFinancialAsset withReceptiveAccountBlock: aReceptiveAccountBlock withPortofolioBlock: aPortfolioBlock
 
 	block _ aReceptiveAccountBlock ! !
@@ -1288,15 +1244,16 @@ Object subclass: #BlockDispatcherToTransaction
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
-!BlockDispatcherToTransaction methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 18:38:09'!
-execute
-
-	^ block value.! !
-
-!BlockDispatcherToTransaction methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 19:17:29'!
+!BlockDispatcherToTransaction methodsFor: 'initialization' stamp: 'AB 6/2/2019 19:17:29'!
 initializeFor: aTransaction withDepositBlock: aDepositBlock withWithdrawBlock: aWithdrawBlock withTransferenceDepositBlock: aTransferenceDepositBlock withTransferenceWithdrawBlock: aTransferenceWithdrawBlock
 
 	self subclassResponsibility ! !
+
+
+!BlockDispatcherToTransaction methodsFor: 'execution' stamp: 'JR 6/1/2019 18:38:09'!
+execute
+
+	^ block value.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1320,7 +1277,7 @@ BlockDispatcherToTransaction subclass: #DepositReportDispatcher
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
-!DepositReportDispatcher methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 19:17:29'!
+!DepositReportDispatcher methodsFor: 'initialization' stamp: 'AB 6/2/2019 19:17:29'!
 initializeFor: aTransaction withDepositBlock: aDepositBlock withWithdrawBlock: aWithdrawBlock withTransferenceDepositBlock: transferenceDepositBlock withTransferenceWithdrawBlock: transferenceWithdrawBlock
 
 	block _ aDepositBlock ! !
@@ -1344,7 +1301,7 @@ BlockDispatcherToTransaction subclass: #TransferenceDepositReportDispatcher
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
-!TransferenceDepositReportDispatcher methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 19:17:29'!
+!TransferenceDepositReportDispatcher methodsFor: 'initialization' stamp: 'AB 6/2/2019 19:17:29'!
 initializeFor: aTransaction withDepositBlock: aDepositBlock withWithdrawBlock: aWithdrawBlock withTransferenceDepositBlock: transferenceDepositBlock withTransferenceWithdrawBlock: transferenceWithdrawBlock
 
 	block _ transferenceDepositBlock ! !
@@ -1368,7 +1325,7 @@ BlockDispatcherToTransaction subclass: #TransferenceWithdrawReportDispatcher
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
-!TransferenceWithdrawReportDispatcher methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 19:17:29'!
+!TransferenceWithdrawReportDispatcher methodsFor: 'initialization' stamp: 'AB 6/2/2019 19:17:29'!
 initializeFor: aTransaction withDepositBlock: aDepositBlock withWithdrawBlock: aWithdrawBlock withTransferenceDepositBlock: transferenceDepositBlock withTransferenceWithdrawBlock: transferenceWithdrawBlock
 
 	block _ transferenceWithdrawBlock ! !
@@ -1392,7 +1349,7 @@ BlockDispatcherToTransaction subclass: #WithdrawReportDispatcher
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter'!
 
-!WithdrawReportDispatcher methodsFor: 'as yet unclassified' stamp: 'AB 6/2/2019 19:17:29'!
+!WithdrawReportDispatcher methodsFor: 'initialization' stamp: 'AB 6/2/2019 19:17:29'!
 initializeFor: aTransaction withDepositBlock: aDepositBlock withWithdrawBlock: aWithdrawBlock withTransferenceDepositBlock: transferenceDepositBlock withTransferenceWithdrawBlock: transferenceWithdrawBlock
 
 	block _ aWithdrawBlock ! !
@@ -1426,6 +1383,16 @@ isComposedBy: anAccount
 
 	self subclassResponsibility ! !
 
+!FinancialAsset methodsFor: 'testing' stamp: 'JR 6/1/2019 20:27:10'!
+isPortfolio
+
+	^ false! !
+
+!FinancialAsset methodsFor: 'testing' stamp: 'JR 6/1/2019 20:27:22'!
+isReceptiveAccount
+
+	^ false! !
+
 
 !FinancialAsset methodsFor: 'balance' stamp: 'HAW 5/25/2019 12:23:40'!
 balance
@@ -1448,17 +1415,6 @@ transactions
 addedTo: aPortfolio
 
 	self subclassResponsibility ! !
-
-
-!FinancialAsset methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:27:10'!
-isPortfolio
-
-	^ false! !
-
-!FinancialAsset methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:27:22'!
-isReceptiveAccount
-
-	^ false! !
 
 
 !classDefinition: #Portfolio category: #PortfolioTreePrinter!
@@ -1559,6 +1515,11 @@ isComposedBy: anAccount
 
 	^ self = anAccount or: [ accounts anySatisfy: [ :composedAccount | (composedAccount isComposedBy: anAccount) or: [ anAccount isComposedBy: composedAccount ]]]! !
 
+!Portfolio methodsFor: 'testing' stamp: 'JR 6/1/2019 20:27:51'!
+isPortfolio
+
+	^ true! !
+
 
 !Portfolio methodsFor: 'account management - private' stamp: 'HAW 5/25/2019 12:17:31'!
 addRootParentsTo: rootParents
@@ -1588,12 +1549,6 @@ named
 named: aName
 
 	name _ aName! !
-
-
-!Portfolio methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:27:51'!
-isPortfolio
-
-	^ true! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1696,6 +1651,11 @@ isComposedBy: anAccount
 
 	^self = anAccount ! !
 
+!ReceptiveAccount methodsFor: 'testing' stamp: 'JR 6/1/2019 20:28:01'!
+isReceptiveAccount
+
+	^ true! !
+
 
 !ReceptiveAccount methodsFor: 'composition' stamp: 'HAW 5/25/2019 12:03:32'!
 addedTo: aPortfolio 
@@ -1703,17 +1663,12 @@ addedTo: aPortfolio
 	! !
 
 
-!ReceptiveAccount methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:28:01'!
-isReceptiveAccount
-
-	^ true! !
-
-!ReceptiveAccount methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:41:52'!
+!ReceptiveAccount methodsFor: 'naming' stamp: 'JR 6/1/2019 20:41:52'!
 named
 
 	^ name ! !
 
-!ReceptiveAccount methodsFor: 'as yet unclassified' stamp: 'JR 6/1/2019 20:41:29'!
+!ReceptiveAccount methodsFor: 'naming' stamp: 'JR 6/1/2019 20:41:29'!
 named: aName
 
 	name _ aName ! !
