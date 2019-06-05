@@ -1,3 +1,64 @@
+!classDefinition: #CashierTest category: #'TusLibros.com'!
+TestCase subclass: #CashierTest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!CashierTest methodsFor: 'as yet unclassified' stamp: 'JR 6/5/2019 07:30:36'!
+test01CannotCheckoutEmptyCart
+
+	| catalogue shoppingCart paymentMethod priceList |
+	
+	catalogue _ Catalogue new.
+	shoppingCart _ ShoppingCart with: catalogue.
+	
+	self should: [Cashier checkout: shoppingCart withPricesFrom: priceList payingWith: paymentMethod]
+	raise: Error
+	withExceptionDo: [ :anError |
+		self assert: anError messageText = Cashier shoppingCartCannotBeEmpty.
+	].
+	! !
+
+!CashierTest methodsFor: 'as yet unclassified' stamp: 'JR 6/5/2019 07:41:57'!
+test02CannotCheckoutCartWithItemsNotFoundInPriceList
+
+	| catalogue shoppingCart paymentMethod priceList |
+	
+	catalogue _ Catalogue new.
+	catalogue add: #book1.
+	shoppingCart _ ShoppingCart with: catalogue.
+	shoppingCart add: #book1.
+	priceList _ OrderedCollection new.
+	
+	self should: [Cashier checkout: shoppingCart withPricesFrom: priceList payingWith: paymentMethod]
+	raise: Error
+	withExceptionDo: [ :anError |
+		self assert: anError messageText = Cashier itemNotFoundInPriceList.
+	].
+	! !
+
+!CashierTest methodsFor: 'as yet unclassified' stamp: 'JR 6/5/2019 07:46:53'!
+test03CannotCheckoutCartWithoutSufficientFunds
+
+	| catalogue shoppingCart paymentMethod priceList |
+	
+	catalogue _ Catalogue new.
+	catalogue add: #book1.
+	shoppingCart _ ShoppingCart with: catalogue.
+	shoppingCart add: #book1.
+	priceList _ Dictionary new.
+	priceList at: #book1 put: 1.
+	paymentMethod _ 0.
+	
+	self should: [Cashier checkout: shoppingCart withPricesFrom: priceList payingWith: paymentMethod]
+	raise: Error
+	withExceptionDo: [ :anError |
+		self assert: anError messageText = Cashier unsufficientFunds.
+	].
+	! !
+
+
 !classDefinition: #ShoppingCartTest category: #'TusLibros.com'!
 TestCase subclass: #ShoppingCartTest
 	instanceVariableNames: 'emptyCatalogue threeBooksCatalogue oneBookCatalogue twoBooksCatalogue'
@@ -149,6 +210,51 @@ setUp
 
 	threeBooksCatalogue _ Catalogue new.
 	threeBooksCatalogue add: #book1; add: #book2; add: #book3.! !
+
+
+!classDefinition: #Cashier category: #'TusLibros.com'!
+Object subclass: #Cashier
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Cashier class' category: #'TusLibros.com'!
+Cashier class
+	instanceVariableNames: ''!
+
+!Cashier class methodsFor: 'error handling' stamp: 'JR 6/5/2019 07:37:30'!
+itemNotFoundInPriceList
+
+	^ 'Shopping cart hast items not found in price list'! !
+
+!Cashier class methodsFor: 'error handling' stamp: 'JR 6/5/2019 07:31:18'!
+shoppingCartCannotBeEmpty
+
+	^ 'Shopping cart cannot be empty'! !
+
+!Cashier class methodsFor: 'error handling' stamp: 'JR 6/5/2019 07:47:21'!
+unsufficientFunds
+	
+	^ 'Unsufficient funds'! !
+
+
+!Cashier class methodsFor: 'checkout' stamp: 'JR 6/5/2019 07:53:03'!
+checkout: shoppingCart withPricesFrom: priceList payingWith: paymentMethod
+
+	| charge |
+	
+	(shoppingCart isEmpty) ifTrue: [ self error: Cashier shoppingCartCannotBeEmpty ].
+	
+	shoppingCart items do: [ :anItem | (priceList includes: anItem) ifFalse: [ self error: Cashier itemNotFoundInPriceList ]].
+	
+	charge _ 0.
+	
+	shoppingCart items do: [ :anItem | 
+			charge _ charge + (priceList at: anItem)
+		].! !
 
 
 !classDefinition: #Catalogue category: #'TusLibros.com'!
