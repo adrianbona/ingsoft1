@@ -5,58 +5,56 @@ TestCase subclass: #CashierTest
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!CashierTest methodsFor: 'as yet unclassified' stamp: 'JR 6/5/2019 07:30:36'!
+!CashierTest methodsFor: 'as yet unclassified' stamp: 'AB 6/5/2019 18:56:36'!
 test01CannotCheckoutEmptyCart
 
 	| catalogue shoppingCart paymentMethod priceList |
 	
-	catalogue _ Catalogue new.
+	catalogue _ OrderedCollection new.
 	shoppingCart _ ShoppingCart with: catalogue.
 	
-	self should: [Cashier checkout: shoppingCart withPricesFrom: priceList payingWith: paymentMethod]
+	self should: [ Cashier checkout: shoppingCart withPricesFrom: priceList payingWith: paymentMethod ]
 	raise: Error
 	withExceptionDo: [ :anError |
-		self assert: anError messageText = Cashier shoppingCartCannotBeEmpty.
-	].
-	! !
+		self assert: anError messageText = Cashier shoppingCartCanNotBeEmpty.
+	]! !
 
-!CashierTest methodsFor: 'as yet unclassified' stamp: 'JR 6/5/2019 07:41:57'!
+!CashierTest methodsFor: 'as yet unclassified' stamp: 'AB 6/5/2019 19:06:34'!
 test02CannotCheckoutCartWithItemsNotFoundInPriceList
 
 	| catalogue shoppingCart paymentMethod priceList |
 	
-	catalogue _ Catalogue new.
-	catalogue add: #book1.
+	catalogue _ OrderedCollection with: #book1.
 	shoppingCart _ ShoppingCart with: catalogue.
 	shoppingCart add: #book1.
-	priceList _ OrderedCollection new.
+	priceList _ Dictionary new.
 	
-	self should: [Cashier checkout: shoppingCart withPricesFrom: priceList payingWith: paymentMethod]
+	self should: [ Cashier checkout: shoppingCart withPricesFrom: priceList payingWith: paymentMethod ]
 	raise: Error
 	withExceptionDo: [ :anError |
 		self assert: anError messageText = Cashier itemNotFoundInPriceList.
 	].
 	! !
 
-!CashierTest methodsFor: 'as yet unclassified' stamp: 'JR 6/5/2019 07:46:53'!
+!CashierTest methodsFor: 'as yet unclassified' stamp: 'AB 6/5/2019 19:14:00'!
 test03CannotCheckoutCartWithoutSufficientFunds
 
 	| catalogue shoppingCart paymentMethod priceList |
 	
-	catalogue _ Catalogue new.
-	catalogue add: #book1.
+	catalogue _ OrderedCollection with: #book1.
 	shoppingCart _ ShoppingCart with: catalogue.
 	shoppingCart add: #book1.
+
 	priceList _ Dictionary new.
 	priceList at: #book1 put: 1.
-	paymentMethod _ 0.
 	
-	self should: [Cashier checkout: shoppingCart withPricesFrom: priceList payingWith: paymentMethod]
+	paymentMethod _ PaymentMethod new.
+	
+	self should: [ Cashier checkout: shoppingCart withPricesFrom: priceList payingWith: paymentMethod ]
 	raise: Error
 	withExceptionDo: [ :anError |
-		self assert: anError messageText = Cashier unsufficientFunds.
-	].
-	! !
+		self assert: anError messageText = PaymentMethod unsufficientFunds.
+	]! !
 
 
 !classDefinition: #ShoppingCartTest category: #'TusLibros.com'!
@@ -197,18 +195,18 @@ test10CanNotAddABookNotIncludedTheCatalogue
 		].! !
 
 
-!ShoppingCartTest methodsFor: 'setUp' stamp: 'AB 6/1/2019 16:13:26'!
+!ShoppingCartTest methodsFor: 'setUp' stamp: 'AB 6/5/2019 18:47:39'!
 setUp
 
-	emptyCatalogue _ Catalogue new.
+	emptyCatalogue _ OrderedCollection new.
 
-	oneBookCatalogue _ Catalogue new.
+	oneBookCatalogue _ OrderedCollection new.
 	oneBookCatalogue add: #aBook.
 
-	twoBooksCatalogue _ Catalogue new.
+	twoBooksCatalogue _ OrderedCollection new.
 	twoBooksCatalogue add: #aBook; add: #anotherBook. 
 
-	threeBooksCatalogue _ Catalogue new.
+	threeBooksCatalogue _ OrderedCollection new.
 	threeBooksCatalogue add: #book1; add: #book2; add: #book3.! !
 
 
@@ -230,56 +228,52 @@ itemNotFoundInPriceList
 
 	^ 'Shopping cart hast items not found in price list'! !
 
-!Cashier class methodsFor: 'error handling' stamp: 'JR 6/5/2019 07:31:18'!
-shoppingCartCannotBeEmpty
+!Cashier class methodsFor: 'error handling' stamp: 'AB 6/5/2019 18:49:13'!
+shoppingCartCanNotBeEmpty
 
 	^ 'Shopping cart cannot be empty'! !
 
-!Cashier class methodsFor: 'error handling' stamp: 'JR 6/5/2019 07:47:21'!
-unsufficientFunds
-	
-	^ 'Unsufficient funds'! !
 
-
-!Cashier class methodsFor: 'checkout' stamp: 'JR 6/5/2019 07:53:03'!
+!Cashier class methodsFor: 'checkout' stamp: 'AB 6/5/2019 19:09:56'!
 checkout: shoppingCart withPricesFrom: priceList payingWith: paymentMethod
 
 	| charge |
 	
-	(shoppingCart isEmpty) ifTrue: [ self error: Cashier shoppingCartCannotBeEmpty ].
+	(shoppingCart isEmpty) ifTrue: [ self error: Cashier shoppingCartCanNotBeEmpty ].
 	
-	shoppingCart items do: [ :anItem | (priceList includes: anItem) ifFalse: [ self error: Cashier itemNotFoundInPriceList ]].
+	(shoppingCart items allSatisfy: [ :anItem | priceList includesKey: anItem ]) ifFalse: [ self error: Cashier itemNotFoundInPriceList ].
 	
 	charge _ 0.
 	
 	shoppingCart items do: [ :anItem | 
 			charge _ charge + (priceList at: anItem)
-		].! !
+		].
+	
+	paymentMethod charge: charge! !
 
 
-!classDefinition: #Catalogue category: #'TusLibros.com'!
-Object subclass: #Catalogue
-	instanceVariableNames: 'items'
+!classDefinition: #PaymentMethod category: #'TusLibros.com'!
+Object subclass: #PaymentMethod
+	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!Catalogue methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:06:58'!
-add: anItem
+!PaymentMethod methodsFor: 'as yet unclassified' stamp: 'AB 6/5/2019 19:13:10'!
+charge: anAmount
 
-	items add: anItem.
-! !
+	self error: PaymentMethod unsufficientFunds ! !
 
-!Catalogue methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:07:18'!
-includes: anItem
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-	^ items includes: anItem! !
+!classDefinition: 'PaymentMethod class' category: #'TusLibros.com'!
+PaymentMethod class
+	instanceVariableNames: ''!
 
-!Catalogue methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:06:44'!
-initialize
-
-	items _ Set new.
-	super initialize! !
+!PaymentMethod class methodsFor: 'as yet unclassified' stamp: 'AB 6/5/2019 19:12:27'!
+unsufficientFunds
+	
+	^ 'Unsufficient funds'! !
 
 
 !classDefinition: #ShoppingCart category: #'TusLibros.com'!
@@ -352,22 +346,23 @@ initializeWith: aCatalogue
 ShoppingCart class
 	instanceVariableNames: ''!
 
-!ShoppingCart class methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:10:42'!
+!ShoppingCart class methodsFor: 'instance creation' stamp: 'AB 6/1/2019 16:05:47'!
+with: aCatalogue
+	
+	^ self new initializeWith: aCatalogue! !
+
+
+!ShoppingCart class methodsFor: 'error handling' stamp: 'AB 6/1/2019 16:10:42'!
 catalogueDoestNotIncludeItem
 
 	^ 'Catalogue does not include item'! !
 
-!ShoppingCart class methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 15:29:39'!
+!ShoppingCart class methodsFor: 'error handling' stamp: 'AB 6/5/2019 18:53:04'!
 quantityMustBeAnIntegerValue
 	
-	^ 'Quantity must be an integer value.'! !
+	^ 'Quantity must be an integer value'! !
 
-!ShoppingCart class methodsFor: 'as yet unclassified' stamp: 'JR 5/31/2019 19:09:34'!
+!ShoppingCart class methodsFor: 'error handling' stamp: 'AB 6/5/2019 18:53:06'!
 quantityMustBeBiggerThanOneError
 	
-	^ 'Quantity must be bigger than one.'! !
-
-!ShoppingCart class methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:05:47'!
-with: aCatalogue
-	
-	^ self new initializeWith: aCatalogue! !
+	^ 'Quantity must be bigger than one'! !
