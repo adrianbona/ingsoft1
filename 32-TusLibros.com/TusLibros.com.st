@@ -1,3 +1,62 @@
+!classDefinition: #CashierTest category: #'TusLibros.com'!
+TestCase subclass: #CashierTest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!CashierTest methodsFor: 'as yet unclassified' stamp: 'AB 6/5/2019 23:05:41'!
+test01CannotCheckoutEmptyCart
+
+	| catalogue shoppingCart priceList |
+	
+	catalogue _ OrderedCollection new.
+	shoppingCart _ ShoppingCart with: catalogue.
+	
+	self should: [ | creditCard | Cashier checkout: shoppingCart withPricesFrom: priceList payingWith: creditCard ]
+	raise: Error
+	withExceptionDo: [ :anError |
+		self assert: anError messageText = Cashier shoppingCartCanNotBeEmpty.
+	]! !
+
+!CashierTest methodsFor: 'as yet unclassified' stamp: 'AB 6/5/2019 23:06:04'!
+test02CannotCheckoutCartWithItemsNotFoundInPriceList
+
+	| catalogue shoppingCart priceList |
+	
+	catalogue _ OrderedCollection with: #book1.
+	shoppingCart _ ShoppingCart with: catalogue.
+	shoppingCart add: #book1.
+	priceList _ Dictionary new.
+	
+	self should: [ | creditCard | Cashier checkout: shoppingCart withPricesFrom: priceList payingWith: creditCard ]
+	raise: Error
+	withExceptionDo: [ :anError |
+		self assert: anError messageText = Cashier itemNotFoundInPriceList.
+	].
+	! !
+
+!CashierTest methodsFor: 'as yet unclassified' stamp: 'AB 6/5/2019 23:10:45'!
+test03CannotCheckoutCartWithExpiredCreditCard
+
+	| catalogue shoppingCart priceList creditCard |
+	
+	catalogue _ OrderedCollection with: #book1.
+	shoppingCart _ ShoppingCart with: catalogue.
+	shoppingCart add: #book1.
+
+	priceList _ Dictionary new.
+	priceList at: #book1 put: 1.
+	
+	creditCard _ CreditCard with: '1234567890123456' with: (GregorianMonthOfYear year: 2019 month: April ) with: 'Jorge'.
+	
+	self should: [ Cashier checkout: shoppingCart withPricesFrom: priceList payingWith: creditCard ]
+	raise: Error
+	withExceptionDo: [ :anError |
+		self assert: anError messageText = Cashier expiredCreditCardIsNotValid
+	]! !
+
+
 !classDefinition: #ShoppingCartTest category: #'TusLibros.com'!
 TestCase subclass: #ShoppingCartTest
 	instanceVariableNames: 'emptyCatalogue threeBooksCatalogue oneBookCatalogue twoBooksCatalogue'
@@ -136,44 +195,112 @@ test10CanNotAddABookNotIncludedTheCatalogue
 		].! !
 
 
-!ShoppingCartTest methodsFor: 'setUp' stamp: 'AB 6/1/2019 16:13:26'!
+!ShoppingCartTest methodsFor: 'setUp' stamp: 'AB 6/5/2019 18:47:39'!
 setUp
 
-	emptyCatalogue _ Catalogue new.
+	emptyCatalogue _ OrderedCollection new.
 
-	oneBookCatalogue _ Catalogue new.
+	oneBookCatalogue _ OrderedCollection new.
 	oneBookCatalogue add: #aBook.
 
-	twoBooksCatalogue _ Catalogue new.
+	twoBooksCatalogue _ OrderedCollection new.
 	twoBooksCatalogue add: #aBook; add: #anotherBook. 
 
-	threeBooksCatalogue _ Catalogue new.
+	threeBooksCatalogue _ OrderedCollection new.
 	threeBooksCatalogue add: #book1; add: #book2; add: #book3.! !
 
 
-!classDefinition: #Catalogue category: #'TusLibros.com'!
-Object subclass: #Catalogue
-	instanceVariableNames: 'items'
+!classDefinition: #Cashier category: #'TusLibros.com'!
+Object subclass: #Cashier
+	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!Catalogue methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:06:58'!
-add: anItem
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-	items add: anItem.
-! !
+!classDefinition: 'Cashier class' category: #'TusLibros.com'!
+Cashier class
+	instanceVariableNames: ''!
 
-!Catalogue methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:07:18'!
-includes: anItem
+!Cashier class methodsFor: 'error handling' stamp: 'AB 6/5/2019 23:09:51'!
+expiredCreditCardIsNotValid
 
-	^ items includes: anItem! !
+	^ 'Credit card has already expired'! !
 
-!Catalogue methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:06:44'!
-initialize
+!Cashier class methodsFor: 'error handling' stamp: 'JR 6/5/2019 07:37:30'!
+itemNotFoundInPriceList
 
-	items _ Set new.
-	super initialize! !
+	^ 'Shopping cart hast items not found in price list'! !
+
+!Cashier class methodsFor: 'error handling' stamp: 'AB 6/5/2019 18:49:13'!
+shoppingCartCanNotBeEmpty
+
+	^ 'Shopping cart cannot be empty'! !
+
+
+!Cashier class methodsFor: 'checkout' stamp: 'AB 6/5/2019 23:11:46'!
+checkout: shoppingCart withPricesFrom: priceList payingWith: creditCard
+
+	| transactionAmout |
+	
+	(shoppingCart isEmpty) ifTrue: [ self error: Cashier shoppingCartCanNotBeEmpty ].
+	
+	(shoppingCart items allSatisfy: [ :anItem | priceList includesKey: anItem ]) ifFalse: [ self error: Cashier itemNotFoundInPriceList ].
+
+	(creditCard hasExpired) ifTrue: [ self error: Cashier expiredCreditCardIsNotValid ].
+		
+	transactionAmout _ 0.	
+	shoppingCart items do: [ :anItem | 
+			transactionAmout _ transactionAmout + (priceList at: anItem)
+		].
+	
+	! !
+
+
+!classDefinition: #CreditCard category: #'TusLibros.com'!
+Object subclass: #CreditCard
+	instanceVariableNames: 'number expiration owner'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!CreditCard methodsFor: 'as yet unclassified' stamp: 'AB 6/5/2019 23:14:30'!
+hasExpired
+
+	^ expiration < GregorianMonthOfYear current! !
+
+!CreditCard methodsFor: 'as yet unclassified' stamp: 'AB 6/5/2019 22:55:30'!
+initializeWith: a16DigitsNumber with: aTwoDigitsMonthAndATwoDigitsYear with: anOwnersName
+
+	number _ a16DigitsNumber.
+	expiration _ aTwoDigitsMonthAndATwoDigitsYear.
+	owner _ anOwnersName! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'CreditCard class' category: #'TusLibros.com'!
+CreditCard class
+	instanceVariableNames: ''!
+
+!CreditCard class methodsFor: 'as yet unclassified' stamp: 'AB 6/5/2019 23:02:11'!
+cardNumberMustBe16DigitsLong
+	
+	^ 'Credit card number must be 16 digits long'! !
+
+!CreditCard class methodsFor: 'as yet unclassified' stamp: 'AB 6/5/2019 23:02:48'!
+ownerNameMustBeBetween1And30CharactersLong
+	
+	^ 'Owner name must be between 1 and 30 characters long'! !
+
+!CreditCard class methodsFor: 'as yet unclassified' stamp: 'AB 6/5/2019 23:01:18'!
+with: a16DigitsNumber with: aTwoDigitsMonthAndATwoDigitsYear with: anOwnersName
+
+	(a16DigitsNumber size = 16) ifFalse: [ self error: CreditCard CardNumberMustBe16DigitsLong ].
+
+	(anOwnersName size between: 1 and: 30) ifFalse: [ self error: CreditCard OwnerNameMustBeBetween1And30CharactersLong ].
+
+	^ self new initializeWith: a16DigitsNumber with: aTwoDigitsMonthAndATwoDigitsYear with: anOwnersName! !
 
 
 !classDefinition: #ShoppingCart category: #'TusLibros.com'!
@@ -246,22 +373,23 @@ initializeWith: aCatalogue
 ShoppingCart class
 	instanceVariableNames: ''!
 
-!ShoppingCart class methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:10:42'!
+!ShoppingCart class methodsFor: 'instance creation' stamp: 'AB 6/1/2019 16:05:47'!
+with: aCatalogue
+	
+	^ self new initializeWith: aCatalogue! !
+
+
+!ShoppingCart class methodsFor: 'error handling' stamp: 'AB 6/1/2019 16:10:42'!
 catalogueDoestNotIncludeItem
 
 	^ 'Catalogue does not include item'! !
 
-!ShoppingCart class methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 15:29:39'!
+!ShoppingCart class methodsFor: 'error handling' stamp: 'AB 6/5/2019 18:53:04'!
 quantityMustBeAnIntegerValue
 	
-	^ 'Quantity must be an integer value.'! !
+	^ 'Quantity must be an integer value'! !
 
-!ShoppingCart class methodsFor: 'as yet unclassified' stamp: 'JR 5/31/2019 19:09:34'!
+!ShoppingCart class methodsFor: 'error handling' stamp: 'AB 6/5/2019 18:53:06'!
 quantityMustBeBiggerThanOneError
 	
-	^ 'Quantity must be bigger than one.'! !
-
-!ShoppingCart class methodsFor: 'as yet unclassified' stamp: 'AB 6/1/2019 16:05:47'!
-with: aCatalogue
-	
-	^ self new initializeWith: aCatalogue! !
+	^ 'Quantity must be bigger than one'! !
