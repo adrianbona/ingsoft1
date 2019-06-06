@@ -5,38 +5,38 @@ TestCase subclass: #CashierTest
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!CashierTest methodsFor: 'as yet unclassified' stamp: 'AB 6/5/2019 23:05:41'!
+!CashierTest methodsFor: 'as yet unclassified' stamp: 'AB 6/6/2019 17:23:04'!
 test01CannotCheckoutEmptyCart
 
-	| catalogue shoppingCart priceList |
+	| catalogue shoppingCart priceList creditCard |
 	
 	catalogue _ OrderedCollection new.
 	shoppingCart _ ShoppingCart with: catalogue.
 	
-	self should: [ | creditCard | Cashier checkout: shoppingCart withPricesFrom: priceList payingWith: creditCard ]
+	self should: [ Cashier new checkout: shoppingCart withPricesFrom: priceList payingWith: creditCard ]
 	raise: Error
 	withExceptionDo: [ :anError |
 		self assert: anError messageText = Cashier shoppingCartCanNotBeEmpty.
 	]! !
 
-!CashierTest methodsFor: 'as yet unclassified' stamp: 'AB 6/5/2019 23:06:04'!
+!CashierTest methodsFor: 'as yet unclassified' stamp: 'AB 6/6/2019 17:23:31'!
 test02CannotCheckoutCartWithItemsNotFoundInPriceList
 
-	| catalogue shoppingCart priceList |
+	| catalogue shoppingCart priceList creditCard |
 	
 	catalogue _ OrderedCollection with: #book1.
 	shoppingCart _ ShoppingCart with: catalogue.
 	shoppingCart add: #book1.
 	priceList _ Dictionary new.
 	
-	self should: [ | creditCard | Cashier checkout: shoppingCart withPricesFrom: priceList payingWith: creditCard ]
+	self should: [ Cashier new checkout: shoppingCart withPricesFrom: priceList payingWith: creditCard ]
 	raise: Error
 	withExceptionDo: [ :anError |
 		self assert: anError messageText = Cashier itemNotFoundInPriceList.
 	].
 	! !
 
-!CashierTest methodsFor: 'as yet unclassified' stamp: 'AB 6/5/2019 23:10:45'!
+!CashierTest methodsFor: 'as yet unclassified' stamp: 'AB 6/6/2019 17:23:40'!
 test03CannotCheckoutCartWithExpiredCreditCard
 
 	| catalogue shoppingCart priceList creditCard |
@@ -50,7 +50,7 @@ test03CannotCheckoutCartWithExpiredCreditCard
 	
 	creditCard _ CreditCard with: '1234567890123456' with: (GregorianMonthOfYear year: 2019 month: April ) with: 'Jorge'.
 	
-	self should: [ Cashier checkout: shoppingCart withPricesFrom: priceList payingWith: creditCard ]
+	self should: [ Cashier new checkout: shoppingCart withPricesFrom: priceList payingWith: creditCard ]
 	raise: Error
 	withExceptionDo: [ :anError |
 		self assert: anError messageText = Cashier expiredCreditCardIsNotValid
@@ -217,6 +217,24 @@ Object subclass: #Cashier
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
+!Cashier methodsFor: 'as yet unclassified' stamp: 'AB 6/6/2019 17:22:08'!
+checkout: shoppingCart withPricesFrom: priceList payingWith: creditCard
+
+	| transactionAmout |
+	
+	(shoppingCart isEmpty) ifTrue: [ self error: Cashier shoppingCartCanNotBeEmpty ].
+	
+	(shoppingCart items allSatisfy: [ :anItem | priceList includesKey: anItem ]) ifFalse: [ self error: Cashier itemNotFoundInPriceList ].
+
+	(creditCard hasExpired) ifTrue: [ self error: Cashier expiredCreditCardIsNotValid ].
+		
+	transactionAmout _ 0.	
+	shoppingCart items do: [ :anItem | 
+			transactionAmout _ transactionAmout + (priceList at: anItem)
+		].
+	
+	! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'Cashier class' category: #'TusLibros.com'!
@@ -238,24 +256,6 @@ shoppingCartCanNotBeEmpty
 
 	^ 'Shopping cart cannot be empty'! !
 
-
-!Cashier class methodsFor: 'checkout' stamp: 'AB 6/5/2019 23:11:46'!
-checkout: shoppingCart withPricesFrom: priceList payingWith: creditCard
-
-	| transactionAmout |
-	
-	(shoppingCart isEmpty) ifTrue: [ self error: Cashier shoppingCartCanNotBeEmpty ].
-	
-	(shoppingCart items allSatisfy: [ :anItem | priceList includesKey: anItem ]) ifFalse: [ self error: Cashier itemNotFoundInPriceList ].
-
-	(creditCard hasExpired) ifTrue: [ self error: Cashier expiredCreditCardIsNotValid ].
-		
-	transactionAmout _ 0.	
-	shoppingCart items do: [ :anItem | 
-			transactionAmout _ transactionAmout + (priceList at: anItem)
-		].
-	
-	! !
 
 
 !classDefinition: #CreditCard category: #'TusLibros.com'!
