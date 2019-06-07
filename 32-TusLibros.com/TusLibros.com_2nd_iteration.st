@@ -23,7 +23,7 @@ test02CannotCheckoutCartWithExpiredCreditCard
 		self assert: anError messageText = Cashier expiredCreditCardIsNotValid
 	]! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/7/2019 15:17:30'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/7/2019 15:54:13'!
 test03CheckingOutIncreasesSalesAmount
 
 	| cashier |
@@ -32,7 +32,7 @@ test03CheckingOutIncreasesSalesAmount
 
 	self assert: emptySalesBook isEmpty.
 
-	cashier checkout.
+	cashier checkOut.
 
 	self assert: 1 equals: emptySalesBook size! !
 
@@ -289,8 +289,8 @@ Object subclass: #Cashier
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!Cashier methodsFor: 'check out' stamp: 'AB 6/7/2019 15:06:49'!
-checkout
+!Cashier methodsFor: 'check out' stamp: 'AB 6/7/2019 15:54:00'!
+checkOut
 
 	salesBook add: (Sale with: shoppingCart items costing: shoppingCart totalCost)! !
 
