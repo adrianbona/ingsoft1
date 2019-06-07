@@ -1,46 +1,62 @@
 !classDefinition: #CashierTest category: #'TusLibros.com'!
 TestCase subclass: #CashierTest
-	instanceVariableNames: 'expiredCreditCard emptyPriceList oneItemPriceList'
+	instanceVariableNames: 'expiredCreditCard emptyPriceList oneItemPriceList workingCreditCard emptySalesBook oneItemShoppingCart emptyShoppingCart'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/7/2019 12:38:45'!
-test01CannotCheckoutEmptyCart
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/7/2019 15:26:27'!
+test01CanNotCreateCashierForAnEmptyCart
 
-	| shoppingCart creditCard |
-	
-	shoppingCart _ ShoppingCart with: emptyPriceList.
-	
-	self should: [ Cashier new checkout: shoppingCart payingWith: creditCard ]
+	self should: [ Cashier with: emptyShoppingCart chargingTo: workingCreditCard registeringOn: emptySalesBook ]
 	raise: Error
 	withExceptionDo: [ :anError |
 		self assert: anError messageText = Cashier shoppingCartCanNotBeEmpty.
 	]! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/7/2019 12:41:01'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/7/2019 15:21:38'!
 test02CannotCheckoutCartWithExpiredCreditCard
 
-	| shoppingCart |
-	
-	shoppingCart _ ShoppingCart with: oneItemPriceList.
-	shoppingCart add: #book1.
-
-	self should: [ Cashier new checkout: shoppingCart payingWith: expiredCreditCard ]
+	self should: [ Cashier with: oneItemShoppingCart chargingTo: expiredCreditCard registeringOn: emptySalesBook ]
 	raise: Error
 	withExceptionDo: [ :anError |
 		self assert: anError messageText = Cashier expiredCreditCardIsNotValid
 	]! !
 
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/7/2019 15:17:30'!
+test03CheckingOutIncreasesSalesAmount
 
-!CashierTest methodsFor: 'setUp' stamp: 'AB 6/7/2019 12:36:29'!
+	| cashier |
+
+	cashier _ Cashier with: oneItemShoppingCart chargingTo: workingCreditCard registeringOn: emptySalesBook.
+
+	self assert: emptySalesBook isEmpty.
+
+	cashier checkout.
+
+	self assert: 1 equals: emptySalesBook size! !
+
+
+!CashierTest methodsFor: 'setUp' stamp: 'AB 6/7/2019 15:32:22'!
 setUp
+
+	emptySalesBook _ OrderedCollection new.
 
 	emptyPriceList _ Dictionary new.
 
-	oneItemPriceList _ emptyPriceList copy.
+	oneItemPriceList _ Dictionary new.
 	oneItemPriceList at: #book1 put: 100 * peso.
 
+	emptyShoppingCart _ ShoppingCart with: oneItemPriceList.
+
+	oneItemShoppingCart _ ShoppingCart with: oneItemPriceList.
+	oneItemShoppingCart add: #book1.
+
+	workingCreditCard _ CreditCard 
+		with: '1234567890123456' 
+		with: (GregorianMonthOfYear current)
+		with: 'Jorge'.
+		
 	expiredCreditCard _ CreditCard 
 		with: '1234567890123456' 
 		with: (May of: 2019)
@@ -106,14 +122,15 @@ TestCase subclass: #ShoppingCartTest
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/7/2019 12:04:08'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/7/2019 15:48:31'!
 test01CreateNewShoppingCartIsEmptyCart
 
 	| shoppingCart |
 	
 	shoppingCart _ ShoppingCart with: emptyPriceList.
 	
-	self assert: shoppingCart isEmpty! !
+	self assert: shoppingCart isEmpty.
+	self assert: shoppingCart totalCost = (0 * peso)! !
 
 !ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/7/2019 12:18:44'!
 test02WhenAddingBookToShoppingCarItIsNotEmpty
@@ -236,18 +253,18 @@ test10CanNotAddABookNotIncludedTheCatalogue
 		self assert: shoppingCart isEmpty.
 		].! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/7/2019 12:51:16'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/7/2019 15:33:40'!
 test11WhenAddingBookToShoppingCartCostIncreases
 
 	| shoppingCart |
 	
 	shoppingCart _ ShoppingCart with: oneItemPriceList.
 
-	self assert: 0 * peso equals: shoppingCart itemsCost.
+	self assert: 0 * peso equals: shoppingCart totalCost.
 		
 	shoppingCart add: #book1.
 	
-	self assert: (oneItemPriceList at: #book1) equals: shoppingCart itemsCost! !
+	self assert: (oneItemPriceList at: #book1) equals: shoppingCart totalCost! !
 
 
 !ShoppingCartTest methodsFor: 'setUp' stamp: 'AB 6/7/2019 12:18:31'!
@@ -267,21 +284,23 @@ setUp
 
 !classDefinition: #Cashier category: #'TusLibros.com'!
 Object subclass: #Cashier
-	instanceVariableNames: ''
+	instanceVariableNames: 'shoppingCart creditCard salesBook'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!Cashier methodsFor: 'check out' stamp: 'AB 6/7/2019 12:40:12'!
-checkout: shoppingCart payingWith: creditCard
+!Cashier methodsFor: 'check out' stamp: 'AB 6/7/2019 15:06:49'!
+checkout
 
-	| transactionAmout |
-	
-	(shoppingCart isEmpty) ifTrue: [ self error: Cashier shoppingCartCanNotBeEmpty ].
-	
-	(creditCard isExpiredOn: (GregorianMonthOfYear current)) ifTrue: [ self error: Cashier expiredCreditCardIsNotValid ].
-		
-	transactionAmout _ shoppingCart itemsCost! !
+	salesBook add: (Sale with: shoppingCart items costing: shoppingCart totalCost)! !
+
+
+!Cashier methodsFor: 'initialization' stamp: 'AB 6/7/2019 14:42:59'!
+initializeWith: aShoppingCart chargingTo: aCreditCard registeringOn: aSalesBook
+
+	shoppingCart _ aShoppingCart.
+	creditCard _ aCreditCard.
+	salesBook _ aSalesBook! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -289,15 +308,36 @@ checkout: shoppingCart payingWith: creditCard
 Cashier class
 	instanceVariableNames: ''!
 
+!Cashier class methodsFor: 'instance creation' stamp: 'AB 6/7/2019 14:25:17'!
+with: aShoppingCart chargingTo: aCreditCard registeringOn: aSalesBook
+	
+	self assertIsNotEmpty: aShoppingCart.
+	self assertIsNotExpired: aCreditCard on: GregorianMonthOfYear current.
+	
+	^ self new initializeWith: aShoppingCart chargingTo: aCreditCard registeringOn: aSalesBook! !
+
+
+!Cashier class methodsFor: 'error handling' stamp: 'AB 6/7/2019 15:26:54'!
+assertIsNotEmpty: aShoppingCart 
+
+	aShoppingCart isEmpty ifTrue: [ self error: self shoppingCartCanNotBeEmpty ]
+! !
+
+!Cashier class methodsFor: 'error handling' stamp: 'AB 6/7/2019 14:21:49'!
+assertIsNotExpired: aCreditCard on: aMonthOfAYear
+	
+	(aCreditCard isExpiredOn: aMonthOfAYear) ifTrue: [ self error: self expiredCreditCardIsNotValid ]
+! !
+
 !Cashier class methodsFor: 'error handling' stamp: 'AB 6/5/2019 23:09:51'!
 expiredCreditCardIsNotValid
 
 	^ 'Credit card has already expired'! !
 
-!Cashier class methodsFor: 'error handling' stamp: 'AB 6/5/2019 18:49:13'!
+!Cashier class methodsFor: 'error handling' stamp: 'AB 6/7/2019 15:27:15'!
 shoppingCartCanNotBeEmpty
 
-	^ 'Shopping cart cannot be empty'! !
+	^ 'Shopping cart can not be empty'! !
 
 
 !classDefinition: #CreditCard category: #'TusLibros.com'!
@@ -344,6 +384,42 @@ with: a16DigitsNumber with: aTwoDigitsMonthAndATwoDigitsYear with: anOwnersName
 	(anOwnersName size between: 1 and: 30) ifFalse: [ self error: CreditCard ownerNameMustBeBetween1And30CharactersLong ].
 
 	^ self new initializeWith: a16DigitsNumber with: aTwoDigitsMonthAndATwoDigitsYear with: anOwnersName! !
+
+
+!classDefinition: #Sale category: #'TusLibros.com'!
+Object subclass: #Sale
+	instanceVariableNames: 'total items'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!Sale methodsFor: 'accessing' stamp: 'PFT 6/18/2018 02:27:07'!
+items
+	
+	^ items! !
+
+!Sale methodsFor: 'accessing' stamp: 'HernanWilkinson 6/17/2013 18:48'!
+total
+	
+	^ total! !
+
+
+!Sale methodsFor: 'initialization' stamp: 'AB 6/7/2019 15:00:42'!
+initializeWith: aCollectionOfItems costing: aTotal
+
+	items _ aCollectionOfItems.
+	total _ aTotal! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Sale class' category: #'TusLibros.com'!
+Sale class
+	instanceVariableNames: ''!
+
+!Sale class methodsFor: 'instance creation' stamp: 'AB 6/7/2019 15:00:08'!
+with: aCollectionOfItems costing: aTotal
+
+	^ self new initializeWith: aCollectionOfItems costing: aTotal! !
 
 
 !classDefinition: #ShoppingCart category: #'TusLibros.com'!
@@ -397,22 +473,23 @@ itemsAmount
 
 	^ items size! !
 
-!ShoppingCart methodsFor: 'querying' stamp: 'AB 6/7/2019 12:32:30'!
-itemsCost
-
-	^ items sum: [ :item | priceList at: item ] ifEmpty: [ 0 * peso ]! !
-
 !ShoppingCart methodsFor: 'querying' stamp: 'JR 5/31/2019 19:43:38'!
 quantityOf: anItem
 
 	^ items occurrencesOf: anItem.! !
 
+!ShoppingCart methodsFor: 'querying' stamp: 'AB 6/7/2019 15:06:36'!
+totalCost
 
-!ShoppingCart methodsFor: 'initialization' stamp: 'AB 6/7/2019 12:22:31'!
+	^ items sum: [ :item | priceList at: item ] ifEmpty: [ 0 * peso ]! !
+
+
+!ShoppingCart methodsFor: 'initialization' stamp: 'AB 6/7/2019 14:19:39'!
 initializeWith: aPriceList
 
-	items _ OrderedCollection new.
+	items _ Bag new.
 	priceList _ aPriceList.
+	
 	super initialize! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
