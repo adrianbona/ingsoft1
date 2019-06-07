@@ -1,9 +1,17 @@
 !classDefinition: #CashierTest category: #'TusLibros.com'!
 TestCase subclass: #CashierTest
-	instanceVariableNames: ''
+	instanceVariableNames: 'expiredCreditCard'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
+
+!CashierTest methodsFor: 'as yet unclassified' stamp: 'AB 6/7/2019 00:21:01'!
+setUp
+
+	expiredCreditCard _ CreditCard 
+		with: '1234567890123456' 
+		with: (GregorianMonthOfYear aprilOf: (GregorianYear number: 2019)) 
+		with: 'Jorge'.! !
 
 !CashierTest methodsFor: 'as yet unclassified' stamp: 'AB 6/6/2019 17:23:04'!
 test01CannotCheckoutEmptyCart
@@ -36,10 +44,10 @@ test02CannotCheckoutCartWithItemsNotFoundInPriceList
 	].
 	! !
 
-!CashierTest methodsFor: 'as yet unclassified' stamp: 'AB 6/6/2019 17:23:40'!
+!CashierTest methodsFor: 'as yet unclassified' stamp: 'AB 6/6/2019 23:46:42'!
 test03CannotCheckoutCartWithExpiredCreditCard
 
-	| catalogue shoppingCart priceList creditCard |
+	| catalogue shoppingCart priceList |
 	
 	catalogue _ OrderedCollection with: #book1.
 	shoppingCart _ ShoppingCart with: catalogue.
@@ -48,12 +56,61 @@ test03CannotCheckoutCartWithExpiredCreditCard
 	priceList _ Dictionary new.
 	priceList at: #book1 put: 1.
 	
-	creditCard _ CreditCard with: '1234567890123456' with: (GregorianMonthOfYear year: 2019 month: April ) with: 'Jorge'.
-	
-	self should: [ Cashier new checkout: shoppingCart withPricesFrom: priceList payingWith: creditCard ]
+	self should: [ Cashier new checkout: shoppingCart withPricesFrom: priceList payingWith: expiredCreditCard ]
 	raise: Error
 	withExceptionDo: [ :anError |
 		self assert: anError messageText = Cashier expiredCreditCardIsNotValid
+	]! !
+
+
+!classDefinition: #CreditCardTest category: #'TusLibros.com'!
+TestCase subclass: #CreditCardTest
+	instanceVariableNames: 'aMonthOfYear a15DigitsNumber a16DigitsNumber a17DigitsNumber a0CharactersLongName a30CharactersLongName a31CharactersLongName'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!CreditCardTest methodsFor: 'as yet unclassified' stamp: 'AB 6/7/2019 00:19:02'!
+setUp
+
+	a0CharactersLongName _ ''.
+	a30CharactersLongName _ 'A Credit Card Name'.
+	a31CharactersLongName _ 'A really long credit card name!!'.
+
+	a15DigitsNumber _ '123456789012345'.
+	a16DigitsNumber _ '1234567890123456'.
+	a17DigitsNumber _ '12345678901234567'.
+
+	aMonthOfYear _ GregorianMonthOfYear julyOf: (GregorianYear number: 2019)! !
+
+!CreditCardTest methodsFor: 'as yet unclassified' stamp: 'AB 6/7/2019 00:17:35'!
+test01SizeOfNumberMustBeExactly16CharactersLong
+	
+	self should: [ CreditCard with: a15DigitsNumber with: aMonthOfYear with: a30CharactersLongName ]
+	raise: Error
+	withExceptionDo: [ :anError |
+		self assert: anError messageText equals: CreditCard cardNumberMustBe16DigitsLong
+	].
+
+	self should: [ CreditCard with: a17DigitsNumber with: aMonthOfYear with: a30CharactersLongName ]
+	raise: Error
+	withExceptionDo: [ :anError |
+		self assert: anError messageText equals: CreditCard cardNumberMustBe16DigitsLong
+	]! !
+
+!CreditCardTest methodsFor: 'as yet unclassified' stamp: 'AB 6/7/2019 00:17:59'!
+test02OwnerNameShorterThan1CharacterAndLargerThan30ReturnsError
+	
+	self should: [ CreditCard with: a16DigitsNumber with: aMonthOfYear with: a0CharactersLongName ]
+	raise: Error
+	withExceptionDo: [ :anError |
+		self assert: anError messageText = CreditCard ownerNameMustBeBetween1And30CharactersLong
+	].
+
+	self should: [ CreditCard with: a16DigitsNumber with: aMonthOfYear with: a31CharactersLongName ]
+	raise: Error
+	withExceptionDo: [ :anError |
+		self assert: anError messageText = CreditCard ownerNameMustBeBetween1And30CharactersLong
 	]! !
 
 
@@ -217,7 +274,7 @@ Object subclass: #Cashier
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!Cashier methodsFor: 'as yet unclassified' stamp: 'AB 6/6/2019 17:22:08'!
+!Cashier methodsFor: 'as yet unclassified' stamp: 'AB 6/6/2019 20:08:10'!
 checkout: shoppingCart withPricesFrom: priceList payingWith: creditCard
 
 	| transactionAmout |
@@ -226,7 +283,7 @@ checkout: shoppingCart withPricesFrom: priceList payingWith: creditCard
 	
 	(shoppingCart items allSatisfy: [ :anItem | priceList includesKey: anItem ]) ifFalse: [ self error: Cashier itemNotFoundInPriceList ].
 
-	(creditCard hasExpired) ifTrue: [ self error: Cashier expiredCreditCardIsNotValid ].
+	(creditCard isExpiredOn: (GregorianMonthOfYear current)) ifTrue: [ self error: Cashier expiredCreditCardIsNotValid ].
 		
 	transactionAmout _ 0.	
 	shoppingCart items do: [ :anItem | 
@@ -265,17 +322,17 @@ Object subclass: #CreditCard
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!CreditCard methodsFor: 'as yet unclassified' stamp: 'AB 6/5/2019 23:14:30'!
-hasExpired
-
-	^ expiration < GregorianMonthOfYear current! !
-
-!CreditCard methodsFor: 'as yet unclassified' stamp: 'AB 6/5/2019 22:55:30'!
-initializeWith: a16DigitsNumber with: aTwoDigitsMonthAndATwoDigitsYear with: anOwnersName
+!CreditCard methodsFor: 'as yet unclassified' stamp: 'AB 6/7/2019 00:20:07'!
+initializeWith: a16DigitsNumber with: aTwoDigitsMonthAndATwoDigitsYear with: anOwnersNameBetween1and30CharactersLong
 
 	number _ a16DigitsNumber.
 	expiration _ aTwoDigitsMonthAndATwoDigitsYear.
-	owner _ anOwnersName! !
+	owner _ anOwnersNameBetween1and30CharactersLong! !
+
+!CreditCard methodsFor: 'as yet unclassified' stamp: 'AB 6/6/2019 19:59:27'!
+isExpiredOn: aMonthOfYear
+
+	^ expiration < aMonthOfYear! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -293,12 +350,12 @@ ownerNameMustBeBetween1And30CharactersLong
 	
 	^ 'Owner name must be between 1 and 30 characters long'! !
 
-!CreditCard class methodsFor: 'as yet unclassified' stamp: 'AB 6/5/2019 23:01:18'!
+!CreditCard class methodsFor: 'as yet unclassified' stamp: 'AB 6/7/2019 00:06:37'!
 with: a16DigitsNumber with: aTwoDigitsMonthAndATwoDigitsYear with: anOwnersName
 
-	(a16DigitsNumber size = 16) ifFalse: [ self error: CreditCard CardNumberMustBe16DigitsLong ].
+	(a16DigitsNumber size = 16) ifFalse: [ self error: CreditCard cardNumberMustBe16DigitsLong ].
 
-	(anOwnersName size between: 1 and: 30) ifFalse: [ self error: CreditCard OwnerNameMustBeBetween1And30CharactersLong ].
+	(anOwnersName size between: 1 and: 30) ifFalse: [ self error: CreditCard ownerNameMustBeBetween1And30CharactersLong ].
 
 	^ self new initializeWith: a16DigitsNumber with: aTwoDigitsMonthAndATwoDigitsYear with: anOwnersName! !
 
