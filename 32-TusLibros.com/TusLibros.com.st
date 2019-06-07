@@ -5,15 +5,7 @@ TestCase subclass: #CashierTest
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!CashierTest methodsFor: 'as yet unclassified' stamp: 'AB 6/7/2019 00:21:01'!
-setUp
-
-	expiredCreditCard _ CreditCard 
-		with: '1234567890123456' 
-		with: (GregorianMonthOfYear aprilOf: (GregorianYear number: 2019)) 
-		with: 'Jorge'.! !
-
-!CashierTest methodsFor: 'as yet unclassified' stamp: 'AB 6/6/2019 17:23:04'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/6/2019 17:23:04'!
 test01CannotCheckoutEmptyCart
 
 	| catalogue shoppingCart priceList creditCard |
@@ -27,7 +19,7 @@ test01CannotCheckoutEmptyCart
 		self assert: anError messageText = Cashier shoppingCartCanNotBeEmpty.
 	]! !
 
-!CashierTest methodsFor: 'as yet unclassified' stamp: 'AB 6/6/2019 17:23:31'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/6/2019 17:23:31'!
 test02CannotCheckoutCartWithItemsNotFoundInPriceList
 
 	| catalogue shoppingCart priceList creditCard |
@@ -44,7 +36,7 @@ test02CannotCheckoutCartWithItemsNotFoundInPriceList
 	].
 	! !
 
-!CashierTest methodsFor: 'as yet unclassified' stamp: 'AB 6/6/2019 23:46:42'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/6/2019 23:46:42'!
 test03CannotCheckoutCartWithExpiredCreditCard
 
 	| catalogue shoppingCart priceList |
@@ -62,6 +54,15 @@ test03CannotCheckoutCartWithExpiredCreditCard
 		self assert: anError messageText = Cashier expiredCreditCardIsNotValid
 	]! !
 
+
+!CashierTest methodsFor: 'setUp' stamp: 'AB 6/7/2019 11:09:27'!
+setUp
+
+	expiredCreditCard _ CreditCard 
+		with: '1234567890123456' 
+		with: (May of: 2019)
+		with: 'Jorge'.! !
+
 
 !classDefinition: #CreditCardTest category: #'TusLibros.com'!
 TestCase subclass: #CreditCardTest
@@ -70,20 +71,7 @@ TestCase subclass: #CreditCardTest
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!CreditCardTest methodsFor: 'as yet unclassified' stamp: 'AB 6/7/2019 00:19:02'!
-setUp
-
-	a0CharactersLongName _ ''.
-	a30CharactersLongName _ 'A Credit Card Name'.
-	a31CharactersLongName _ 'A really long credit card name!!'.
-
-	a15DigitsNumber _ '123456789012345'.
-	a16DigitsNumber _ '1234567890123456'.
-	a17DigitsNumber _ '12345678901234567'.
-
-	aMonthOfYear _ GregorianMonthOfYear julyOf: (GregorianYear number: 2019)! !
-
-!CreditCardTest methodsFor: 'as yet unclassified' stamp: 'AB 6/7/2019 00:17:35'!
+!CreditCardTest methodsFor: 'testing' stamp: 'AB 6/7/2019 00:17:35'!
 test01SizeOfNumberMustBeExactly16CharactersLong
 	
 	self should: [ CreditCard with: a15DigitsNumber with: aMonthOfYear with: a30CharactersLongName ]
@@ -98,7 +86,7 @@ test01SizeOfNumberMustBeExactly16CharactersLong
 		self assert: anError messageText equals: CreditCard cardNumberMustBe16DigitsLong
 	]! !
 
-!CreditCardTest methodsFor: 'as yet unclassified' stamp: 'AB 6/7/2019 00:17:59'!
+!CreditCardTest methodsFor: 'testing' stamp: 'AB 6/7/2019 00:17:59'!
 test02OwnerNameShorterThan1CharacterAndLargerThan30ReturnsError
 	
 	self should: [ CreditCard with: a16DigitsNumber with: aMonthOfYear with: a0CharactersLongName ]
@@ -112,6 +100,20 @@ test02OwnerNameShorterThan1CharacterAndLargerThan30ReturnsError
 	withExceptionDo: [ :anError |
 		self assert: anError messageText = CreditCard ownerNameMustBeBetween1And30CharactersLong
 	]! !
+
+
+!CreditCardTest methodsFor: 'setUp' stamp: 'AB 6/7/2019 11:01:40'!
+setUp
+
+	a0CharactersLongName _ ''.
+	a30CharactersLongName _ 'A Credit Card Name'.
+	a31CharactersLongName _ 'A really long credit card name!!'.
+
+	a15DigitsNumber _ '123456789012345'.
+	a16DigitsNumber _ '1234567890123456'.
+	a17DigitsNumber _ '12345678901234567'.
+
+	aMonthOfYear _ July of: 2019! !
 
 
 !classDefinition: #ShoppingCartTest category: #'TusLibros.com'!
@@ -274,7 +276,7 @@ Object subclass: #Cashier
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!Cashier methodsFor: 'as yet unclassified' stamp: 'AB 6/6/2019 20:08:10'!
+!Cashier methodsFor: 'check out' stamp: 'AB 6/6/2019 20:08:10'!
 checkout: shoppingCart withPricesFrom: priceList payingWith: creditCard
 
 	| transactionAmout |
@@ -313,7 +315,6 @@ shoppingCartCanNotBeEmpty
 
 	^ 'Shopping cart cannot be empty'! !
 
-
 
 !classDefinition: #CreditCard category: #'TusLibros.com'!
 Object subclass: #CreditCard
@@ -322,14 +323,15 @@ Object subclass: #CreditCard
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!CreditCard methodsFor: 'as yet unclassified' stamp: 'AB 6/7/2019 00:20:07'!
+!CreditCard methodsFor: 'initialization' stamp: 'AB 6/7/2019 00:20:07'!
 initializeWith: a16DigitsNumber with: aTwoDigitsMonthAndATwoDigitsYear with: anOwnersNameBetween1and30CharactersLong
 
 	number _ a16DigitsNumber.
 	expiration _ aTwoDigitsMonthAndATwoDigitsYear.
 	owner _ anOwnersNameBetween1and30CharactersLong! !
 
-!CreditCard methodsFor: 'as yet unclassified' stamp: 'AB 6/6/2019 19:59:27'!
+
+!CreditCard methodsFor: 'expiration' stamp: 'AB 6/6/2019 19:59:27'!
 isExpiredOn: aMonthOfYear
 
 	^ expiration < aMonthOfYear! !
