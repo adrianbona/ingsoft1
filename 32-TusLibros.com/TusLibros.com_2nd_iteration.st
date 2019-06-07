@@ -1,62 +1,45 @@
 !classDefinition: #CashierTest category: #'TusLibros.com'!
 TestCase subclass: #CashierTest
-	instanceVariableNames: 'expiredCreditCard'
+	instanceVariableNames: 'expiredCreditCard emptyPriceList oneItemPriceList'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/6/2019 17:23:04'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/7/2019 12:38:45'!
 test01CannotCheckoutEmptyCart
 
-	| catalogue shoppingCart priceList creditCard |
+	| shoppingCart creditCard |
 	
-	catalogue _ OrderedCollection new.
-	shoppingCart _ ShoppingCart with: catalogue.
+	shoppingCart _ ShoppingCart with: emptyPriceList.
 	
-	self should: [ Cashier new checkout: shoppingCart withPricesFrom: priceList payingWith: creditCard ]
+	self should: [ Cashier new checkout: shoppingCart payingWith: creditCard ]
 	raise: Error
 	withExceptionDo: [ :anError |
 		self assert: anError messageText = Cashier shoppingCartCanNotBeEmpty.
 	]! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/6/2019 17:23:31'!
-test02CannotCheckoutCartWithItemsNotFoundInPriceList
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/7/2019 12:41:01'!
+test02CannotCheckoutCartWithExpiredCreditCard
 
-	| catalogue shoppingCart priceList creditCard |
+	| shoppingCart |
 	
-	catalogue _ OrderedCollection with: #book1.
-	shoppingCart _ ShoppingCart with: catalogue.
-	shoppingCart add: #book1.
-	priceList _ Dictionary new.
-	
-	self should: [ Cashier new checkout: shoppingCart withPricesFrom: priceList payingWith: creditCard ]
-	raise: Error
-	withExceptionDo: [ :anError |
-		self assert: anError messageText = Cashier itemNotFoundInPriceList.
-	].
-	! !
-
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/6/2019 23:46:42'!
-test03CannotCheckoutCartWithExpiredCreditCard
-
-	| catalogue shoppingCart priceList |
-	
-	catalogue _ OrderedCollection with: #book1.
-	shoppingCart _ ShoppingCart with: catalogue.
+	shoppingCart _ ShoppingCart with: oneItemPriceList.
 	shoppingCart add: #book1.
 
-	priceList _ Dictionary new.
-	priceList at: #book1 put: 1.
-	
-	self should: [ Cashier new checkout: shoppingCart withPricesFrom: priceList payingWith: expiredCreditCard ]
+	self should: [ Cashier new checkout: shoppingCart payingWith: expiredCreditCard ]
 	raise: Error
 	withExceptionDo: [ :anError |
 		self assert: anError messageText = Cashier expiredCreditCardIsNotValid
 	]! !
 
 
-!CashierTest methodsFor: 'setUp' stamp: 'AB 6/7/2019 11:09:27'!
+!CashierTest methodsFor: 'setUp' stamp: 'AB 6/7/2019 12:36:29'!
 setUp
+
+	emptyPriceList _ Dictionary new.
+
+	oneItemPriceList _ emptyPriceList copy.
+	oneItemPriceList at: #book1 put: 100 * peso.
 
 	expiredCreditCard _ CreditCard 
 		with: '1234567890123456' 
@@ -118,102 +101,102 @@ setUp
 
 !classDefinition: #ShoppingCartTest category: #'TusLibros.com'!
 TestCase subclass: #ShoppingCartTest
-	instanceVariableNames: 'emptyCatalogue threeBooksCatalogue oneBookCatalogue twoBooksCatalogue'
+	instanceVariableNames: 'emptyPriceList threeItemsPriceList oneItemPriceList twoItemsPriceList'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/1/2019 16:08:17'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/7/2019 12:04:08'!
 test01CreateNewShoppingCartIsEmptyCart
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart with: emptyCatalogue.
+	shoppingCart _ ShoppingCart with: emptyPriceList.
 	
 	self assert: shoppingCart isEmpty! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/1/2019 16:13:39'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/7/2019 12:18:44'!
 test02WhenAddingBookToShoppingCarItIsNotEmpty
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart with: oneBookCatalogue.
+	shoppingCart _ ShoppingCart with: oneItemPriceList.
 	
-	shoppingCart add: #aBook.
+	shoppingCart add: #book1.
 	
 	self deny: shoppingCart isEmpty! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/1/2019 16:13:45'!
-test03WhenAddingBookToShoppingCartICanCheckIsThere
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/7/2019 12:52:47'!
+test03WhenAddingABookToShoppingCartCanCheckIsThere
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart with: oneBookCatalogue.
+	shoppingCart _ ShoppingCart with: oneItemPriceList.
 	
-	shoppingCart add: #aBook.
+	shoppingCart add: #book1.
 	
 	self deny: shoppingCart isEmpty.
-	self assert: (shoppingCart contains: #aBook)! !
+	self assert: (shoppingCart contains: #book1)! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/1/2019 16:11:47'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/7/2019 12:19:06'!
 test04AddingTwoBooksMakesSizeTwoAndBothAreContained
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart with: twoBooksCatalogue.
+	shoppingCart _ ShoppingCart with: twoItemsPriceList.
 	
-	shoppingCart add: #aBook.
-	shoppingCart add: #anotherBook.
+	shoppingCart add: #book1.
+	shoppingCart add: #book2.
 	
 	self deny: shoppingCart isEmpty.
 	self assert: 2 equals: shoppingCart itemsAmount.
-	self assert: (shoppingCart contains: #aBook).
-	self assert: (shoppingCart contains: #anotherBook)! !
+	self assert: (shoppingCart contains: #book1).
+	self assert: (shoppingCart contains: #book2)! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/1/2019 16:13:08'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/7/2019 12:19:15'!
 test05AddTwoCopiesOfTheSameBookAssertInclusionInCart
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart with: oneBookCatalogue.
+	shoppingCart _ ShoppingCart with: oneItemPriceList.
 	
-	shoppingCart add: #aBook quantity: 2.
+	shoppingCart add: #book1 quantity: 2.
 	
 	self deny: shoppingCart isEmpty.
 	self assert: 2 equals: shoppingCart itemsAmount.
-	self assert: (shoppingCart contains: #aBook)! !
+	self assert: (shoppingCart contains: #book1)! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/1/2019 16:14:18'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/7/2019 12:19:21'!
 test06AddingABookWithAQuantityLessThan1ThrowsAnError
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart with: oneBookCatalogue.
+	shoppingCart _ ShoppingCart with: oneItemPriceList.
 	
-	self should: [shoppingCart add: #aBook quantity: 0]
+	self should: [shoppingCart add: #book1 quantity: 0]
 	raise: Error
 	withExceptionDo: [ :anError |
 		self assert: anError messageText = ShoppingCart quantityMustBeBiggerThanOneError.
 		self assert: shoppingCart isEmpty.
 		].! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/1/2019 16:14:31'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/7/2019 12:19:29'!
 test07AShoppingCartReturnsNumberOfCopiesOfABook 
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart with: oneBookCatalogue.
-	self assert: (shoppingCart quantityOf: #aBook) = 0.
+	shoppingCart _ ShoppingCart with: oneItemPriceList.
+	self assert: (shoppingCart quantityOf: #book1) = 0.
 	
-	shoppingCart add: #aBook quantity: 3.
-	self assert: (shoppingCart quantityOf: #aBook) = 3.! !
+	shoppingCart add: #book1 quantity: 3.
+	self assert: (shoppingCart quantityOf: #book1) = 3.! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/1/2019 16:14:44'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/7/2019 12:04:36'!
 test08AShoppingCartReturnsCollectionWithTheBooksItContains
 
 	| shoppingCart items |
 	
-	shoppingCart _ ShoppingCart with: threeBooksCatalogue.
+	shoppingCart _ ShoppingCart with: threeItemsPriceList.
 	
 	shoppingCart add: #book1 quantity: 1.
 	shoppingCart add: #book2 quantity: 2.
@@ -225,48 +208,61 @@ test08AShoppingCartReturnsCollectionWithTheBooksItContains
 	self assert: (items includes: #book2).
 	self assert: (items includes: #book3)! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/1/2019 16:14:58'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/7/2019 12:19:37'!
 test09CanNotAddANotIntegerQuantityOfBooksToCart
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart with: oneBookCatalogue.
+	shoppingCart _ ShoppingCart with: oneItemPriceList.
 	
-	self should: [shoppingCart add: #aBook quantity: 2.5]
+	self should: [shoppingCart add: #book1 quantity: 2.5]
 	raise: Error
 	withExceptionDo: [ :anError |
 		self assert: anError messageText = ShoppingCart quantityMustBeAnIntegerValue.
 		self assert: shoppingCart isEmpty.
 		].! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/1/2019 16:15:47'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/7/2019 12:19:41'!
 test10CanNotAddABookNotIncludedTheCatalogue
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart with: oneBookCatalogue.
+	shoppingCart _ ShoppingCart with: oneItemPriceList.
 	
-	self should: [shoppingCart add: #anotherBook quantity: 2]
+	self should: [shoppingCart add: #book2 quantity: 2]
 	raise: Error
 	withExceptionDo: [ :anError |
 		self assert: anError messageText = ShoppingCart catalogueDoestNotIncludeItem.
 		self assert: shoppingCart isEmpty.
 		].! !
 
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/7/2019 12:51:16'!
+test11WhenAddingBookToShoppingCartCostIncreases
 
-!ShoppingCartTest methodsFor: 'setUp' stamp: 'AB 6/5/2019 18:47:39'!
+	| shoppingCart |
+	
+	shoppingCart _ ShoppingCart with: oneItemPriceList.
+
+	self assert: 0 * peso equals: shoppingCart itemsCost.
+		
+	shoppingCart add: #book1.
+	
+	self assert: (oneItemPriceList at: #book1) equals: shoppingCart itemsCost! !
+
+
+!ShoppingCartTest methodsFor: 'setUp' stamp: 'AB 6/7/2019 12:18:31'!
 setUp
 
-	emptyCatalogue _ OrderedCollection new.
+	emptyPriceList _ Dictionary new.
 
-	oneBookCatalogue _ OrderedCollection new.
-	oneBookCatalogue add: #aBook.
+	oneItemPriceList _ emptyPriceList copy.
+	oneItemPriceList at: #book1 put: 100 * peso.
 
-	twoBooksCatalogue _ OrderedCollection new.
-	twoBooksCatalogue add: #aBook; add: #anotherBook. 
+	twoItemsPriceList _ oneItemPriceList copy.
+	twoItemsPriceList at: #book2 put: 200 * peso.
 
-	threeBooksCatalogue _ OrderedCollection new.
-	threeBooksCatalogue add: #book1; add: #book2; add: #book3.! !
+	threeItemsPriceList _ twoItemsPriceList copy.
+	threeItemsPriceList at: #book3 put: 300 * peso.! !
 
 
 !classDefinition: #Cashier category: #'TusLibros.com'!
@@ -276,23 +272,16 @@ Object subclass: #Cashier
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!Cashier methodsFor: 'check out' stamp: 'AB 6/6/2019 20:08:10'!
-checkout: shoppingCart withPricesFrom: priceList payingWith: creditCard
+!Cashier methodsFor: 'check out' stamp: 'AB 6/7/2019 12:40:12'!
+checkout: shoppingCart payingWith: creditCard
 
 	| transactionAmout |
 	
 	(shoppingCart isEmpty) ifTrue: [ self error: Cashier shoppingCartCanNotBeEmpty ].
 	
-	(shoppingCart items allSatisfy: [ :anItem | priceList includesKey: anItem ]) ifFalse: [ self error: Cashier itemNotFoundInPriceList ].
-
 	(creditCard isExpiredOn: (GregorianMonthOfYear current)) ifTrue: [ self error: Cashier expiredCreditCardIsNotValid ].
 		
-	transactionAmout _ 0.	
-	shoppingCart items do: [ :anItem | 
-			transactionAmout _ transactionAmout + (priceList at: anItem)
-		].
-	
-	! !
+	transactionAmout _ shoppingCart itemsCost! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -304,11 +293,6 @@ Cashier class
 expiredCreditCardIsNotValid
 
 	^ 'Credit card has already expired'! !
-
-!Cashier class methodsFor: 'error handling' stamp: 'JR 6/5/2019 07:37:30'!
-itemNotFoundInPriceList
-
-	^ 'Shopping cart hast items not found in price list'! !
 
 !Cashier class methodsFor: 'error handling' stamp: 'AB 6/5/2019 18:49:13'!
 shoppingCartCanNotBeEmpty
@@ -364,7 +348,7 @@ with: a16DigitsNumber with: aTwoDigitsMonthAndATwoDigitsYear with: anOwnersName
 
 !classDefinition: #ShoppingCart category: #'TusLibros.com'!
 Object subclass: #ShoppingCart
-	instanceVariableNames: 'items catalogue'
+	instanceVariableNames: 'items priceList'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
@@ -383,10 +367,10 @@ assertQuantityIsAnIntegerValueAndBiggerThenZero: aQuantity
 	(aQuantity isInteger) ifFalse: [ self error: ShoppingCart quantityMustBeAnIntegerValue ]! !
 
 
-!ShoppingCart methodsFor: 'adding' stamp: 'AB 6/1/2019 16:17:51'!
+!ShoppingCart methodsFor: 'adding' stamp: 'AB 6/7/2019 12:20:36'!
 add: anItem
 
-	(catalogue includes: anItem) ifFalse: [ self error: ShoppingCart catalogueDoestNotIncludeItem ].
+	(priceList includesKey: anItem) ifFalse: [ self error: ShoppingCart catalogueDoestNotIncludeItem ].
 
 	^ items add: anItem! !
 
@@ -413,17 +397,22 @@ itemsAmount
 
 	^ items size! !
 
+!ShoppingCart methodsFor: 'querying' stamp: 'AB 6/7/2019 12:32:30'!
+itemsCost
+
+	^ items sum: [ :item | priceList at: item ] ifEmpty: [ 0 * peso ]! !
+
 !ShoppingCart methodsFor: 'querying' stamp: 'JR 5/31/2019 19:43:38'!
 quantityOf: anItem
 
 	^ items occurrencesOf: anItem.! !
 
 
-!ShoppingCart methodsFor: 'initialization' stamp: 'AB 6/1/2019 16:06:08'!
-initializeWith: aCatalogue
+!ShoppingCart methodsFor: 'initialization' stamp: 'AB 6/7/2019 12:22:31'!
+initializeWith: aPriceList
 
 	items _ OrderedCollection new.
-	catalogue _ aCatalogue.
+	priceList _ aPriceList.
 	super initialize! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
