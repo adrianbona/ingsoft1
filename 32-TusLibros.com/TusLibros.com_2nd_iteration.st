@@ -1,6 +1,6 @@
 !classDefinition: #CashierTest category: #'TusLibros.com'!
 TestCase subclass: #CashierTest
-	instanceVariableNames: 'expiredCreditCard emptyPriceList oneItemPriceList workingCreditCard emptySalesBook oneItemShoppingCart emptyShoppingCart'
+	instanceVariableNames: 'expiredCreditCard emptyPriceList oneItemPriceList workingCreditCard emptySalesBook oneItemShoppingCart emptyShoppingCart oneItemWithCostLongerThan15DigitsPriceList shoppingCartWithCostLongerThan15Digits oneItemWithThreeDigitsInFractionPart shoppingCartWithThreeDigitsInFractionPart'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
@@ -14,8 +14,8 @@ test01CanNotCreateCashierForAnEmptyCart
 		self assert: anError messageText = Cashier shoppingCartCanNotBeEmpty.
 	]! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/7/2019 15:21:38'!
-test02CannotCheckoutCartWithExpiredCreditCard
+!CashierTest methodsFor: 'testing' stamp: 'JR 6/7/2019 18:55:07'!
+test02CanNotCreateCashierWithExpiredCreditCard
 
 	self should: [ Cashier with: oneItemShoppingCart chargingTo: expiredCreditCard registeringOn: emptySalesBook ]
 	raise: Error
@@ -36,8 +36,39 @@ test03CheckingOutIncreasesSalesAmount
 
 	self assert: 1 equals: emptySalesBook size! !
 
+!CashierTest methodsFor: 'testing' stamp: 'JR 6/7/2019 19:12:24'!
+test04CantCreateCashierForNegativeCost
 
-!CashierTest methodsFor: 'setUp' stamp: 'AB 6/7/2019 15:32:22'!
+	| cashier |
+
+	cashier _ Cashier with: oneItemShoppingCart chargingTo: workingCreditCard registeringOn: emptySalesBook.
+
+	self assert: emptySalesBook isEmpty.
+
+	cashier checkOut.
+
+	self assert: 1 equals: emptySalesBook size! !
+
+!CashierTest methodsFor: 'testing' stamp: 'JR 6/7/2019 19:33:32'!
+test05CanNotCreateCashierForATotalCostWithMoreThan15DigitsForItsIntegerPart
+
+	self should: [ Cashier with: shoppingCartWithCostLongerThan15Digits chargingTo: workingCreditCard registeringOn: emptySalesBook ]
+	raise: Error
+	withExceptionDo: [ :anError |
+		self assert: anError messageText = Cashier totalCostCanNotBeLongerThan15DigitsInItsIntegerPart.
+	]! !
+
+!CashierTest methodsFor: 'testing' stamp: 'JR 6/7/2019 19:52:39'!
+test06CanNotCreateCashierForATotalCostWithMoreThan2DigitsInFractionPart
+
+	self should: [ Cashier with: shoppingCartWithThreeDigitsInFractionPart chargingTo: workingCreditCard registeringOn: emptySalesBook ]
+	raise: Error
+	withExceptionDo: [ :anError |
+		self assert: anError messageText = Cashier totalCostCanNotBeLongerThan2DigitsInItsFractionPart .
+	]! !
+
+
+!CashierTest methodsFor: 'setUp' stamp: 'JR 6/7/2019 20:27:26'!
 setUp
 
 	emptySalesBook _ OrderedCollection new.
@@ -46,6 +77,18 @@ setUp
 
 	oneItemPriceList _ Dictionary new.
 	oneItemPriceList at: #book1 put: 100 * peso.
+
+	oneItemWithCostLongerThan15DigitsPriceList _ Dictionary new.
+	oneItemWithCostLongerThan15DigitsPriceList at: #book1 put: 1234567890123456 * peso.
+	
+	shoppingCartWithCostLongerThan15Digits _ ShoppingCart with: oneItemWithCostLongerThan15DigitsPriceList.
+	shoppingCartWithCostLongerThan15Digits add: #book1.
+	
+	oneItemWithThreeDigitsInFractionPart _ Dictionary new.
+	oneItemWithThreeDigitsInFractionPart at: #book1 put: 1.234 * peso.
+	
+	shoppingCartWithThreeDigitsInFractionPart _ ShoppingCart with: oneItemWithThreeDigitsInFractionPart.
+	shoppingCartWithThreeDigitsInFractionPart add: #book1.
 
 	emptyShoppingCart _ ShoppingCart with: oneItemPriceList.
 
@@ -117,7 +160,7 @@ setUp
 
 !classDefinition: #ShoppingCartTest category: #'TusLibros.com'!
 TestCase subclass: #ShoppingCartTest
-	instanceVariableNames: 'emptyPriceList threeItemsPriceList oneItemPriceList twoItemsPriceList'
+	instanceVariableNames: 'emptyPriceList threeItemsPriceList oneItemPriceList twoItemsPriceList oneNegativeItemPriceList'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
@@ -239,7 +282,7 @@ test09CanNotAddANotIntegerQuantityOfBooksToCart
 		self assert: shoppingCart isEmpty.
 		].! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/7/2019 12:19:41'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'JR 6/7/2019 19:24:46'!
 test10CanNotAddABookNotIncludedTheCatalogue
 
 	| shoppingCart |
@@ -249,7 +292,7 @@ test10CanNotAddABookNotIncludedTheCatalogue
 	self should: [shoppingCart add: #book2 quantity: 2]
 	raise: Error
 	withExceptionDo: [ :anError |
-		self assert: anError messageText = ShoppingCart catalogueDoestNotIncludeItem.
+		self assert: anError messageText = ShoppingCart priceListDoestNotIncludeItem.
 		self assert: shoppingCart isEmpty.
 		].! !
 
@@ -266,19 +309,35 @@ test11WhenAddingBookToShoppingCartCostIncreases
 	
 	self assert: (oneItemPriceList at: #book1) equals: shoppingCart totalCost! !
 
+!ShoppingCartTest methodsFor: 'testing' stamp: 'JR 6/7/2019 19:19:21'!
+test12CanNotCreateAShoppingCartWithAnItemWithNegativeCostInPriceList
 
-!ShoppingCartTest methodsFor: 'setUp' stamp: 'AB 6/7/2019 12:18:31'!
+	self should: [ ShoppingCart with: oneNegativeItemPriceList ]
+	raise: Error
+	withExceptionDo: [ :anError |
+		self assert: anError messageText = ShoppingCart canNotHaveItemsWithNegativeCostInPriceList	
+	]
+	! !
+
+
+!ShoppingCartTest methodsFor: 'setUp' stamp: 'JR 6/7/2019 20:27:55'!
 setUp
 
 	emptyPriceList _ Dictionary new.
 
-	oneItemPriceList _ emptyPriceList copy.
+	oneNegativeItemPriceList _ Dictionary new.
+	oneNegativeItemPriceList at: #book1 put: -100 * peso.
+
+	oneItemPriceList _ Dictionary new.
 	oneItemPriceList at: #book1 put: 100 * peso.
 
-	twoItemsPriceList _ oneItemPriceList copy.
+	twoItemsPriceList _ Dictionary new.
+	twoItemsPriceList at: #book1 put: 100 * peso.
 	twoItemsPriceList at: #book2 put: 200 * peso.
 
-	threeItemsPriceList _ twoItemsPriceList copy.
+	threeItemsPriceList _ Dictionary new.
+	threeItemsPriceList at: #book1 put: 100 * peso.
+	threeItemsPriceList at: #book2 put: 200 * peso.
 	threeItemsPriceList at: #book3 put: 300 * peso.! !
 
 
@@ -289,7 +348,7 @@ Object subclass: #Cashier
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!Cashier methodsFor: 'check out' stamp: 'AB 6/7/2019 15:54:00'!
+!Cashier methodsFor: 'check out' stamp: 'JR 6/7/2019 19:51:52'!
 checkOut
 
 	salesBook add: (Sale with: shoppingCart items costing: shoppingCart totalCost)! !
@@ -308,10 +367,12 @@ initializeWith: aShoppingCart chargingTo: aCreditCard registeringOn: aSalesBook
 Cashier class
 	instanceVariableNames: ''!
 
-!Cashier class methodsFor: 'instance creation' stamp: 'AB 6/7/2019 14:25:17'!
+!Cashier class methodsFor: 'instance creation' stamp: 'JR 6/7/2019 19:52:30'!
 with: aShoppingCart chargingTo: aCreditCard registeringOn: aSalesBook
 	
 	self assertIsNotEmpty: aShoppingCart.
+	self assertTotalCostHasUpToFifteenDigits: aShoppingCart.
+	self assertTotalCostHasUpToTwoDigitsInItsFractionalPart: aShoppingCart.
 	self assertIsNotExpired: aCreditCard on: GregorianMonthOfYear current.
 	
 	^ self new initializeWith: aShoppingCart chargingTo: aCreditCard registeringOn: aSalesBook! !
@@ -329,6 +390,24 @@ assertIsNotExpired: aCreditCard on: aMonthOfAYear
 	(aCreditCard isExpiredOn: aMonthOfAYear) ifTrue: [ self error: self expiredCreditCardIsNotValid ]
 ! !
 
+!Cashier class methodsFor: 'error handling' stamp: 'JR 6/7/2019 20:06:27'!
+assertTotalCostHasUpToFifteenDigits: aShoppingCart
+
+	| totalCostIntegerPart |
+	
+	totalCostIntegerPart _ aShoppingCart totalCost amount asInteger.
+
+	((totalCostIntegerPart numberOfDigitsInBase: 10) > 15) ifTrue: [ self error: self totalCostCanNotBeLongerThan15DigitsInItsIntegerPart ]! !
+
+!Cashier class methodsFor: 'error handling' stamp: 'JR 6/7/2019 20:25:03'!
+assertTotalCostHasUpToTwoDigitsInItsFractionalPart: aShoppingCart
+
+	| totalCostFractionalPart|
+	
+	totalCostFractionalPart _ ((aShoppingCart totalCost amount) * 100) fractionPart .
+
+	(totalCostFractionalPart > 0) ifTrue: [ self error: self totalCostCanNotBeLongerThan2DigitsInItsFractionPart ]! !
+
 !Cashier class methodsFor: 'error handling' stamp: 'AB 6/5/2019 23:09:51'!
 expiredCreditCardIsNotValid
 
@@ -338,6 +417,16 @@ expiredCreditCardIsNotValid
 shoppingCartCanNotBeEmpty
 
 	^ 'Shopping cart can not be empty'! !
+
+!Cashier class methodsFor: 'error handling' stamp: 'JR 6/7/2019 19:34:03'!
+totalCostCanNotBeLongerThan15DigitsInItsIntegerPart
+
+	^ 'Total cost can not be longer than 15 digits in its integer part'! !
+
+!Cashier class methodsFor: 'error handling' stamp: 'JR 6/7/2019 19:52:08'!
+totalCostCanNotBeLongerThan2DigitsInItsFractionPart
+
+	^ 'Total cost can not be longer than 2 digits in its fractional part'! !
 
 
 !classDefinition: #CreditCard category: #'TusLibros.com'!
@@ -443,10 +532,10 @@ assertQuantityIsAnIntegerValueAndBiggerThenZero: aQuantity
 	(aQuantity isInteger) ifFalse: [ self error: ShoppingCart quantityMustBeAnIntegerValue ]! !
 
 
-!ShoppingCart methodsFor: 'adding' stamp: 'AB 6/7/2019 12:20:36'!
+!ShoppingCart methodsFor: 'adding' stamp: 'JR 6/7/2019 19:24:46'!
 add: anItem
 
-	(priceList includesKey: anItem) ifFalse: [ self error: ShoppingCart catalogueDoestNotIncludeItem ].
+	(priceList includesKey: anItem) ifFalse: [ self error: ShoppingCart priceListDoestNotIncludeItem ].
 
 	^ items add: anItem! !
 
@@ -498,16 +587,28 @@ initializeWith: aPriceList
 ShoppingCart class
 	instanceVariableNames: ''!
 
-!ShoppingCart class methodsFor: 'instance creation' stamp: 'AB 6/1/2019 16:05:47'!
-with: aCatalogue
+!ShoppingCart class methodsFor: 'instance creation' stamp: 'JR 6/7/2019 19:20:54'!
+with: aPriceList
 	
-	^ self new initializeWith: aCatalogue! !
+	self assertThereAreNoItemsWithNegativeCostsInPriceList: aPriceList.
+	
+	^ self new initializeWith: aPriceList! !
 
 
-!ShoppingCart class methodsFor: 'error handling' stamp: 'AB 6/1/2019 16:10:42'!
-catalogueDoestNotIncludeItem
+!ShoppingCart class methodsFor: 'error handling' stamp: 'JR 6/7/2019 19:23:53'!
+assertThereAreNoItemsWithNegativeCostsInPriceList: aPriceList
 
-	^ 'Catalogue does not include item'! !
+	(aPriceList values allSatisfy: [ :aCost | aCost > 0]) ifFalse: [ self error: ShoppingCart canNotHaveItemsWithNegativeCostInPriceList ]! !
+
+!ShoppingCart class methodsFor: 'error handling' stamp: 'JR 6/7/2019 19:19:53'!
+canNotHaveItemsWithNegativeCostInPriceList
+
+	^ 'Price list can not have items with negative costs.'! !
+
+!ShoppingCart class methodsFor: 'error handling' stamp: 'JR 6/7/2019 19:24:51'!
+priceListDoestNotIncludeItem
+
+	^ 'Price list does not include item'! !
 
 !ShoppingCart class methodsFor: 'error handling' stamp: 'AB 6/5/2019 18:53:04'!
 quantityMustBeAnIntegerValue
