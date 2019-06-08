@@ -5,35 +5,37 @@ TestCase subclass: #CashierTest
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/8/2019 11:31:20'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/8/2019 13:32:28'!
 test01CanNotCreateCashierForAnEmptyCart
 
 	self should: [ 
 		Cashier 
 			with: TesteableObjectsFactory emptyShoppingCart 
 			chargingTo: TesteableObjectsFactory workingCreditCard 
-			registeringOn: TesteableObjectsFactory emptySalesBook 
+			registeringOn: TesteableObjectsFactory emptySalesBook
+			startingOn: Date today 
 		]
 	raise: Error
 	withExceptionDo: [ :anError |
 		self assert: anError messageText = Cashier shoppingCartCanNotBeEmpty.
 	]! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/8/2019 11:31:40'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/8/2019 13:33:17'!
 test02CanNotCreateCashierWithExpiredCreditCard
 
 	self should: [ 
 		Cashier 
 			with: TesteableObjectsFactory oneItemShoppingCart 
 			chargingTo: TesteableObjectsFactory expiredCreditCard 
-			registeringOn: TesteableObjectsFactory emptySalesBook 
+			registeringOn: TesteableObjectsFactory emptySalesBook
+			startingOn: Date today
 		]
 	raise: Error
 	withExceptionDo: [ :anError |
 		self assert: anError messageText = Cashier expiredCreditCardIsNotValid
 	]! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/8/2019 11:33:20'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/8/2019 13:33:23'!
 test03CheckingOutIncreasesSalesAmount
 
 	| cashier salesBook |
@@ -43,7 +45,8 @@ test03CheckingOutIncreasesSalesAmount
 	cashier _ Cashier 
 		with: TesteableObjectsFactory oneItemShoppingCart 
 		chargingTo: TesteableObjectsFactory workingCreditCard 
-		registeringOn: salesBook.
+		registeringOn: salesBook
+		startingOn: Date today.
 
 	self assert: salesBook isEmpty.
 
@@ -51,28 +54,30 @@ test03CheckingOutIncreasesSalesAmount
 
 	self assert: 1 equals: salesBook size! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/8/2019 11:38:17'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/8/2019 13:33:28'!
 test04CanNotCreateCashierForATotalCostWithMoreThan15DigitsForItsIntegerPart
 
 	self should: [ 
 		Cashier 
 			with: TesteableObjectsFactory shoppingCartWithTotalCostLongerThan15Digits 
 			chargingTo: TesteableObjectsFactory workingCreditCard 
-			registeringOn: TesteableObjectsFactory emptySalesBook 
+			registeringOn: TesteableObjectsFactory emptySalesBook
+			startingOn: Date today
 		]
 	raise: Error
 	withExceptionDo: [ :anError |
 		self assert: anError messageText = Cashier totalCostCanNotBeLongerThan15DigitsInItsIntegerPart
 	]! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/8/2019 11:39:07'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/8/2019 13:33:32'!
 test05CanNotCreateCashierForATotalCostWithMoreThan2DigitsInFractionPart
 
 	self should: [ 
 		Cashier 
 			with: TesteableObjectsFactory shoppingCartWithTotalCostThreeDigitsInFractionPart 
 			chargingTo: TesteableObjectsFactory workingCreditCard 
-			registeringOn: TesteableObjectsFactory emptySalesBook 
+			registeringOn: TesteableObjectsFactory emptySalesBook
+			startingOn: Date today
 		]
 	raise: Error
 	withExceptionDo: [ :anError |
@@ -303,7 +308,7 @@ test12CanNotCreateAShoppingCartWithAnItemWithNegativeCostInPriceList
 
 !classDefinition: #Cashier category: #'TusLibros.com'!
 Object subclass: #Cashier
-	instanceVariableNames: 'shoppingCart creditCard salesBook'
+	instanceVariableNames: 'shoppingCart creditCard salesBook date'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
@@ -314,12 +319,13 @@ checkOut
 	salesBook add: (Sale with: shoppingCart items costing: shoppingCart totalCost)! !
 
 
-!Cashier methodsFor: 'initialization' stamp: 'AB 6/7/2019 14:42:59'!
-initializeWith: aShoppingCart chargingTo: aCreditCard registeringOn: aSalesBook
+!Cashier methodsFor: 'initialization' stamp: 'AB 6/8/2019 13:31:36'!
+initializeWith: aShoppingCart chargingTo: aCreditCard registeringOn: aSalesBook startingOn: aDate
 
 	shoppingCart _ aShoppingCart.
 	creditCard _ aCreditCard.
-	salesBook _ aSalesBook! !
+	salesBook _ aSalesBook.
+	date _ aDate ! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -327,15 +333,15 @@ initializeWith: aShoppingCart chargingTo: aCreditCard registeringOn: aSalesBook
 Cashier class
 	instanceVariableNames: ''!
 
-!Cashier class methodsFor: 'instance creation' stamp: 'JR 6/7/2019 19:52:30'!
-with: aShoppingCart chargingTo: aCreditCard registeringOn: aSalesBook
+!Cashier class methodsFor: 'instance creation' stamp: 'AB 6/8/2019 13:49:28'!
+with: aShoppingCart chargingTo: aCreditCard registeringOn: aSalesBook startingOn: aDate
 	
 	self assertIsNotEmpty: aShoppingCart.
 	self assertTotalCostHasUpToFifteenDigits: aShoppingCart.
 	self assertTotalCostHasUpToTwoDigitsInItsFractionalPart: aShoppingCart.
-	self assertIsNotExpired: aCreditCard on: GregorianMonthOfYear current.
+	self assertIsNotExpired: aCreditCard on: aDate.
 	
-	^ self new initializeWith: aShoppingCart chargingTo: aCreditCard registeringOn: aSalesBook! !
+	^ self new initializeWith: aShoppingCart chargingTo: aCreditCard registeringOn: aSalesBook startingOn: aDate! !
 
 
 !Cashier class methodsFor: 'error handling' stamp: 'AB 6/7/2019 15:26:54'!
@@ -344,10 +350,14 @@ assertIsNotEmpty: aShoppingCart
 	aShoppingCart isEmpty ifTrue: [ self error: self shoppingCartCanNotBeEmpty ]
 ! !
 
-!Cashier class methodsFor: 'error handling' stamp: 'AB 6/7/2019 14:21:49'!
-assertIsNotExpired: aCreditCard on: aMonthOfAYear
+!Cashier class methodsFor: 'error handling' stamp: 'AB 6/8/2019 13:50:23'!
+assertIsNotExpired: aCreditCard on: aDate
 	
-	(aCreditCard isExpiredOn: aMonthOfAYear) ifTrue: [ self error: self expiredCreditCardIsNotValid ]
+	| monthOfYear |
+	
+	monthOfYear _ GregorianMonthOfYear year: (GregorianYear number: (aDate yearNumber) ) monthNumber: (aDate monthIndex).
+	
+	(aCreditCard isExpiredOn: monthOfYear) ifTrue: [ self error: self expiredCreditCardIsNotValid ]
 ! !
 
 !Cashier class methodsFor: 'error handling' stamp: 'JR 6/7/2019 20:06:27'!
