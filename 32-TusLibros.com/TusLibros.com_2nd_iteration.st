@@ -41,10 +41,12 @@ test02CanNotCreateCashierWithExpiredCreditCard
 		self assert: anError messageText = Cashier expiredCreditCardIsNotValid
 	]! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/8/2019 14:19:13'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/8/2019 15:32:03'!
 test03CheckingOutIncreasesSalesAmount
 
 	| cashier salesBook aMerchantProcessor |
+
+	aMerchantProcessor _ MerchantProcessor new.
 
 	salesBook _ TesteableObjectsFactory emptySalesBook.
 
@@ -96,6 +98,29 @@ test05CanNotCreateCashierForATotalCostWithMoreThan2DigitsInFractionPart
 	withExceptionDo: [ :anError |
 		self assert: anError messageText = Cashier totalCostCanNotBeLongerThan2DigitsInItsFractionPart
 	]! !
+
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/8/2019 15:39:59'!
+test06CanNotCheckOutWhenCreditCardIsWithoutFunds
+
+	| cashier salesBook aMerchantProcessor |
+
+	aMerchantProcessor _ MerchantProcessorInsufficientFunds new.
+
+	salesBook _ TesteableObjectsFactory emptySalesBook.
+
+	cashier _ Cashier 
+		with: TesteableObjectsFactory oneItemShoppingCart 
+		chargingTo: TesteableObjectsFactory workingCreditCard 
+		registeringOn: salesBook
+		startingOn: Date today
+		using: aMerchantProcessor.
+	
+	self should: [ cashier checkOut ]
+	raise: Error
+	withExceptionDo: [ :anError |
+		self assert: anError messageText = MerchantProcessor creditCardHasInsufficientFunds.
+		self assert: salesBook isEmpty
+		]! !
 
 
 !classDefinition: #CreditCardTest category: #'TusLibros.com'!
@@ -326,10 +351,16 @@ Object subclass: #Cashier
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!Cashier methodsFor: 'check out' stamp: 'JR 6/7/2019 19:51:52'!
+!Cashier methodsFor: 'check out' stamp: 'AB 6/8/2019 15:30:35'!
 checkOut
 
-	salesBook add: (Sale with: shoppingCart items costing: shoppingCart totalCost)! !
+	| totalCost |
+	
+	totalCost _ shoppingCart totalCost.
+
+	merchantProcessor debit: totalCost from: creditCard.
+
+	salesBook add: (Sale with: shoppingCart items costing: totalCost)! !
 
 
 !Cashier methodsFor: 'initialization' stamp: 'AB 6/8/2019 14:18:03'!
@@ -439,17 +470,18 @@ isExpiredOn: aMonthOfYear
 CreditCard class
 	instanceVariableNames: ''!
 
-!CreditCard class methodsFor: 'as yet unclassified' stamp: 'AB 6/5/2019 23:02:11'!
+!CreditCard class methodsFor: 'error handling' stamp: 'AB 6/5/2019 23:02:11'!
 cardNumberMustBe16DigitsLong
 	
 	^ 'Credit card number must be 16 digits long'! !
 
-!CreditCard class methodsFor: 'as yet unclassified' stamp: 'AB 6/5/2019 23:02:48'!
+!CreditCard class methodsFor: 'error handling' stamp: 'AB 6/5/2019 23:02:48'!
 ownerNameMustBeBetween1And30CharactersLong
 	
 	^ 'Owner name must be between 1 and 30 characters long'! !
 
-!CreditCard class methodsFor: 'as yet unclassified' stamp: 'AB 6/7/2019 00:06:37'!
+
+!CreditCard class methodsFor: 'instance creation' stamp: 'AB 6/7/2019 00:06:37'!
 with: a16DigitsNumber with: aTwoDigitsMonthAndATwoDigitsYear with: anOwnersName
 
 	(a16DigitsNumber size = 16) ifFalse: [ self error: CreditCard cardNumberMustBe16DigitsLong ].
@@ -457,6 +489,43 @@ with: a16DigitsNumber with: aTwoDigitsMonthAndATwoDigitsYear with: anOwnersName
 	(anOwnersName size between: 1 and: 30) ifFalse: [ self error: CreditCard ownerNameMustBeBetween1And30CharactersLong ].
 
 	^ self new initializeWith: a16DigitsNumber with: aTwoDigitsMonthAndATwoDigitsYear with: anOwnersName! !
+
+
+!classDefinition: #MerchantProcessor category: #'TusLibros.com'!
+Object subclass: #MerchantProcessor
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!MerchantProcessor methodsFor: 'debit' stamp: 'AB 6/8/2019 15:39:32'!
+debit: anAmount from: aCreditCard
+
+	^ self! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'MerchantProcessor class' category: #'TusLibros.com'!
+MerchantProcessor class
+	instanceVariableNames: ''!
+
+!MerchantProcessor class methodsFor: 'error handling' stamp: 'AB 6/8/2019 15:36:21'!
+creditCardHasInsufficientFunds
+
+	^ 'Credit card has insufficient funds'! !
+
+
+!classDefinition: #MerchantProcessorInsufficientFunds category: #'TusLibros.com'!
+MerchantProcessor subclass: #MerchantProcessorInsufficientFunds
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!MerchantProcessorInsufficientFunds methodsFor: 'debit' stamp: 'AB 6/8/2019 15:40:38'!
+debit: anAmount from: aCreditCard
+
+	^ self error: self class creditCardHasInsufficientFunds! !
 
 
 !classDefinition: #Sale category: #'TusLibros.com'!
