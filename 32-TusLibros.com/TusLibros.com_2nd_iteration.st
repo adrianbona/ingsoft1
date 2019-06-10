@@ -155,7 +155,7 @@ test01SizeOfNumberMustBeExactly16CharactersLong
 		self assert: anError messageText equals: CreditCard cardNumberMustBe16DigitsLong
 	]! !
 
-!CreditCardTest methodsFor: 'testing' stamp: 'AB 6/8/2019 11:16:32'!
+!CreditCardTest methodsFor: 'testing' stamp: 'AB 6/10/2019 10:51:18'!
 test02OwnerNameShorterThan1CharacterAndLargerThan30ReturnsError
 	
 	self should: [ 
@@ -166,7 +166,7 @@ test02OwnerNameShorterThan1CharacterAndLargerThan30ReturnsError
 		]
 	raise: Error
 	withExceptionDo: [ :anError |
-		self assert: anError messageText = CreditCard ownerNameMustBeBetween1And30CharactersLong
+		self assert: anError messageText equals: CreditCard ownerNameMustBeBetween1And30CharactersLong
 	].
 
 	self should: [ 
@@ -177,7 +177,21 @@ test02OwnerNameShorterThan1CharacterAndLargerThan30ReturnsError
 		]
 	raise: Error
 	withExceptionDo: [ :anError |
-		self assert: anError messageText = CreditCard ownerNameMustBeBetween1And30CharactersLong
+		self assert: anError messageText equals: CreditCard ownerNameMustBeBetween1And30CharactersLong
+	]! !
+
+!CreditCardTest methodsFor: 'testing' stamp: 'AB 6/10/2019 11:25:14'!
+test03CreditCardNumberContainsOnlyNumbers
+	
+	self should: [ 
+		CreditCard 
+			with: TesteableObjectsFactory a16DigitsStringWithNumbersAndLetters 
+			with: TesteableObjectsFactory aMonthOfYear 
+			with: TesteableObjectsFactory a0CharactersLongName 
+		]
+	raise: Error
+	withExceptionDo: [ :anError |
+		self assert: anError messageText equals: CreditCard cardNumberMustContainOnlyNumbers 
 	]! !
 
 
@@ -188,7 +202,7 @@ TestCase subclass: #ShoppingCartTest
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/8/2019 11:06:33'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/10/2019 10:51:54'!
 test01CreateNewShoppingCartIsEmptyCart
 
 	| shoppingCart |
@@ -196,7 +210,7 @@ test01CreateNewShoppingCartIsEmptyCart
 	shoppingCart _ ShoppingCart with: TesteableObjectsFactory emptyPriceList.
 	
 	self assert: shoppingCart isEmpty.
-	self assert: shoppingCart totalCost = (0 * peso)! !
+	self assert: 0 * peso equals: shoppingCart totalCost! !
 
 !ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/8/2019 11:06:44'!
 test02WhenAddingBookToShoppingCarItIsNotEmpty
@@ -249,7 +263,7 @@ test05AddTwoCopiesOfTheSameBookAssertInclusionInCart
 	self assert: 2 equals: shoppingCart itemsAmount.
 	self assert: (shoppingCart contains: #book1)! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/8/2019 11:07:09'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/10/2019 10:52:16'!
 test06AddingABookWithAQuantityLessThan1ThrowsAnError
 
 	| shoppingCart |
@@ -259,7 +273,7 @@ test06AddingABookWithAQuantityLessThan1ThrowsAnError
 	self should: [shoppingCart add: #book1 quantity: 0]
 	raise: Error
 	withExceptionDo: [ :anError |
-		self assert: anError messageText = ShoppingCart quantityMustBeBiggerThanOneError.
+		self assert: anError messageText equals: ShoppingCart quantityMustBeBiggerThanOneError.
 		self assert: shoppingCart isEmpty.
 		].! !
 
@@ -291,7 +305,7 @@ test08AShoppingCartReturnsCollectionWithTheBooksItContains
 	self assert: (items includes: #book2).
 	self assert: (items includes: #book3)! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/8/2019 11:07:20'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/10/2019 10:52:25'!
 test09CanNotAddANotIntegerQuantityOfBooksToCart
 
 	| shoppingCart |
@@ -301,11 +315,11 @@ test09CanNotAddANotIntegerQuantityOfBooksToCart
 	self should: [shoppingCart add: #book1 quantity: 2.5]
 	raise: Error
 	withExceptionDo: [ :anError |
-		self assert: anError messageText = ShoppingCart quantityMustBeAnIntegerValue.
+		self assert: anError messageText equals: ShoppingCart quantityMustBeAnIntegerValue.
 		self assert: shoppingCart isEmpty.
 		].! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/8/2019 11:07:24'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/10/2019 10:52:33'!
 test10CanNotAddABookNotIncludedTheCatalogue
 
 	| shoppingCart |
@@ -315,7 +329,7 @@ test10CanNotAddABookNotIncludedTheCatalogue
 	self should: [shoppingCart add: #book2 quantity: 2]
 	raise: Error
 	withExceptionDo: [ :anError |
-		self assert: anError messageText = ShoppingCart priceListDoestNotIncludeItem.
+		self assert: anError messageText equals: ShoppingCart priceListDoestNotIncludeItem.
 		self assert: shoppingCart isEmpty.
 		].! !
 
@@ -333,13 +347,13 @@ test11WhenAddingBookToShoppingCartCostIncreases
 	
 	self assert: (priceList at: #book1) equals: shoppingCart totalCost! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/8/2019 11:07:31'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/10/2019 10:52:42'!
 test12CanNotCreateAShoppingCartWithAnItemWithNegativeCostInPriceList
 
 	self should: [ ShoppingCart with: TesteableObjectsFactory oneNegativeItemPriceList ]
 	raise: Error
 	withExceptionDo: [ :anError |
-		self assert: anError messageText = ShoppingCart canNotHaveItemsWithNegativeCostInPriceList	
+		self assert: anError messageText equals: ShoppingCart canNotHaveItemsWithNegativeCostInPriceList	
 	]
 	! !
 
@@ -351,16 +365,23 @@ Object subclass: #Cashier
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!Cashier methodsFor: 'check out' stamp: 'AB 6/8/2019 15:30:35'!
+!Cashier methodsFor: 'check out' stamp: 'AB 6/10/2019 11:29:48'!
 checkOut
 
-	| totalCost |
-	
-	totalCost _ shoppingCart totalCost.
+	self debitTotalCost.
 
-	merchantProcessor debit: totalCost from: creditCard.
+	self registerSale
+	! !
 
-	salesBook add: (Sale with: shoppingCart items costing: totalCost)! !
+!Cashier methodsFor: 'check out' stamp: 'AB 6/10/2019 11:29:28'!
+debitTotalCost
+
+	merchantProcessor debit: shoppingCart totalCost from: creditCard! !
+
+!Cashier methodsFor: 'check out' stamp: 'AB 6/10/2019 11:30:08'!
+registerSale
+
+	salesBook add: (Sale with: shoppingCart items costing: shoppingCart totalCost)! !
 
 
 !Cashier methodsFor: 'initialization' stamp: 'AB 6/8/2019 14:18:03'!
@@ -378,12 +399,13 @@ initializeWith: aShoppingCart chargingTo: aCreditCard registeringOn: aSalesBook 
 Cashier class
 	instanceVariableNames: ''!
 
-!Cashier class methodsFor: 'instance creation' stamp: 'AB 6/8/2019 14:17:32'!
+!Cashier class methodsFor: 'instance creation' stamp: 'AB 6/10/2019 11:14:43'!
 with: aShoppingCart chargingTo: aCreditCard registeringOn: aSalesBook startingOn: aDate using: aMerchantProcessor
 	
 	self assertIsNotEmpty: aShoppingCart.
-	self assertTotalCostHasUpToFifteenDigits: aShoppingCart.
-	self assertTotalCostHasUpToTwoDigitsInItsFractionalPart: aShoppingCart.
+	
+	self assertTotalCostIsAValidNumberValue: aShoppingCart.
+	
 	self assertIsNotExpired: aCreditCard on: aDate.
 	
 	^ self new initializeWith: aShoppingCart chargingTo: aCreditCard registeringOn: aSalesBook startingOn: aDate using: aMerchantProcessor! !
@@ -423,6 +445,13 @@ assertTotalCostHasUpToTwoDigitsInItsFractionalPart: aShoppingCart
 
 	(totalCostFractionalPart > 0) ifTrue: [ self error: self totalCostCanNotBeLongerThan2DigitsInItsFractionPart ]! !
 
+!Cashier class methodsFor: 'error handling' stamp: 'AB 6/10/2019 10:00:26'!
+assertTotalCostIsAValidNumberValue: aShoppingCart
+	
+	self assertTotalCostHasUpToFifteenDigits: aShoppingCart.
+	self assertTotalCostHasUpToTwoDigitsInItsFractionalPart: aShoppingCart
+! !
+
 !Cashier class methodsFor: 'error handling' stamp: 'AB 6/5/2019 23:09:51'!
 expiredCreditCardIsNotValid
 
@@ -451,11 +480,11 @@ Object subclass: #CreditCard
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!CreditCard methodsFor: 'initialization' stamp: 'AB 6/7/2019 00:20:07'!
-initializeWith: a16DigitsNumber with: aTwoDigitsMonthAndATwoDigitsYear with: anOwnersNameBetween1and30CharactersLong
+!CreditCard methodsFor: 'initialization' stamp: 'AB 6/10/2019 10:50:03'!
+initializeWith: a16DigitsNumber with: aMonthOfYear with: anOwnersNameBetween1and30CharactersLong
 
 	number _ a16DigitsNumber.
-	expiration _ aTwoDigitsMonthAndATwoDigitsYear.
+	expiration _ aMonthOfYear.
 	owner _ anOwnersNameBetween1and30CharactersLong! !
 
 
@@ -470,10 +499,30 @@ isExpiredOn: aMonthOfYear
 CreditCard class
 	instanceVariableNames: ''!
 
+!CreditCard class methodsFor: 'error handling' stamp: 'AB 6/10/2019 11:26:50'!
+assertCardNumberContainsOnlyNumbers: a16DigitsNumber
+	
+	(a16DigitsNumber allSatisfy: [ :character | character digitValue between: 0 and: 9 ]) ifFalse: [ self error: CreditCard cardNumberMustContainOnlyNumbers ]! !
+
+!CreditCard class methodsFor: 'error handling' stamp: 'AB 6/10/2019 11:12:15'!
+assertCardNumberIs16DigitsLong: a16DigitsNumber
+	
+	(a16DigitsNumber size = 16) ifFalse: [ self error: CreditCard cardNumberMustBe16DigitsLong ]! !
+
+!CreditCard class methodsFor: 'error handling' stamp: 'AB 6/10/2019 11:13:13'!
+assertOwnersNameBetween1And30CharactersLong: anOwnersName
+	
+	(anOwnersName size between: 1 and: 30) ifFalse: [ self error: CreditCard ownerNameMustBeBetween1And30CharactersLong ]! !
+
 !CreditCard class methodsFor: 'error handling' stamp: 'AB 6/5/2019 23:02:11'!
 cardNumberMustBe16DigitsLong
 	
 	^ 'Credit card number must be 16 digits long'! !
+
+!CreditCard class methodsFor: 'error handling' stamp: 'AB 6/10/2019 11:23:46'!
+cardNumberMustContainOnlyNumbers
+	
+	^ 'Credit card number must be formed by numbers from 1 to 9'! !
 
 !CreditCard class methodsFor: 'error handling' stamp: 'AB 6/5/2019 23:02:48'!
 ownerNameMustBeBetween1And30CharactersLong
@@ -481,12 +530,14 @@ ownerNameMustBeBetween1And30CharactersLong
 	^ 'Owner name must be between 1 and 30 characters long'! !
 
 
-!CreditCard class methodsFor: 'instance creation' stamp: 'AB 6/7/2019 00:06:37'!
+!CreditCard class methodsFor: 'instance creation' stamp: 'AB 6/10/2019 11:16:12'!
 with: a16DigitsNumber with: aTwoDigitsMonthAndATwoDigitsYear with: anOwnersName
 
-	(a16DigitsNumber size = 16) ifFalse: [ self error: CreditCard cardNumberMustBe16DigitsLong ].
+	self assertCardNumberContainsOnlyNumbers: a16DigitsNumber.
 
-	(anOwnersName size between: 1 and: 30) ifFalse: [ self error: CreditCard ownerNameMustBeBetween1And30CharactersLong ].
+	self assertCardNumberIs16DigitsLong: a16DigitsNumber.
+
+	self assertOwnersNameBetween1And30CharactersLong: anOwnersName.
 
 	^ self new initializeWith: a16DigitsNumber with: aTwoDigitsMonthAndATwoDigitsYear with: anOwnersName! !
 
@@ -577,6 +628,11 @@ items
 	^ items! !
 
 
+!ShoppingCart methodsFor: 'assertions' stamp: 'AB 6/10/2019 09:44:13'!
+assertIsIncludedInPriceList: anItem
+
+	(priceList includesKey: anItem) ifFalse: [ self error: ShoppingCart priceListDoestNotIncludeItem ]! !
+
 !ShoppingCart methodsFor: 'assertions' stamp: 'AB 6/1/2019 16:17:34'!
 assertQuantityIsAnIntegerValueAndBiggerThenZero: aQuantity
 
@@ -585,10 +641,10 @@ assertQuantityIsAnIntegerValueAndBiggerThenZero: aQuantity
 	(aQuantity isInteger) ifFalse: [ self error: ShoppingCart quantityMustBeAnIntegerValue ]! !
 
 
-!ShoppingCart methodsFor: 'adding' stamp: 'JR 6/7/2019 19:24:46'!
+!ShoppingCart methodsFor: 'adding' stamp: 'AB 6/10/2019 09:43:54'!
 add: anItem
 
-	(priceList includesKey: anItem) ifFalse: [ self error: ShoppingCart priceListDoestNotIncludeItem ].
+	self assertIsIncludedInPriceList: anItem.
 
 	^ items add: anItem! !
 
@@ -640,16 +696,16 @@ initializeWith: aPriceList
 ShoppingCart class
 	instanceVariableNames: ''!
 
-!ShoppingCart class methodsFor: 'instance creation' stamp: 'JR 6/7/2019 19:20:54'!
+!ShoppingCart class methodsFor: 'instance creation' stamp: 'AB 6/10/2019 09:47:06'!
 with: aPriceList
 	
-	self assertThereAreNoItemsWithNegativeCostsInPriceList: aPriceList.
+	self assertThereAreNoItemsWithZeroOrLessCostsInPriceList: aPriceList.
 	
 	^ self new initializeWith: aPriceList! !
 
 
-!ShoppingCart class methodsFor: 'error handling' stamp: 'JR 6/7/2019 19:23:53'!
-assertThereAreNoItemsWithNegativeCostsInPriceList: aPriceList
+!ShoppingCart class methodsFor: 'error handling' stamp: 'AB 6/10/2019 09:47:06'!
+assertThereAreNoItemsWithZeroOrLessCostsInPriceList: aPriceList
 
 	(aPriceList values allSatisfy: [ :aCost | aCost > 0]) ifFalse: [ self error: ShoppingCart canNotHaveItemsWithNegativeCostInPriceList ]! !
 
@@ -722,7 +778,7 @@ oneItemWithCostThreeDigitsInFractionPartPriceList
 	
 	^ priceList! !
 
-!TesteableObjectsFactory class methodsFor: 'price lists' stamp: 'AB 6/8/2019 12:00:53'!
+!TesteableObjectsFactory class methodsFor: 'price lists' stamp: 'AB 6/10/2019 09:48:42'!
 oneNegativeItemPriceList
 
 	| priceList |
@@ -767,6 +823,11 @@ a15DigitsNumber
 a16DigitsNumber
 
 	^ '1234567890123456'! !
+
+!TesteableObjectsFactory class methodsFor: 'credit card' stamp: 'AB 6/10/2019 11:25:37'!
+a16DigitsStringWithNumbersAndLetters
+
+	^ '123456789o123456'! !
 
 !TesteableObjectsFactory class methodsFor: 'credit card' stamp: 'AB 6/8/2019 11:13:36'!
 a17DigitsNumber
