@@ -5,7 +5,7 @@ TestCase subclass: #CashierTest
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/8/2019 14:18:42'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/10/2019 15:42:04'!
 test01CanNotCreateCashierForAnEmptyCart
 
 	| aMerchantProcessor |
@@ -20,10 +20,10 @@ test01CanNotCreateCashierForAnEmptyCart
 		]
 	raise: Error
 	withExceptionDo: [ :anError |
-		self assert: anError messageText = Cashier shoppingCartCanNotBeEmpty.
+		self assert: anError messageText equals: Cashier shoppingCartCanNotBeEmpty.
 	]! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/8/2019 14:19:00'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/10/2019 15:41:58'!
 test02CanNotCreateCashierWithExpiredCreditCard
 
 	| aMerchantProcessor |
@@ -38,7 +38,7 @@ test02CanNotCreateCashierWithExpiredCreditCard
 		]
 	raise: Error
 	withExceptionDo: [ :anError |
-		self assert: anError messageText = Cashier expiredCreditCardIsNotValid
+		self assert: anError messageText equals: Cashier expiredCreditCardIsNotValid
 	]! !
 
 !CashierTest methodsFor: 'testing' stamp: 'AB 6/8/2019 15:32:03'!
@@ -63,7 +63,7 @@ test03CheckingOutIncreasesSalesAmount
 
 	self assert: 1 equals: salesBook size! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/8/2019 14:19:33'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/10/2019 15:41:47'!
 test04CanNotCreateCashierForATotalCostWithMoreThan15DigitsForItsIntegerPart
 
 	| aMerchantProcessor |
@@ -78,10 +78,10 @@ test04CanNotCreateCashierForATotalCostWithMoreThan15DigitsForItsIntegerPart
 		]
 	raise: Error
 	withExceptionDo: [ :anError |
-		self assert: anError messageText = Cashier totalCostCanNotBeLongerThan15DigitsInItsIntegerPart
+		self assert: anError messageText equals: Cashier totalCostCanNotBeLongerThan15DigitsInItsIntegerPart
 	]! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/8/2019 14:19:47'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/10/2019 15:41:40'!
 test05CanNotCreateCashierForATotalCostWithMoreThan2DigitsInFractionPart
 
 	| aMerchantProcessor |
@@ -96,10 +96,10 @@ test05CanNotCreateCashierForATotalCostWithMoreThan2DigitsInFractionPart
 		]
 	raise: Error
 	withExceptionDo: [ :anError |
-		self assert: anError messageText = Cashier totalCostCanNotBeLongerThan2DigitsInItsFractionPart
+		self assert: anError messageText equals: Cashier totalCostCanNotBeLongerThan2DigitsInItsFractionPart
 	]! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/8/2019 15:39:59'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/10/2019 15:41:35'!
 test06CanNotCheckOutWhenCreditCardIsWithoutFunds
 
 	| cashier salesBook aMerchantProcessor |
@@ -118,11 +118,11 @@ test06CanNotCheckOutWhenCreditCardIsWithoutFunds
 	self should: [ cashier checkOut ]
 	raise: Error
 	withExceptionDo: [ :anError |
-		self assert: anError messageText = MerchantProcessor creditCardHasInsufficientFunds.
+		self assert: anError messageText equals: MerchantProcessor creditCardHasInsufficientFunds.
 		self assert: salesBook isEmpty
 		]! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/10/2019 12:55:56'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/10/2019 15:41:30'!
 test07CanNotCheckOutWhenCreditCardHasReportedStolen
 
 	| cashier salesBook aMerchantProcessor |
@@ -141,7 +141,7 @@ test07CanNotCheckOutWhenCreditCardHasReportedStolen
 	self should: [ cashier checkOut ]
 	raise: Error
 	withExceptionDo: [ :anError |
-		self assert: anError messageText = MerchantProcessor creditCardHasBeenReportedStolen.
+		self assert: anError messageText equals: MerchantProcessor creditCardHasBeenReportedStolen.
 		self assert: salesBook isEmpty
 		]! !
 
@@ -300,16 +300,16 @@ test06AddingABookWithAQuantityLessThan1ThrowsAnError
 		self assert: shoppingCart isEmpty.
 		].! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/8/2019 11:07:13'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/10/2019 15:44:00'!
 test07AShoppingCartReturnsNumberOfCopiesOfABook 
 
 	| shoppingCart |
 	
 	shoppingCart _ ShoppingCart with: TesteableObjectsFactory oneItemPriceList.
-	self assert: (shoppingCart quantityOf: #book1) = 0.
+	self assert: 0 equals: (shoppingCart quantityOf: #book1).
 	
 	shoppingCart add: #book1 quantity: 3.
-	self assert: (shoppingCart quantityOf: #book1) = 3.! !
+	self assert: 3 equals: (shoppingCart quantityOf: #book1)! !
 
 !ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/8/2019 11:07:17'!
 test08AShoppingCartReturnsCollectionWithTheBooksItContains
