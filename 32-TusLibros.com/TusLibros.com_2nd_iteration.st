@@ -122,6 +122,29 @@ test06CanNotCheckOutWhenCreditCardIsWithoutFunds
 		self assert: salesBook isEmpty
 		]! !
 
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/10/2019 12:55:56'!
+test07CanNotCheckOutWhenCreditCardHasReportedStolen
+
+	| cashier salesBook aMerchantProcessor |
+
+	aMerchantProcessor _ MerchantProcessorCardReportedStolen new.
+
+	salesBook _ TesteableObjectsFactory emptySalesBook.
+
+	cashier _ Cashier 
+		with: TesteableObjectsFactory oneItemShoppingCart 
+		chargingTo: TesteableObjectsFactory workingCreditCard 
+		registeringOn: salesBook
+		startingOn: Date today
+		using: aMerchantProcessor.
+	
+	self should: [ cashier checkOut ]
+	raise: Error
+	withExceptionDo: [ :anError |
+		self assert: anError messageText = MerchantProcessor creditCardHasBeenReportedStolen.
+		self assert: salesBook isEmpty
+		]! !
+
 
 !classDefinition: #CreditCardTest category: #'TusLibros.com'!
 TestCase subclass: #CreditCardTest
@@ -560,23 +583,54 @@ debit: anAmount from: aCreditCard
 MerchantProcessor class
 	instanceVariableNames: ''!
 
+!MerchantProcessor class methodsFor: 'error handling' stamp: 'AB 6/10/2019 12:52:11'!
+creditCardHasBeenReportedStolen
+
+	^ 'Credit card owner has reported this card as stolen'! !
+
 !MerchantProcessor class methodsFor: 'error handling' stamp: 'AB 6/8/2019 15:36:21'!
 creditCardHasInsufficientFunds
 
 	^ 'Credit card has insufficient funds'! !
 
 
-!classDefinition: #MerchantProcessorInsufficientFunds category: #'TusLibros.com'!
-MerchantProcessor subclass: #MerchantProcessorInsufficientFunds
+!classDefinition: #MerchantProcessorSimulator category: #'TusLibros.com'!
+Object subclass: #MerchantProcessorSimulator
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!MerchantProcessorInsufficientFunds methodsFor: 'debit' stamp: 'AB 6/8/2019 15:40:38'!
+!MerchantProcessorSimulator methodsFor: 'debit' stamp: 'AB 6/10/2019 11:54:25'!
 debit: anAmount from: aCreditCard
 
-	^ self error: self class creditCardHasInsufficientFunds! !
+	self subclassResponsibility! !
+
+
+!classDefinition: #MerchantProcessorCardReportedStolen category: #'TusLibros.com'!
+MerchantProcessorSimulator subclass: #MerchantProcessorCardReportedStolen
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!MerchantProcessorCardReportedStolen methodsFor: 'debit' stamp: 'AB 6/10/2019 12:55:14'!
+debit: anAmount from: aCreditCard
+
+	^ self error: MerchantProcessor creditCardHasBeenReportedStolen! !
+
+
+!classDefinition: #MerchantProcessorInsufficientFunds category: #'TusLibros.com'!
+MerchantProcessorSimulator subclass: #MerchantProcessorInsufficientFunds
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!MerchantProcessorInsufficientFunds methodsFor: 'debit' stamp: 'AB 6/10/2019 11:55:00'!
+debit: anAmount from: aCreditCard
+
+	^ self error: MerchantProcessor creditCardHasInsufficientFunds! !
 
 
 !classDefinition: #Sale category: #'TusLibros.com'!
