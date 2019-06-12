@@ -318,7 +318,7 @@ test03RestInterfaceCanAddItemToShoppingCart
 
 	self assert: (shoppingCart items includes: TestableObjectsFactory existingISBN)! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/12/2019 12:03:50'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/12/2019 17:44:13'!
 test04RestInterfaceCanAddMoreThanOneBookToShoppingCart
 
 	| shoppingCart interface aMerchantProcessor |
@@ -333,6 +333,8 @@ test04RestInterfaceCanAddMoreThanOneBookToShoppingCart
 		createCartFor: TestableObjectsFactory aValidClienId
 		protectedWith: TestableObjectsFactory aValidClientPassword
 		startingOn: DateAndTime today.
+
+	self assert: shoppingCart isEmpty.
 
 	interface addTo: shoppingCart aBookWithCode: TestableObjectsFactory existingISBN aQuntityOf: 1.
 	interface addTo: shoppingCart aBookWithCode: TestableObjectsFactory anotherExistingISBN aQuntityOf: 2.
@@ -364,6 +366,58 @@ test05RestInterfaceCanNotAddItemToInvalidShoppingCart
 		raise: Error
 		withExceptionDo: [ :anError |
 			self assert: anError messageText equals: RestInterface shoppingCartNotFound.
+		]! !
+
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/12/2019 17:42:14'!
+test06RestInterfaceCanNotAddBookToShoppingCartNotInCatalogue
+
+	| interface aMerchantProcessor |
+	
+	interface _ RestInterface 
+		withCatalogue: TestableObjectsFactory oneItemPriceList
+		processingThrough: aMerchantProcessor
+		signInUsersWith: self
+		recordingTo: TestableObjectsFactory emptySalesBook.
+		
+	interface 
+		createCartFor: TestableObjectsFactory aValidClienId
+		protectedWith: TestableObjectsFactory aValidClientPassword
+		startingOn: DateAndTime today.
+
+	self 
+		should: [ interface 
+			addTo: TestableObjectsFactory oneItemBookShoppingCart
+			aBookWithCode: TestableObjectsFactory anotherExistingISBN aQuntityOf: 1
+		]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: ShoppingCart priceListDoestNotIncludeItem
+		]! !
+
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/12/2019 17:42:05'!
+test07RestInterfaceCanNotAddBookToShoppingCartWithQuantitySmallerThanOne
+
+	| interface aMerchantProcessor |
+	
+	interface _ RestInterface 
+		withCatalogue: TestableObjectsFactory oneItemPriceList
+		processingThrough: aMerchantProcessor
+		signInUsersWith: self
+		recordingTo: TestableObjectsFactory emptySalesBook.
+		
+	interface 
+		createCartFor: TestableObjectsFactory aValidClienId
+		protectedWith: TestableObjectsFactory aValidClientPassword
+		startingOn: DateAndTime today.
+
+	self 
+		should: [ interface 
+			addTo: TestableObjectsFactory oneItemBookShoppingCart
+			aBookWithCode: TestableObjectsFactory anotherExistingISBN aQuntityOf: 0
+		]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: ShoppingCart quantityMustBeBiggerThanOneError
 		]! !
 
 
