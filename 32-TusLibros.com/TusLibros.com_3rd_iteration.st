@@ -345,6 +345,27 @@ test04RestInterfaceCanAddMoreThanOneBookToShoppingCart
 	self assert: (shoppingCart items includes: TestableObjectsFactory anotherExistingISBN).
 	self assert: 2 equals: (shoppingCart items occurrencesOf: TestableObjectsFactory anotherExistingISBN)! !
 
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/12/2019 17:20:14'!
+test05RestInterfaceCanNotAddItemToInvalidShoppingCart
+
+	| interface aMerchantProcessor |
+	
+	interface _ RestInterface 
+		withCatalogue: TestableObjectsFactory oneItemPriceList
+		processingThrough: aMerchantProcessor
+		signInUsersWith: self
+		recordingTo: TestableObjectsFactory emptySalesBook.
+
+	self 
+		should: [ interface 
+			addTo: TestableObjectsFactory oneItemBookShoppingCart
+			aBookWithCode: TestableObjectsFactory existingISBN aQuntityOf: 1
+		]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: RestInterface shoppingCartNotFound.
+		]! !
+
 
 !classDefinition: #ShoppingCartTest category: #'TusLibros.com'!
 TestCase subclass: #ShoppingCartTest
@@ -744,10 +765,10 @@ assertClientExistsWith: aClientId and: aPassword
 	 clientsRecord isRegisteredWith: aClientId and: aPassword! !
 
 
-!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/11/2019 23:29:57'!
+!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/12/2019 17:17:16'!
 addTo: aShoppingCart aBookWithCode: aBookISBN aQuntityOf: anAmount
 
-	(activeShoppingCarts at: aShoppingCart id) add: aBookISBN quantity: anAmount! !
+	(activeShoppingCarts at: (aShoppingCart id) ifAbsent: [ self error: RestInterface shoppingCartNotFound ]) add: aBookISBN quantity: anAmount! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -759,6 +780,11 @@ RestInterface class
 invalidClient
 	
 	^ 'Client details do not match any existing client'! !
+
+!RestInterface class methodsFor: 'error handling' stamp: 'AB 6/12/2019 17:12:31'!
+shoppingCartNotFound
+	
+	^ 'Shopping Cart was not found'! !
 
 
 !RestInterface class methodsFor: 'instance creation' stamp: 'AB 6/11/2019 22:39:55'!
@@ -1102,6 +1128,16 @@ workingCreditCard
 emptyShoppingCart
 
 	^ ShoppingCart with: self oneItemPriceList! !
+
+!TestableObjectsFactory class methodsFor: 'shopping cart' stamp: 'AB 6/12/2019 17:19:40'!
+oneItemBookShoppingCart
+
+	| shoppingCart |
+
+	shoppingCart _ BookShoppingCart with: self oneItemPriceList identifiedWith: 1.
+	shoppingCart add: self existingISBN.
+	
+	^ shoppingCart! !
 
 !TestableObjectsFactory class methodsFor: 'shopping cart' stamp: 'AB 6/11/2019 23:41:29'!
 oneItemShoppingCart
