@@ -15,16 +15,16 @@ setUp
 
 	debitBehavior _ [ :anAmount :aCreditCard | ]! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/10/2019 15:42:04'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/11/2019 19:44:16'!
 test01CanNotCreateCashierForAnEmptyCart
 
 	| aMerchantProcessor |
 	
 	self should: [ 
 		Cashier 
-			with: TesteableObjectsFactory emptyShoppingCart 
-			chargingTo: TesteableObjectsFactory workingCreditCard 
-			registeringOn: TesteableObjectsFactory emptySalesBook
+			with: TestableObjectsFactory emptyShoppingCart 
+			chargingTo: TestableObjectsFactory workingCreditCard 
+			registeringOn: TestableObjectsFactory emptySalesBook
 			startingOn: Date today
 			using: aMerchantProcessor
 		]
@@ -33,16 +33,16 @@ test01CanNotCreateCashierForAnEmptyCart
 		self assert: anError messageText equals: Cashier shoppingCartCanNotBeEmpty.
 	]! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/10/2019 15:41:58'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/11/2019 19:44:16'!
 test02CanNotCreateCashierWithExpiredCreditCard
 
 	| aMerchantProcessor |
 
 	self should: [ 
 		Cashier 
-			with: TesteableObjectsFactory oneItemShoppingCart 
-			chargingTo: TesteableObjectsFactory expiredCreditCard 
-			registeringOn: TesteableObjectsFactory emptySalesBook
+			with: TestableObjectsFactory oneItemShoppingCart 
+			chargingTo: TestableObjectsFactory expiredCreditCard 
+			registeringOn: TestableObjectsFactory emptySalesBook
 			startingOn: Date today
 			using: aMerchantProcessor
 		]
@@ -51,16 +51,16 @@ test02CanNotCreateCashierWithExpiredCreditCard
 		self assert: anError messageText equals: Cashier expiredCreditCardIsNotValid
 	]! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/11/2019 14:31:46'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/11/2019 19:44:16'!
 test03CheckingOutIncreasesSalesAmount
 
 	| cashier salesBook |
 
-	salesBook _ TesteableObjectsFactory emptySalesBook.
+	salesBook _ TestableObjectsFactory emptySalesBook.
 
 	cashier _ Cashier 
-		with: TesteableObjectsFactory oneItemShoppingCart 
-		chargingTo: TesteableObjectsFactory workingCreditCard 
+		with: TestableObjectsFactory oneItemShoppingCart 
+		chargingTo: TestableObjectsFactory workingCreditCard 
 		registeringOn: salesBook
 		startingOn: Date today
 		using: self.
@@ -71,16 +71,16 @@ test03CheckingOutIncreasesSalesAmount
 
 	self assert: 1 equals: salesBook size! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/10/2019 15:41:47'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/11/2019 19:44:16'!
 test04CanNotCreateCashierForATotalCostWithMoreThan15DigitsForItsIntegerPart
 
 	| aMerchantProcessor |
 
 	self should: [ 
 		Cashier 
-			with: TesteableObjectsFactory shoppingCartWithTotalCostLongerThan15Digits 
-			chargingTo: TesteableObjectsFactory workingCreditCard 
-			registeringOn: TesteableObjectsFactory emptySalesBook
+			with: TestableObjectsFactory shoppingCartWithTotalCostLongerThan15Digits 
+			chargingTo: TestableObjectsFactory workingCreditCard 
+			registeringOn: TestableObjectsFactory emptySalesBook
 			startingOn: Date today
 			using: aMerchantProcessor
 		]
@@ -89,16 +89,16 @@ test04CanNotCreateCashierForATotalCostWithMoreThan15DigitsForItsIntegerPart
 		self assert: anError messageText equals: Cashier totalCostCanNotBeLongerThan15DigitsInItsIntegerPart
 	]! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/10/2019 15:41:40'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/11/2019 19:44:16'!
 test05CanNotCreateCashierForATotalCostWithMoreThan2DigitsInFractionPart
 
 	| aMerchantProcessor |
 	
 	self should: [ 
 		Cashier 
-			with: TesteableObjectsFactory shoppingCartWithTotalCostThreeDigitsInFractionPart 
-			chargingTo: TesteableObjectsFactory workingCreditCard 
-			registeringOn: TesteableObjectsFactory emptySalesBook
+			with: TestableObjectsFactory shoppingCartWithTotalCostThreeDigitsInFractionPart 
+			chargingTo: TestableObjectsFactory workingCreditCard 
+			registeringOn: TestableObjectsFactory emptySalesBook
 			startingOn: Date today
 			using: aMerchantProcessor
 		]
@@ -107,18 +107,18 @@ test05CanNotCreateCashierForATotalCostWithMoreThan2DigitsInFractionPart
 		self assert: anError messageText equals: Cashier totalCostCanNotBeLongerThan2DigitsInItsFractionPart
 	]! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/11/2019 14:30:13'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/11/2019 19:44:16'!
 test06CanNotCheckOutWhenCreditCardIsWithoutFunds
 
 	| cashier salesBook |
 
  	debitBehavior _ [ :anAmount :aCreditCard | self error: Cashier creditCardHasInsufficientFunds ].
 
-	salesBook _ TesteableObjectsFactory emptySalesBook.
+	salesBook _ TestableObjectsFactory emptySalesBook.
 
 	cashier _ Cashier 
-		with: TesteableObjectsFactory oneItemShoppingCart 
-		chargingTo: TesteableObjectsFactory workingCreditCard 
+		with: TestableObjectsFactory oneItemShoppingCart 
+		chargingTo: TestableObjectsFactory workingCreditCard 
 		registeringOn: salesBook
 		startingOn: Date today
 		using: self.
@@ -130,18 +130,18 @@ test06CanNotCheckOutWhenCreditCardIsWithoutFunds
 		self assert: salesBook isEmpty
 		]! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/11/2019 14:30:41'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/11/2019 19:44:16'!
 test07CanNotCheckOutWhenCreditCardHasReportedStolen
 
 	| cashier salesBook |
 
  	debitBehavior _ [ :anAmount :aCreditCard | self error: Cashier creditCardHasBeenReportedStolen ].
 
-	salesBook _ TesteableObjectsFactory emptySalesBook.
+	salesBook _ TestableObjectsFactory emptySalesBook.
 
 	cashier _ Cashier 
-		with: TesteableObjectsFactory oneItemShoppingCart 
-		chargingTo: TesteableObjectsFactory workingCreditCard 
+		with: TestableObjectsFactory oneItemShoppingCart 
+		chargingTo: TestableObjectsFactory workingCreditCard 
 		registeringOn: salesBook
 		startingOn: Date today
 		using: self.
@@ -161,14 +161,14 @@ TestCase subclass: #CreditCardTest
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!CreditCardTest methodsFor: 'testing' stamp: 'AB 6/8/2019 11:16:00'!
+!CreditCardTest methodsFor: 'testing' stamp: 'AB 6/11/2019 19:44:16'!
 test01SizeOfNumberMustBeExactly16CharactersLong
 	
 	self should: [ 
 		CreditCard 
-			with: TesteableObjectsFactory a15DigitsNumber 
-			with: TesteableObjectsFactory aMonthOfYear 
-			with: TesteableObjectsFactory a30CharactersLongName 
+			with: TestableObjectsFactory a15DigitsNumber 
+			with: TestableObjectsFactory aMonthOfYear 
+			with: TestableObjectsFactory a30CharactersLongName 
 		]
 	raise: Error
 	withExceptionDo: [ :anError |
@@ -177,23 +177,23 @@ test01SizeOfNumberMustBeExactly16CharactersLong
 
 	self should: [ 
 		CreditCard 
-			with: TesteableObjectsFactory a17DigitsNumber 
-			with: TesteableObjectsFactory aMonthOfYear 
-			with: TesteableObjectsFactory a30CharactersLongName 
+			with: TestableObjectsFactory a17DigitsNumber 
+			with: TestableObjectsFactory aMonthOfYear 
+			with: TestableObjectsFactory a30CharactersLongName 
 		]
 	raise: Error
 	withExceptionDo: [ :anError |
 		self assert: anError messageText equals: CreditCard cardNumberMustBe16DigitsLong
 	]! !
 
-!CreditCardTest methodsFor: 'testing' stamp: 'AB 6/10/2019 10:51:18'!
+!CreditCardTest methodsFor: 'testing' stamp: 'AB 6/11/2019 19:44:16'!
 test02OwnerNameShorterThan1CharacterAndLargerThan30ReturnsError
 	
 	self should: [ 
 		CreditCard 
-			with: TesteableObjectsFactory a16DigitsNumber 
-			with: TesteableObjectsFactory aMonthOfYear 
-			with: TesteableObjectsFactory a0CharactersLongName 
+			with: TestableObjectsFactory a16DigitsNumber 
+			with: TestableObjectsFactory aMonthOfYear 
+			with: TestableObjectsFactory a0CharactersLongName 
 		]
 	raise: Error
 	withExceptionDo: [ :anError |
@@ -202,28 +202,148 @@ test02OwnerNameShorterThan1CharacterAndLargerThan30ReturnsError
 
 	self should: [ 
 		CreditCard 
-			with: TesteableObjectsFactory a16DigitsNumber 
-			with: TesteableObjectsFactory aMonthOfYear 
-			with: TesteableObjectsFactory a31CharactersLongName 
+			with: TestableObjectsFactory a16DigitsNumber 
+			with: TestableObjectsFactory aMonthOfYear 
+			with: TestableObjectsFactory a31CharactersLongName 
 		]
 	raise: Error
 	withExceptionDo: [ :anError |
 		self assert: anError messageText equals: CreditCard ownerNameMustBeBetween1And30CharactersLong
 	]! !
 
-!CreditCardTest methodsFor: 'testing' stamp: 'AB 6/10/2019 11:25:14'!
+!CreditCardTest methodsFor: 'testing' stamp: 'AB 6/11/2019 19:44:16'!
 test03CreditCardNumberContainsOnlyNumbers
 	
 	self should: [ 
 		CreditCard 
-			with: TesteableObjectsFactory a16DigitsStringWithNumbersAndLetters 
-			with: TesteableObjectsFactory aMonthOfYear 
-			with: TesteableObjectsFactory a0CharactersLongName 
+			with: TestableObjectsFactory a16DigitsStringWithNumbersAndLetters 
+			with: TestableObjectsFactory aMonthOfYear 
+			with: TestableObjectsFactory a0CharactersLongName 
 		]
 	raise: Error
 	withExceptionDo: [ :anError |
 		self assert: anError messageText equals: CreditCard cardNumberMustContainOnlyNumbers 
 	]! !
+
+
+!classDefinition: #RestInterfaceTest category: #'TusLibros.com'!
+TestCase subclass: #RestInterfaceTest
+	instanceVariableNames: 'loginBehavior'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/11/2019 22:55:18'!
+isRegisteredWith: aClientId and: aPassword
+
+	^ loginBehavior value: aClientId value: aPassword! !
+
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/11/2019 22:31:11'!
+setUp 
+
+	loginBehavior _ [ :aClientId :aPassword | ]! !
+
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/11/2019 23:00:11'!
+test01RestInterfaceReturnsEmptyShoppingCartWithValidUserIdAndPassword
+
+	| shoppingCart interface aMerchantProcessor |
+	
+	interface _ RestInterface 
+		withCatalogue: TestableObjectsFactory emptyPriceList 
+		processingThrough: aMerchantProcessor
+		signInUsersWith: self
+		recordingTo: TestableObjectsFactory emptySalesBook.
+		
+	shoppingCart _ interface 
+		createCartFor: TestableObjectsFactory aValidClienId
+		protectedWith: TestableObjectsFactory aValidClientPassword
+		startingOn: DateAndTime today.
+
+	self assert: shoppingCart isEmpty! !
+
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/11/2019 23:00:33'!
+test02RestInterfaceCanNotCreateCartWithInvalidUserOrPassword
+
+	| interface aMerchantProcessor |
+	
+ 	loginBehavior _ [ :aClientId :aPassword | self error: RestInterface invalidClient ].
+
+	interface _ RestInterface 
+		withCatalogue: TestableObjectsFactory emptyPriceList 
+		processingThrough: aMerchantProcessor
+		signInUsersWith: self
+		recordingTo: TestableObjectsFactory emptySalesBook.
+
+	self 
+		should: [ interface 
+			createCartFor: TestableObjectsFactory anInvalidClientId
+			protectedWith: TestableObjectsFactory aValidClientPassword
+			startingOn: DateAndTime today
+		]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: RestInterface invalidClient.
+		].
+	
+	self 
+		should: [ interface 
+			createCartFor: TestableObjectsFactory aValidClienId 
+			protectedWith: TestableObjectsFactory anInvalidClientPassword
+			startingOn: DateAndTime today
+		]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: RestInterface invalidClient.
+		]! !
+
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/11/2019 23:36:36'!
+test03RestInterfaceCanAddItemToShoppingCart
+
+	| shoppingCart interface aMerchantProcessor |
+	
+	interface _ RestInterface 
+		withCatalogue: TestableObjectsFactory oneItemPriceList
+		processingThrough: aMerchantProcessor
+		signInUsersWith: self
+		recordingTo: TestableObjectsFactory emptySalesBook.
+		
+	shoppingCart _ interface 
+		createCartFor: TestableObjectsFactory aValidClienId
+		protectedWith: TestableObjectsFactory aValidClientPassword
+		startingOn: DateAndTime today.
+
+	interface addTo: shoppingCart aBookWithCode: TestableObjectsFactory existingISBN aQuntityOf: 1.
+
+	self deny: shoppingCart isEmpty.
+
+	self assert: (shoppingCart items includes: TestableObjectsFactory existingISBN)! !
+
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/12/2019 12:03:50'!
+test04RestInterfaceCanAddMoreThanOneBookToShoppingCart
+
+	| shoppingCart interface aMerchantProcessor |
+	
+	interface _ RestInterface 
+		withCatalogue: TestableObjectsFactory twoItemsPriceList
+		processingThrough: aMerchantProcessor
+		signInUsersWith: self
+		recordingTo: TestableObjectsFactory emptySalesBook.
+		
+	shoppingCart _ interface 
+		createCartFor: TestableObjectsFactory aValidClienId
+		protectedWith: TestableObjectsFactory aValidClientPassword
+		startingOn: DateAndTime today.
+
+	interface addTo: shoppingCart aBookWithCode: TestableObjectsFactory existingISBN aQuntityOf: 1.
+	interface addTo: shoppingCart aBookWithCode: TestableObjectsFactory anotherExistingISBN aQuntityOf: 2.
+
+	self deny: shoppingCart isEmpty.
+
+	self assert: (shoppingCart items includes: TestableObjectsFactory existingISBN).
+	self assert: 1 equals: (shoppingCart items occurrencesOf: TestableObjectsFactory existingISBN).
+	
+	self assert: (shoppingCart items includes: TestableObjectsFactory anotherExistingISBN).
+	self assert: 2 equals: (shoppingCart items occurrencesOf: TestableObjectsFactory anotherExistingISBN)! !
 
 
 !classDefinition: #ShoppingCartTest category: #'TusLibros.com'!
@@ -233,45 +353,45 @@ TestCase subclass: #ShoppingCartTest
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/10/2019 10:51:54'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/11/2019 19:44:16'!
 test01CreateNewShoppingCartIsEmptyCart
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart with: TesteableObjectsFactory emptyPriceList.
+	shoppingCart _ ShoppingCart with: TestableObjectsFactory emptyPriceList.
 	
 	self assert: shoppingCart isEmpty.
 	self assert: 0 * peso equals: shoppingCart totalCost! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/8/2019 11:06:44'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/11/2019 19:44:16'!
 test02WhenAddingBookToShoppingCarItIsNotEmpty
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart with: TesteableObjectsFactory oneItemPriceList.
+	shoppingCart _ ShoppingCart with: TestableObjectsFactory oneItemPriceList.
 	
 	shoppingCart add: #book1.
 	
 	self deny: shoppingCart isEmpty! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/8/2019 11:06:54'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/11/2019 19:44:16'!
 test03WhenAddingABookToShoppingCartCanCheckIsThere
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart with: TesteableObjectsFactory oneItemPriceList.
+	shoppingCart _ ShoppingCart with: TestableObjectsFactory oneItemPriceList.
 	
 	shoppingCart add: #book1.
 	
 	self deny: shoppingCart isEmpty.
 	self assert: (shoppingCart contains: #book1)! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/8/2019 11:07:00'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/11/2019 19:44:16'!
 test04AddingTwoBooksMakesSizeTwoAndBothAreContained
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart with: TesteableObjectsFactory twoItemsPriceList.
+	shoppingCart _ ShoppingCart with: TestableObjectsFactory twoItemsPriceList.
 	
 	shoppingCart add: #book1.
 	shoppingCart add: #book2.
@@ -281,12 +401,12 @@ test04AddingTwoBooksMakesSizeTwoAndBothAreContained
 	self assert: (shoppingCart contains: #book1).
 	self assert: (shoppingCart contains: #book2)! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/8/2019 11:07:05'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/11/2019 19:44:16'!
 test05AddTwoCopiesOfTheSameBookAssertInclusionInCart
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart with: TesteableObjectsFactory oneItemPriceList.
+	shoppingCart _ ShoppingCart with: TestableObjectsFactory oneItemPriceList.
 	
 	shoppingCart add: #book1 quantity: 2.
 	
@@ -294,12 +414,12 @@ test05AddTwoCopiesOfTheSameBookAssertInclusionInCart
 	self assert: 2 equals: shoppingCart itemsAmount.
 	self assert: (shoppingCart contains: #book1)! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/10/2019 10:52:16'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/11/2019 19:44:16'!
 test06AddingABookWithAQuantityLessThan1ThrowsAnError
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart with: TesteableObjectsFactory oneItemPriceList.
+	shoppingCart _ ShoppingCart with: TestableObjectsFactory oneItemPriceList.
 	
 	self should: [shoppingCart add: #book1 quantity: 0]
 	raise: Error
@@ -308,23 +428,23 @@ test06AddingABookWithAQuantityLessThan1ThrowsAnError
 		self assert: shoppingCart isEmpty.
 		].! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/10/2019 15:44:00'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/11/2019 19:44:16'!
 test07AShoppingCartReturnsNumberOfCopiesOfABook 
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart with: TesteableObjectsFactory oneItemPriceList.
+	shoppingCart _ ShoppingCart with: TestableObjectsFactory oneItemPriceList.
 	self assert: 0 equals: (shoppingCart quantityOf: #book1).
 	
 	shoppingCart add: #book1 quantity: 3.
 	self assert: 3 equals: (shoppingCart quantityOf: #book1)! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/8/2019 11:07:17'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/11/2019 19:44:16'!
 test08AShoppingCartReturnsCollectionWithTheBooksItContains
 
 	| shoppingCart items |
 	
-	shoppingCart _ ShoppingCart with: TesteableObjectsFactory threeItemsPriceList.
+	shoppingCart _ ShoppingCart with: TestableObjectsFactory threeItemsPriceList.
 	
 	shoppingCart add: #book1 quantity: 1.
 	shoppingCart add: #book2 quantity: 2.
@@ -336,12 +456,12 @@ test08AShoppingCartReturnsCollectionWithTheBooksItContains
 	self assert: (items includes: #book2).
 	self assert: (items includes: #book3)! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/10/2019 10:52:25'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/11/2019 19:44:16'!
 test09CanNotAddANotIntegerQuantityOfBooksToCart
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart with: TesteableObjectsFactory oneItemPriceList.
+	shoppingCart _ ShoppingCart with: TestableObjectsFactory oneItemPriceList.
 	
 	self should: [shoppingCart add: #book1 quantity: 2.5]
 	raise: Error
@@ -350,12 +470,12 @@ test09CanNotAddANotIntegerQuantityOfBooksToCart
 		self assert: shoppingCart isEmpty.
 		].! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/10/2019 10:52:33'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/11/2019 19:44:16'!
 test10CanNotAddABookNotIncludedTheCatalogue
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart with: TesteableObjectsFactory oneItemPriceList.
+	shoppingCart _ ShoppingCart with: TestableObjectsFactory oneItemPriceList.
 	
 	self should: [shoppingCart add: #book2 quantity: 2]
 	raise: Error
@@ -364,12 +484,12 @@ test10CanNotAddABookNotIncludedTheCatalogue
 		self assert: shoppingCart isEmpty.
 		].! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/8/2019 11:08:36'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/11/2019 19:44:16'!
 test11WhenAddingBookToShoppingCartCostIncreases
 
 	| shoppingCart priceList |
 	
-	priceList _ TesteableObjectsFactory oneItemPriceList.
+	priceList _ TestableObjectsFactory oneItemPriceList.
 	shoppingCart _ ShoppingCart with: priceList.
 
 	self assert: 0 * peso equals: shoppingCart totalCost.
@@ -378,10 +498,10 @@ test11WhenAddingBookToShoppingCartCostIncreases
 	
 	self assert: (priceList at: #book1) equals: shoppingCart totalCost! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/10/2019 10:52:42'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/11/2019 19:44:16'!
 test12CanNotCreateAShoppingCartWithAnItemWithNegativeCostInPriceList
 
-	self should: [ ShoppingCart with: TesteableObjectsFactory oneNegativeItemPriceList ]
+	self should: [ ShoppingCart with: TestableObjectsFactory oneNegativeItemPriceList ]
 	raise: Error
 	withExceptionDo: [ :anError |
 		self assert: anError messageText equals: ShoppingCart canNotHaveItemsWithNegativeCostInPriceList	
@@ -583,6 +703,70 @@ with: a16DigitsNumber with: aTwoDigitsMonthAndATwoDigitsYear with: anOwnersName
 	^ self new initializeWith: a16DigitsNumber with: aTwoDigitsMonthAndATwoDigitsYear with: anOwnersName! !
 
 
+!classDefinition: #RestInterface category: #'TusLibros.com'!
+Object subclass: #RestInterface
+	instanceVariableNames: 'priceList merchantProcessor salesBoook currentCartId clientsRecord activeShoppingCarts'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!RestInterface methodsFor: 'initialization' stamp: 'AB 6/11/2019 23:32:39'!
+initializewithCatalogue: aPriceList processingThrough: aMerchantProcessor signInUsersWith: aUsersRecord recordingTo: aSalesBook
+
+	priceList _ aPriceList.
+	merchantProcessor _ aMerchantProcessor.
+	clientsRecord _ aUsersRecord.
+	salesBoook _ aSalesBook.
+
+	activeShoppingCarts _ Dictionary new.	
+	currentCartId _ 1! !
+
+
+!RestInterface methodsFor: 'cart creation' stamp: 'AB 6/11/2019 23:35:53'!
+createCartFor: aClientId protectedWith: aPassword startingOn: aDatetime
+
+	| aBooksShoppingCart |
+
+	self assertClientExistsWith: aClientId and: aPassword.
+
+	aBooksShoppingCart _ BookShoppingCart with: priceList identifiedWith: currentCartId.
+
+	activeShoppingCarts at: currentCartId put: aBooksShoppingCart.
+
+	currentCartId _ currentCartId + 1.
+
+	^ aBooksShoppingCart! !
+
+
+!RestInterface methodsFor: 'clients records' stamp: 'AB 6/11/2019 22:54:47'!
+assertClientExistsWith: aClientId and: aPassword
+
+	 clientsRecord isRegisteredWith: aClientId and: aPassword! !
+
+
+!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/11/2019 23:29:57'!
+addTo: aShoppingCart aBookWithCode: aBookISBN aQuntityOf: anAmount
+
+	(activeShoppingCarts at: aShoppingCart id) add: aBookISBN quantity: anAmount! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'RestInterface class' category: #'TusLibros.com'!
+RestInterface class
+	instanceVariableNames: ''!
+
+!RestInterface class methodsFor: 'error handling' stamp: 'AB 6/12/2019 12:03:26'!
+invalidClient
+	
+	^ 'Client details do not match any existing client'! !
+
+
+!RestInterface class methodsFor: 'instance creation' stamp: 'AB 6/11/2019 22:39:55'!
+withCatalogue: aPriceList processingThrough: aMerchantProcessor signInUsersWith: aUsersRecord recordingTo: aSalesBook
+
+	^ self new initializewithCatalogue: aPriceList processingThrough: aMerchantProcessor signInUsersWith: aUsersRecord recordingTo: aSalesBook! !
+
+
 !classDefinition: #Sale category: #'TusLibros.com'!
 Object subclass: #Sale
 	instanceVariableNames: 'total items'
@@ -734,8 +918,42 @@ quantityMustBeBiggerThanOneError
 	^ 'Quantity must be bigger than one'! !
 
 
-!classDefinition: #TesteableObjectsFactory category: #'TusLibros.com'!
-Object subclass: #TesteableObjectsFactory
+!classDefinition: #BookShoppingCart category: #'TusLibros.com'!
+ShoppingCart subclass: #BookShoppingCart
+	instanceVariableNames: 'id'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!BookShoppingCart methodsFor: 'identification' stamp: 'AB 6/11/2019 23:21:08'!
+id
+
+	^ id! !
+
+
+!BookShoppingCart methodsFor: 'initialization' stamp: 'AB 6/11/2019 23:31:39'!
+initializeWith: aPriceList identifiedWith: anId
+
+	id _ anId.
+			
+	super initializeWith: aPriceList! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'BookShoppingCart class' category: #'TusLibros.com'!
+BookShoppingCart class
+	instanceVariableNames: ''!
+
+!BookShoppingCart class methodsFor: 'instance creation' stamp: 'AB 6/11/2019 23:22:37'!
+with: aPriceList identifiedWith: anId
+
+	self assertThereAreNoItemsWithZeroOrLessCostsInPriceList: aPriceList.
+
+	^ self new initializeWith: aPriceList identifiedWith: anId! !
+
+
+!classDefinition: #TestableObjectsFactory category: #'TusLibros.com'!
+Object subclass: #TestableObjectsFactory
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -743,56 +961,66 @@ Object subclass: #TesteableObjectsFactory
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-!classDefinition: 'TesteableObjectsFactory class' category: #'TusLibros.com'!
-TesteableObjectsFactory class
+!classDefinition: 'TestableObjectsFactory class' category: #'TusLibros.com'!
+TestableObjectsFactory class
 	instanceVariableNames: ''!
 
-!TesteableObjectsFactory class methodsFor: 'price lists' stamp: 'AB 6/8/2019 11:01:58'!
+!TestableObjectsFactory class methodsFor: 'price lists' stamp: 'AB 6/11/2019 23:40:51'!
+anotherExistingISBN
+
+	^ #book2! !
+
+!TestableObjectsFactory class methodsFor: 'price lists' stamp: 'AB 6/8/2019 11:01:58'!
 emptyPriceList
 
 	^ Dictionary new! !
 
-!TesteableObjectsFactory class methodsFor: 'price lists' stamp: 'AB 6/8/2019 11:54:08'!
+!TestableObjectsFactory class methodsFor: 'price lists' stamp: 'AB 6/11/2019 23:05:36'!
+existingISBN
+
+	^ #book1! !
+
+!TestableObjectsFactory class methodsFor: 'price lists' stamp: 'AB 6/11/2019 23:05:59'!
 oneItemPriceList
 
 	| priceList |
 	
 	priceList _ self emptyPriceList.
-	priceList at: #book1 put: 100 * peso.
+	priceList at: self existingISBN put: 100 * peso.
 	
 	^ priceList! !
 
-!TesteableObjectsFactory class methodsFor: 'price lists' stamp: 'AB 6/8/2019 11:58:28'!
+!TestableObjectsFactory class methodsFor: 'price lists' stamp: 'AB 6/11/2019 23:06:05'!
 oneItemWithCostLongerThan15DigitsPriceList
 
 	| priceList |
 	
 	priceList _ self emptyPriceList.
-	priceList at: #book1 put: 1234567890123456 * peso.
+	priceList at: self existingISBN put: 1234567890123456 * peso.
 	
 	^ priceList! !
 
-!TesteableObjectsFactory class methodsFor: 'price lists' stamp: 'AB 6/8/2019 11:55:24'!
+!TestableObjectsFactory class methodsFor: 'price lists' stamp: 'AB 6/11/2019 23:06:10'!
 oneItemWithCostThreeDigitsInFractionPartPriceList
 
 	| priceList |
 	
 	priceList _ self emptyPriceList.
-	priceList at: #book1 put: 1.234 * peso.
+	priceList at: self existingISBN put: 1.234 * peso.
 	
 	^ priceList! !
 
-!TesteableObjectsFactory class methodsFor: 'price lists' stamp: 'AB 6/10/2019 09:48:42'!
+!TestableObjectsFactory class methodsFor: 'price lists' stamp: 'AB 6/11/2019 23:06:15'!
 oneNegativeItemPriceList
 
 	| priceList |
 	
 	priceList _ self emptyPriceList.
-	priceList at: #book1 put: -100 * peso.
+	priceList at: self existingISBN put: -100 * peso.
 	
 	^ priceList! !
 
-!TesteableObjectsFactory class methodsFor: 'price lists' stamp: 'AB 6/8/2019 11:56:49'!
+!TestableObjectsFactory class methodsFor: 'price lists' stamp: 'AB 6/8/2019 11:56:49'!
 threeItemsPriceList
 
 	| priceList |
@@ -802,58 +1030,58 @@ threeItemsPriceList
 	
 	^ priceList! !
 
-!TesteableObjectsFactory class methodsFor: 'price lists' stamp: 'AB 6/8/2019 11:56:30'!
+!TestableObjectsFactory class methodsFor: 'price lists' stamp: 'AB 6/11/2019 23:41:05'!
 twoItemsPriceList
 
 	| priceList |
 	
 	priceList _ self oneItemPriceList.
-	priceList at: #book2 put: 200 * peso.
+	priceList at: self anotherExistingISBN put: 200 * peso.
 	
 	^ priceList! !
 
 
-!TesteableObjectsFactory class methodsFor: 'credit card' stamp: 'AB 6/8/2019 11:10:02'!
+!TestableObjectsFactory class methodsFor: 'credit card' stamp: 'AB 6/8/2019 11:10:02'!
 a0CharactersLongName
 
 	^ ''! !
 
-!TesteableObjectsFactory class methodsFor: 'credit card' stamp: 'AB 6/8/2019 11:10:44'!
+!TestableObjectsFactory class methodsFor: 'credit card' stamp: 'AB 6/8/2019 11:10:44'!
 a15DigitsNumber
 
 	^ '123456789012345'! !
 
-!TesteableObjectsFactory class methodsFor: 'credit card' stamp: 'AB 6/8/2019 11:10:54'!
+!TestableObjectsFactory class methodsFor: 'credit card' stamp: 'AB 6/8/2019 11:10:54'!
 a16DigitsNumber
 
 	^ '1234567890123456'! !
 
-!TesteableObjectsFactory class methodsFor: 'credit card' stamp: 'AB 6/10/2019 11:25:37'!
+!TestableObjectsFactory class methodsFor: 'credit card' stamp: 'AB 6/10/2019 11:25:37'!
 a16DigitsStringWithNumbersAndLetters
 
 	^ '123456789o123456'! !
 
-!TesteableObjectsFactory class methodsFor: 'credit card' stamp: 'AB 6/8/2019 11:13:36'!
+!TestableObjectsFactory class methodsFor: 'credit card' stamp: 'AB 6/8/2019 11:13:36'!
 a17DigitsNumber
 
 	^ '12345678901234567'! !
 
-!TesteableObjectsFactory class methodsFor: 'credit card' stamp: 'AB 6/8/2019 11:10:17'!
+!TestableObjectsFactory class methodsFor: 'credit card' stamp: 'AB 6/8/2019 11:10:17'!
 a30CharactersLongName
 
 	^ 'A Credit Card Name'! !
 
-!TesteableObjectsFactory class methodsFor: 'credit card' stamp: 'AB 6/8/2019 11:10:29'!
+!TestableObjectsFactory class methodsFor: 'credit card' stamp: 'AB 6/8/2019 11:10:29'!
 a31CharactersLongName
 
 	^ 'A really long credit card name!!'! !
 
-!TesteableObjectsFactory class methodsFor: 'credit card' stamp: 'AB 6/8/2019 11:42:01'!
+!TestableObjectsFactory class methodsFor: 'credit card' stamp: 'AB 6/8/2019 11:42:01'!
 aMonthOfYear
 
 	^ GregorianMonthOfYear current! !
 
-!TesteableObjectsFactory class methodsFor: 'credit card' stamp: 'AB 6/8/2019 11:30:25'!
+!TestableObjectsFactory class methodsFor: 'credit card' stamp: 'AB 6/8/2019 11:30:25'!
 expiredCreditCard
 
 	^ CreditCard
@@ -861,7 +1089,7 @@ expiredCreditCard
 		with: (May of: 2019)
 		with: self a30CharactersLongName ! !
 
-!TesteableObjectsFactory class methodsFor: 'credit card' stamp: 'AB 6/8/2019 11:29:41'!
+!TestableObjectsFactory class methodsFor: 'credit card' stamp: 'AB 6/8/2019 11:29:41'!
 workingCreditCard
 
 	^ CreditCard 
@@ -870,43 +1098,76 @@ workingCreditCard
 		with: self a30CharactersLongName! !
 
 
-!TesteableObjectsFactory class methodsFor: 'shopping cart' stamp: 'AB 6/8/2019 11:53:07'!
+!TestableObjectsFactory class methodsFor: 'shopping cart' stamp: 'AB 6/8/2019 11:53:07'!
 emptyShoppingCart
 
 	^ ShoppingCart with: self oneItemPriceList! !
 
-!TesteableObjectsFactory class methodsFor: 'shopping cart' stamp: 'AB 6/8/2019 11:52:24'!
+!TestableObjectsFactory class methodsFor: 'shopping cart' stamp: 'AB 6/11/2019 23:41:29'!
 oneItemShoppingCart
 
 	| shoppingCart |
 
 	shoppingCart _ self emptyShoppingCart.
-	shoppingCart add: #book1.
+	shoppingCart add: self existingISBN.
 	
 	^ shoppingCart! !
 
-!TesteableObjectsFactory class methodsFor: 'shopping cart' stamp: 'AB 6/8/2019 11:52:44'!
+!TestableObjectsFactory class methodsFor: 'shopping cart' stamp: 'AB 6/11/2019 23:41:39'!
 shoppingCartWithTotalCostLongerThan15Digits
 
 	| shoppingCart |
 
 	shoppingCart _ ShoppingCart with: self oneItemWithCostLongerThan15DigitsPriceList.
-	shoppingCart add: #book1.
+	shoppingCart add: self existingISBN.
 	
 	^ shoppingCart! !
 
-!TesteableObjectsFactory class methodsFor: 'shopping cart' stamp: 'AB 6/8/2019 11:40:42'!
+!TestableObjectsFactory class methodsFor: 'shopping cart' stamp: 'AB 6/11/2019 23:41:46'!
 shoppingCartWithTotalCostThreeDigitsInFractionPart
 
 	| shoppingCart |
 
 	shoppingCart _ ShoppingCart with: self oneItemWithCostThreeDigitsInFractionPartPriceList.
-	shoppingCart add: #book1.
+	shoppingCart add: self existingISBN.
 	
 	^ shoppingCart! !
 
 
-!TesteableObjectsFactory class methodsFor: 'sales book' stamp: 'AB 6/8/2019 11:18:12'!
+!TestableObjectsFactory class methodsFor: 'sales book' stamp: 'AB 6/8/2019 11:18:12'!
 emptySalesBook
 
 	^ OrderedCollection new! !
+
+
+!TestableObjectsFactory class methodsFor: 'rest interface' stamp: 'AB 6/11/2019 22:41:02'!
+workingRestInterface
+	
+	| aMerchantProcessor aUsersRecord |
+	
+	^ RestInterface 
+		withCatalogue: TestableObjectsFactory emptyPriceList
+		processingThrough: aMerchantProcessor
+		signInUsersWith: aUsersRecord
+		recordingTo: TestableObjectsFactory emptySalesBook! !
+
+
+!TestableObjectsFactory class methodsFor: 'clients record' stamp: 'AB 6/11/2019 22:59:58'!
+aValidClienId
+	
+	^ 'Valid Client ID'! !
+
+!TestableObjectsFactory class methodsFor: 'clients record' stamp: 'AB 6/11/2019 23:00:11'!
+aValidClientPassword
+
+	^ 'Valid User Password'! !
+
+!TestableObjectsFactory class methodsFor: 'clients record' stamp: 'AB 6/11/2019 23:00:42'!
+anInvalidClientId
+	
+	^ 'Invalid Client ID'! !
+
+!TestableObjectsFactory class methodsFor: 'clients record' stamp: 'AB 6/11/2019 23:00:38'!
+anInvalidClientPassword
+
+	^ 'Invalid Client Password'! !
