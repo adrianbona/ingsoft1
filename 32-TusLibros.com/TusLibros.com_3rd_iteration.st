@@ -420,6 +420,32 @@ test07RestInterfaceCanNotAddBookToShoppingCartWithQuantitySmallerThanOne
 			self assert: anError messageText equals: ShoppingCart quantityMustBeBiggerThanOneError
 		]! !
 
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/12/2019 19:13:57'!
+test08RestInterfaceCanNotAddBookToShoppingCartWithNotIntegerAmount
+
+	| interface aMerchantProcessor |
+	
+	interface _ RestInterface 
+		withCatalogue: TestableObjectsFactory oneItemPriceList
+		processingThrough: aMerchantProcessor
+		signInUsersWith: self
+		recordingTo: TestableObjectsFactory emptySalesBook.
+		
+	interface 
+		createCartFor: TestableObjectsFactory aValidClienId
+		protectedWith: TestableObjectsFactory aValidClientPassword
+		startingOn: DateAndTime today.
+
+	self 
+		should: [ interface 
+			addTo: TestableObjectsFactory oneItemBookShoppingCart
+			aBookWithCode: TestableObjectsFactory anotherExistingISBN aQuntityOf: 1.5
+		]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: ShoppingCart quantityMustBeAnIntegerValue
+		]! !
+
 
 !classDefinition: #ShoppingCartTest category: #'TusLibros.com'!
 TestCase subclass: #ShoppingCartTest
