@@ -228,20 +228,27 @@ test03CreditCardNumberContainsOnlyNumbers
 
 !classDefinition: #RestInterfaceTest category: #'TusLibros.com'!
 TestCase subclass: #RestInterfaceTest
-	instanceVariableNames: 'loginBehavior'
+	instanceVariableNames: 'loginBehavior debitBehavior'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
+
+!RestInterfaceTest methodsFor: 'testing' stamp: 'JR 6/12/2019 23:05:32'!
+debit: anAmount from: aCreditCard
+
+	^ debitBehavior value: anAmount value: aCreditCard! !
 
 !RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/11/2019 22:55:18'!
 isRegisteredWith: aClientId and: aPassword
 
 	^ loginBehavior value: aClientId value: aPassword! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/11/2019 22:31:11'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'JR 6/12/2019 23:06:59'!
 setUp 
 
-	loginBehavior _ [ :aClientId :aPassword | ]! !
+	loginBehavior _ [ :aClientId :aPassword | ].
+
+	debitBehavior _ [ :anAmount :aCreditCard | ]! !
 
 !RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/11/2019 23:00:11'!
 test01RestInterfaceReturnsEmptyShoppingCartWithValidUserIdAndPassword
@@ -534,6 +541,87 @@ test12RestInterfaceCanNotListPurchasesWithAnInvalidUserIdOrInvalidPassword
 		withExceptionDo: [ :anError |
 			self assert: anError messageText equals: RestInterface invalidClient.
 		]! !
+
+!RestInterfaceTest methodsFor: 'testing' stamp: 'JR 6/12/2019 22:46:32'!
+test13RestInterfaceListPurchasesBeforeCheckingOutReturnsEmptyCollection
+
+	| interface aMerchantProcessor listPurchases shoppingCart |
+	
+	interface _ RestInterface 
+		withCatalogue: TestableObjectsFactory oneItemPriceList
+		processingThrough: aMerchantProcessor
+		signInUsersWith: self 
+		recordingTo: TestableObjectsFactory emptySalesBook.		
+
+	shoppingCart _ interface 
+		createCartFor: TestableObjectsFactory aValidClienId
+		protectedWith: TestableObjectsFactory aValidClientPassword
+		startingOn: DateAndTime today.
+
+	interface addTo: shoppingCart aBookWithCode: TestableObjectsFactory existingISBN aQuantityOf: 1.
+
+	listPurchases _ interface listPurchasesFor: TestableObjectsFactory aValidClienId protectedBy: TestableObjectsFactory aValidClientPassword.
+	
+	self assert: listPurchases isEmpty.! !
+
+!RestInterfaceTest methodsFor: 'testing' stamp: 'JR 6/12/2019 23:05:20'!
+test14RestInterfaceCheckingOutAShoppingCartWithItemIncreasesSalesBook
+
+	| interface listPurchases shoppingCart |
+	
+	interface _ RestInterface 
+		withCatalogue: TestableObjectsFactory oneItemPriceList
+		processingThrough: self
+		signInUsersWith: self 
+		recordingTo: TestableObjectsFactory emptySalesBook.		
+
+	shoppingCart _ interface 
+		createCartFor: TestableObjectsFactory aValidClienId
+		protectedWith: TestableObjectsFactory aValidClientPassword
+		startingOn: DateAndTime today.
+
+	interface addTo: shoppingCart aBookWithCode: TestableObjectsFactory existingISBN aQuantityOf: 1.
+
+	interface checkOut: shoppingCart chargingTo: TestableObjectsFactory workingCreditCard.
+	
+	listPurchases _ interface listPurchasesFor: TestableObjectsFactory aValidClienId protectedBy: TestableObjectsFactory aValidClientPassword.
+	
+	self deny: listPurchases isEmpty.! !
+
+!RestInterfaceTest methodsFor: 'testing' stamp: 'JR 6/12/2019 23:17:05'!
+test15RestInterfaceListPurchasesContainsThePurchasesForTheClient
+
+	| interface listPurchases shoppingCart anotherShoppingCart |
+	
+	interface _ RestInterface 
+		withCatalogue: TestableObjectsFactory oneItemPriceList
+		processingThrough: self
+		signInUsersWith: self 
+		recordingTo: TestableObjectsFactory emptySalesBook.		
+
+	shoppingCart _ interface 
+		createCartFor: TestableObjectsFactory aValidClienId
+		protectedWith: TestableObjectsFactory aValidClientPassword
+		startingOn: DateAndTime today.
+
+	anotherShoppingCart _ interface 
+		createCartFor: TestableObjectsFactory anotherValidClienId
+		protectedWith: TestableObjectsFactory anotherValidClientPassword
+		startingOn: DateAndTime today.
+
+	interface addTo: shoppingCart aBookWithCode: TestableObjectsFactory existingISBN aQuantityOf: 1.
+	
+	interface addTo: anotherShoppingCart aBookWithCode: TestableObjectsFactory existingISBN aQuantityOf: 1.
+	
+	interface checkOut: shoppingCart chargingTo: TestableObjectsFactory workingCreditCard.
+
+	interface checkOut: anotherShoppingCart chargingTo: TestableObjectsFactory workingCreditCard.
+	
+	listPurchases _ interface listPurchasesFor: TestableObjectsFactory aValidClienId protectedBy: TestableObjectsFactory aValidClientPassword.
+	
+	self deny: listPurchases isEmpty.
+	
+	self assert: listPurchases size = 1.! !
 
 
 !classDefinition: #ShoppingCartTest category: #'TusLibros.com'!
@@ -895,31 +983,31 @@ with: a16DigitsNumber with: aTwoDigitsMonthAndATwoDigitsYear with: anOwnersName
 
 !classDefinition: #RestInterface category: #'TusLibros.com'!
 Object subclass: #RestInterface
-	instanceVariableNames: 'priceList merchantProcessor salesBoook currentCartId clientsRecord activeShoppingCarts'
+	instanceVariableNames: 'priceList merchantProcessor currentCartId clientsRecord activeShoppingCarts salesBook'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!RestInterface methodsFor: 'initialization' stamp: 'AB 6/11/2019 23:32:39'!
+!RestInterface methodsFor: 'initialization' stamp: 'JR 6/12/2019 23:08:17'!
 initializewithCatalogue: aPriceList processingThrough: aMerchantProcessor signInUsersWith: aUsersRecord recordingTo: aSalesBook
 
 	priceList _ aPriceList.
 	merchantProcessor _ aMerchantProcessor.
 	clientsRecord _ aUsersRecord.
-	salesBoook _ aSalesBook.
+	salesBook _ aSalesBook.
 
 	activeShoppingCarts _ Dictionary new.	
 	currentCartId _ 1! !
 
 
-!RestInterface methodsFor: 'cart creation' stamp: 'AB 6/11/2019 23:35:53'!
+!RestInterface methodsFor: 'cart creation' stamp: 'JR 6/12/2019 22:19:23'!
 createCartFor: aClientId protectedWith: aPassword startingOn: aDatetime
 
 	| aBooksShoppingCart |
 
 	self assertClientExistsWith: aClientId and: aPassword.
 
-	aBooksShoppingCart _ BookShoppingCart with: priceList identifiedWith: currentCartId.
+	aBooksShoppingCart _ IdentifiableShoppingCart with: priceList identifiedWith: currentCartId.
 
 	activeShoppingCarts at: currentCartId put: aBooksShoppingCart.
 
@@ -939,19 +1027,28 @@ addTo: aShoppingCart aBookWithCode: aBookISBN aQuantityOf: anAmount
 
 	(activeShoppingCarts at: (aShoppingCart id) ifAbsent: [ self error: RestInterface shoppingCartNotFound ]) add: aBookISBN quantity: anAmount! !
 
-!RestInterface methodsFor: 'cart accessing' stamp: 'JR 6/12/2019 19:37:56'!
+!RestInterface methodsFor: 'cart accessing' stamp: 'JR 6/12/2019 23:08:17'!
+checkOut: aShoppingCart chargingTo: aCreditCard
+
+	| cashier |
+	
+	cashier _ Cashier with: aShoppingCart chargingTo: aCreditCard registeringOn: salesBook startingOn: DateAndTime now using: merchantProcessor.
+	
+	cashier checkOut.! !
+
+!RestInterface methodsFor: 'cart accessing' stamp: 'JR 6/12/2019 22:14:36'!
 listCart: aShoppingCart
 
-	| shoppingCartItems |
+	^ (activeShoppingCarts at: (aShoppingCart id) ifAbsent: [ self error: RestInterface shoppingCartNotFound ]) items.
 	
-	shoppingCartItems _ (activeShoppingCarts at: (aShoppingCart id) ifAbsent: [ self error: RestInterface shoppingCartNotFound ]) items.
-	
-	^ shoppingCartItems.! !
+! !
 
-!RestInterface methodsFor: 'cart accessing' stamp: 'JR 6/12/2019 20:53:41'!
+!RestInterface methodsFor: 'cart accessing' stamp: 'JR 6/12/2019 23:08:49'!
 listPurchasesFor: aClientId protectedBy: aPassword
 
-	self assertClientExistsWith: aClientId and: aPassword.! !
+	self assertClientExistsWith: aClientId and: aPassword.
+	
+	^ salesBook ! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1127,20 +1224,20 @@ quantityMustBeBiggerThanOneError
 	^ 'Quantity must be bigger than one'! !
 
 
-!classDefinition: #BookShoppingCart category: #'TusLibros.com'!
-ShoppingCart subclass: #BookShoppingCart
+!classDefinition: #IdentifiableShoppingCart category: #'TusLibros.com'!
+ShoppingCart subclass: #IdentifiableShoppingCart
 	instanceVariableNames: 'id'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!BookShoppingCart methodsFor: 'identification' stamp: 'AB 6/11/2019 23:21:08'!
+!IdentifiableShoppingCart methodsFor: 'identification' stamp: 'AB 6/11/2019 23:21:08'!
 id
 
 	^ id! !
 
 
-!BookShoppingCart methodsFor: 'initialization' stamp: 'AB 6/11/2019 23:31:39'!
+!IdentifiableShoppingCart methodsFor: 'initialization' stamp: 'AB 6/11/2019 23:31:39'!
 initializeWith: aPriceList identifiedWith: anId
 
 	id _ anId.
@@ -1149,11 +1246,11 @@ initializeWith: aPriceList identifiedWith: anId
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-!classDefinition: 'BookShoppingCart class' category: #'TusLibros.com'!
-BookShoppingCart class
+!classDefinition: 'IdentifiableShoppingCart class' category: #'TusLibros.com'!
+IdentifiableShoppingCart class
 	instanceVariableNames: ''!
 
-!BookShoppingCart class methodsFor: 'instance creation' stamp: 'AB 6/11/2019 23:22:37'!
+!IdentifiableShoppingCart class methodsFor: 'instance creation' stamp: 'AB 6/11/2019 23:22:37'!
 with: aPriceList identifiedWith: anId
 
 	self assertThereAreNoItemsWithZeroOrLessCostsInPriceList: aPriceList.
@@ -1312,12 +1409,12 @@ emptyShoppingCart
 
 	^ ShoppingCart with: self oneItemPriceList! !
 
-!TestableObjectsFactory class methodsFor: 'shopping cart' stamp: 'AB 6/12/2019 17:19:40'!
+!TestableObjectsFactory class methodsFor: 'shopping cart' stamp: 'JR 6/12/2019 22:19:23'!
 oneItemBookShoppingCart
 
 	| shoppingCart |
 
-	shoppingCart _ BookShoppingCart with: self oneItemPriceList identifiedWith: 1.
+	shoppingCart _ IdentifiableShoppingCart with: self oneItemPriceList identifiedWith: 1.
 	shoppingCart add: self existingISBN.
 	
 	^ shoppingCart! !
@@ -1390,3 +1487,13 @@ anInvalidClientId
 anInvalidClientPassword
 
 	^ 'Invalid Client Password'! !
+
+!TestableObjectsFactory class methodsFor: 'clients record' stamp: 'JR 6/12/2019 23:17:26'!
+anotherValidClienId
+	
+	^ 'Another Valid Client ID'! !
+
+!TestableObjectsFactory class methodsFor: 'clients record' stamp: 'JR 6/12/2019 23:17:34'!
+anotherValidClientPassword
+
+	^ 'Another Valid User Password'! !
