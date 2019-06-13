@@ -623,6 +623,72 @@ test15RestInterfaceListPurchasesContainsThePurchasesForTheClient
 	
 	self assert: listPurchases size = 1.! !
 
+!RestInterfaceTest methodsFor: 'testing' stamp: 'JR 6/13/2019 07:38:26'!
+test16RestInterfaceCanNotCheckOutWithInvalidCartId
+
+	| interface aMerchantProcessor |
+	
+	interface _ RestInterface 
+		withCatalogue: TestableObjectsFactory oneItemPriceList
+		processingThrough: aMerchantProcessor
+		signInUsersWith: self 
+		recordingTo: TestableObjectsFactory emptySalesBook.		
+
+	self 
+		should: [ interface checkOut: TestableObjectsFactory oneItemBookShoppingCart chargingTo: TestableObjectsFactory workingCreditCard ]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: RestInterface shoppingCartNotFound.
+		]! !
+
+!RestInterfaceTest methodsFor: 'testing' stamp: 'JR 6/13/2019 07:38:10'!
+test17RestInterfaceCanNotCheckOutAnEmptyCart
+
+	| interface aMerchantProcessor shoppingCart |
+	
+	interface _ RestInterface 
+		withCatalogue: TestableObjectsFactory oneItemPriceList
+		processingThrough: aMerchantProcessor
+		signInUsersWith: self
+		recordingTo: TestableObjectsFactory emptySalesBook.
+		
+	shoppingCart _ interface 
+		createCartFor: TestableObjectsFactory aValidClienId
+		protectedWith: TestableObjectsFactory aValidClientPassword
+		startingOn: DateAndTime today.		
+
+	self 
+		should: [ interface checkOut: shoppingCart chargingTo: TestableObjectsFactory workingCreditCard ]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: Cashier shoppingCartCanNotBeEmpty.
+		]! !
+
+!RestInterfaceTest methodsFor: 'testing' stamp: 'JR 6/13/2019 07:43:28'!
+test18RestInterfaceCanNotCheckOutWithInvalidCreditCard
+
+	| interface aMerchantProcessor shoppingCart |
+		
+	interface _ RestInterface 
+		withCatalogue: TestableObjectsFactory oneItemPriceList
+		processingThrough: aMerchantProcessor
+		signInUsersWith: self
+		recordingTo: TestableObjectsFactory emptySalesBook.
+		
+	shoppingCart _ interface 
+		createCartFor: TestableObjectsFactory aValidClienId
+		protectedWith: TestableObjectsFactory aValidClientPassword
+		startingOn: DateAndTime today.		
+
+	interface addTo: shoppingCart aBookWithCode: TestableObjectsFactory existingISBN aQuantityOf: 1.
+
+	self 
+		should: [ interface checkOut: shoppingCart chargingTo: TestableObjectsFactory expiredCreditCard ]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: Cashier expiredCreditCardIsNotValid.
+		]! !
+
 
 !classDefinition: #ShoppingCartTest category: #'TusLibros.com'!
 TestCase subclass: #ShoppingCartTest
@@ -1027,10 +1093,12 @@ addTo: aShoppingCart aBookWithCode: aBookISBN aQuantityOf: anAmount
 
 	(activeShoppingCarts at: (aShoppingCart id) ifAbsent: [ self error: RestInterface shoppingCartNotFound ]) add: aBookISBN quantity: anAmount! !
 
-!RestInterface methodsFor: 'cart accessing' stamp: 'JR 6/12/2019 23:08:17'!
+!RestInterface methodsFor: 'cart accessing' stamp: 'JR 6/13/2019 07:34:01'!
 checkOut: aShoppingCart chargingTo: aCreditCard
 
 	| cashier |
+	
+	(activeShoppingCarts at: (aShoppingCart id) ifAbsent: [ self error: RestInterface shoppingCartNotFound ]).
 	
 	cashier _ Cashier with: aShoppingCart chargingTo: aCreditCard registeringOn: salesBook startingOn: DateAndTime now using: merchantProcessor.
 	
