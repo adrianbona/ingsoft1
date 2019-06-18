@@ -405,7 +405,7 @@ test07CanAddItemInCatalogueToExistingShoppingCart
 
 	self assert: (interface listCart: shoppingCartId) includes: testObjects existingISBN! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 17:41:44'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 15:27:01'!
 test08CanAddMoreThanOneItemToShoppingCart
 
 	| shoppingCartId interface aMerchantProcessor itemsOnCart |
@@ -422,12 +422,8 @@ test08CanAddMoreThanOneItemToShoppingCart
 
 	itemsOnCart _ interface listCart: shoppingCartId.
 
-	self assert: itemsOnCart isEmpty.
-
 	interface addTo: shoppingCartId aBookWithCode: testObjects existingISBN aQuantityOf: 1.
 	interface addTo: shoppingCartId aBookWithCode: testObjects anotherExistingISBN aQuantityOf: 2.
-
-	self deny: itemsOnCart isEmpty.
 
 	self assert: itemsOnCart includes: testObjects existingISBN.
 	self assert: 1 equals: (itemsOnCart occurrencesOf: testObjects existingISBN).
@@ -501,7 +497,7 @@ test11CanNotAddItemToShoppingCartWithQuantitySmallerThanOne
 			self assert: (interface listCart: shoppingCartId) isEmpty
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:41:25'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 15:27:40'!
 test12CanNotAddItemToShoppingCartWithANonIntegerAmount
 
 	| shoppingCartId interface aMerchantProcessor |
@@ -520,7 +516,8 @@ test12CanNotAddItemToShoppingCartWithANonIntegerAmount
 		should: [ interface addTo: shoppingCartId aBookWithCode: testObjects anotherExistingISBN aQuantityOf: 1.5 ]
 		raise: Error
 		withExceptionDo: [ :anError |
-			self assert: anError messageText equals: ShoppingCart quantityMustBeAnIntegerValue
+			self assert: anError messageText equals: ShoppingCart quantityMustBeAnIntegerValue.
+			self assert: (interface listCart: shoppingCartId) isEmpty
 		]! !
 
 !RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:41:53'!
@@ -830,10 +827,10 @@ test23WhenCheckingOutClientNowRegistersANewPurchase
 				
 	self deny: (interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword) isEmpty! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:46:27'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 15:14:43'!
 test24WhenCheckingOutDifferentClientsPurchasesAreRegisteredIndividually
 
-	| interface shoppingCartId anotherShoppingCartId |
+	| interface shoppingCartId anotherShoppingCartId anotherValidClientPurchases validClientPurchases |
 		
 	interface _ RestInterface 
 		withCatalogue: testObjects twoItemsPriceList 
@@ -865,13 +862,17 @@ test24WhenCheckingOutDifferentClientsPurchasesAreRegisteredIndividually
 			expiringOn: testObjects currentMonthOfYear
 			ownedBy: testObjects a30CharactersLongName.
 
-	self assert: (interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword) includes: testObjects existingISBN.
-	self assert: ((interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword) occurrencesOf: testObjects existingISBN) equals: 1.
-	self assert: ((interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword) occurrencesOf: testObjects anotherExistingISBN) equals: 0.
+	validClientPurchases _ interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword.
+
+	self assert: validClientPurchases includes: testObjects existingISBN.
+	self assert: (validClientPurchases occurrencesOf: testObjects existingISBN) equals: 1.
+	self assert: (validClientPurchases occurrencesOf: testObjects anotherExistingISBN) equals: 0.
+
+	anotherValidClientPurchases _ interface listPurchasesFor: testObjects anotherValidClienId protectedBy: testObjects anotherValidClientPassword.
 	
-	self assert: (interface listPurchasesFor: testObjects anotherValidClienId protectedBy: testObjects anotherValidClientPassword) includes: testObjects anotherExistingISBN.
-	self assert: ((interface listPurchasesFor: testObjects anotherValidClienId protectedBy: testObjects anotherValidClientPassword) occurrencesOf: testObjects anotherExistingISBN) equals: 2.
-		self assert: ((interface listPurchasesFor: testObjects anotherValidClienId protectedBy: testObjects anotherValidClientPassword) occurrencesOf: testObjects existingISBN) equals: 0! !
+	self assert: anotherValidClientPurchases includes: testObjects anotherExistingISBN.
+	self assert: (anotherValidClientPurchases occurrencesOf: testObjects anotherExistingISBN) equals: 2.
+	self assert: (anotherValidClientPurchases occurrencesOf: testObjects existingISBN) equals: 0! !
 
 
 !classDefinition: #ShoppingCartTest category: #'TusLibros.com'!
