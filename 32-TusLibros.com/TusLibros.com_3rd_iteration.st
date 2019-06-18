@@ -781,7 +781,7 @@ test21CanNotCheckOutWithAnInvalidCreditCardNumber
 			self assert: anError messageText equals: CreditCard cardNumberMustContainOnlyNumbers 
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:44:56'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 17:19:46'!
 test22ListingPurchasesBeforeCheckingOutReturnsEmptyCollection
 
 	| interface shoppingCartId |
@@ -798,12 +798,12 @@ test22ListingPurchasesBeforeCheckingOutReturnsEmptyCollection
 
 	interface addTo: shoppingCartId aBookWithCode: testObjects existingISBN aQuantityOf: 1.
 	
-	self assert: (interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword) isEmpty! !
+	self assert: (interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword) items isEmpty! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:45:23'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 17:29:49'!
 test23WhenCheckingOutClientNowRegistersANewPurchase
 
-	| interface shoppingCartId |
+	| interface shoppingCartId clientPurchases |
 		
 	interface _ RestInterface 
 		withCatalogue: testObjects oneItemPriceList
@@ -817,20 +817,57 @@ test23WhenCheckingOutClientNowRegistersANewPurchase
 
 	interface addTo: shoppingCartId aBookWithCode: testObjects existingISBN aQuantityOf: 1.
 	
-	self assert: (interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword) isEmpty.
+	clientPurchases _ interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword.
+
+	self assert: clientPurchases items isEmpty.
 
 	interface 
 			checkOut: shoppingCartId 
 			chargingToACreditCardNumbered: testObjects a16DigitsNumber 
 			expiringOn: testObjects currentMonthOfYear
 			ownedBy: testObjects a30CharactersLongName.
+
+	clientPurchases _ interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword.
 				
-	self deny: (interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword) isEmpty! !
+	self deny: clientPurchases items isEmpty! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 15:14:43'!
-test24WhenCheckingOutDifferentClientsPurchasesAreRegisteredIndividually
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 17:32:21'!
+test24WhenCheckingOutClientNowRegistersANewPurchaseAndItsTotalCost
 
-	| interface shoppingCartId anotherShoppingCartId anotherValidClientPurchases validClientPurchases |
+	| interface shoppingCartId clientPurchases |
+		
+	interface _ RestInterface 
+		withCatalogue: testObjects oneItemPriceList
+		processingThrough: self
+		signInUsersWith: self.
+		
+	shoppingCartId _ interface 
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword
+		startingOn: testObjects today.		
+
+	interface addTo: shoppingCartId aBookWithCode: testObjects existingISBN aQuantityOf: 1.
+	
+	clientPurchases _ interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword.
+
+	self assert: clientPurchases items isEmpty.
+	self assert: 0 = clientPurchases total.
+
+	interface 
+			checkOut: shoppingCartId 
+			chargingToACreditCardNumbered: testObjects a16DigitsNumber 
+			expiringOn: testObjects currentMonthOfYear
+			ownedBy: testObjects a30CharactersLongName.
+
+	clientPurchases _ interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword.
+				
+	self assert: (clientPurchases items occurrencesOf: testObjects existingISBN) equals: 1.
+	self assert: (testObjects oneItemPriceList at: testObjects existingISBN) = clientPurchases total! !
+
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 17:34:43'!
+test25WhenCheckingOutDifferentClientsPurchasesAreRegisteredIndividually
+
+	| interface shoppingCartId anotherShoppingCartId anotherClientPurchases clientPurchases |
 		
 	interface _ RestInterface 
 		withCatalogue: testObjects twoItemsPriceList 
@@ -862,17 +899,19 @@ test24WhenCheckingOutDifferentClientsPurchasesAreRegisteredIndividually
 			expiringOn: testObjects currentMonthOfYear
 			ownedBy: testObjects a30CharactersLongName.
 
-	validClientPurchases _ interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword.
+	clientPurchases _ interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword.
 
-	self assert: validClientPurchases includes: testObjects existingISBN.
-	self assert: (validClientPurchases occurrencesOf: testObjects existingISBN) equals: 1.
-	self assert: (validClientPurchases occurrencesOf: testObjects anotherExistingISBN) equals: 0.
+	self assert: clientPurchases items includes: testObjects existingISBN.
+	self assert: (clientPurchases items occurrencesOf: testObjects existingISBN) equals: 1.
+	self deny: (clientPurchases items includes: testObjects anotherExistingISBN).
+	self assert: (testObjects twoItemsPriceList at: testObjects existingISBN) = clientPurchases total.
 
-	anotherValidClientPurchases _ interface listPurchasesFor: testObjects anotherValidClienId protectedBy: testObjects anotherValidClientPassword.
+	anotherClientPurchases _ interface listPurchasesFor: testObjects anotherValidClienId protectedBy: testObjects anotherValidClientPassword.
 	
-	self assert: anotherValidClientPurchases includes: testObjects anotherExistingISBN.
-	self assert: (anotherValidClientPurchases occurrencesOf: testObjects anotherExistingISBN) equals: 2.
-	self assert: (anotherValidClientPurchases occurrencesOf: testObjects existingISBN) equals: 0! !
+	self assert: anotherClientPurchases items includes: testObjects anotherExistingISBN.
+	self assert: (anotherClientPurchases items occurrencesOf: testObjects anotherExistingISBN) equals: 2.
+	self deny: (anotherClientPurchases items includes: testObjects existingISBN).
+	self assert: (testObjects twoItemsPriceList at: testObjects anotherExistingISBN) * 2 = anotherClientPurchases total! !
 
 
 !classDefinition: #ShoppingCartTest category: #'TusLibros.com'!
@@ -1269,6 +1308,40 @@ with: a16DigitsNumber with: aMonthOfYear with: anOwnersName
 	^ self new initializeWith: a16DigitsNumber with: aMonthOfYear with: anOwnersName! !
 
 
+!classDefinition: #Purchase category: #'TusLibros.com'!
+Object subclass: #Purchase
+	instanceVariableNames: 'total items'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!Purchase methodsFor: 'accessing' stamp: 'AB 6/18/2019 17:11:31'!
+items
+	
+	^ items! !
+
+!Purchase methodsFor: 'accessing' stamp: 'AB 6/18/2019 17:11:31'!
+total
+	
+	^ total! !
+
+
+!Purchase methodsFor: 'initialization' stamp: 'AB 6/18/2019 17:12:16'!
+initialize
+
+	items _ Bag new.
+	total _ 0.
+	
+	super initialize! !
+
+
+!Purchase methodsFor: 'adding' stamp: 'AB 6/18/2019 17:13:23'!
+add: anItem costing: anAmount
+
+	items add: anItem.
+	total _ total + anAmount! !
+
+
 !classDefinition: #RestInterface category: #'TusLibros.com'!
 Object subclass: #RestInterface
 	instanceVariableNames: 'priceList merchantProcessor currentCartId clientsRecord salesBook activeSessions'
@@ -1337,12 +1410,22 @@ listCart: aShoppingCartId
 
 	^ (activeSessions at: aShoppingCartId ifAbsent: [ self error: RestInterface shoppingCartNotFound ]) shoppingCart items! !
 
-!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/15/2019 01:20:06'!
+!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/18/2019 17:18:50'!
 listPurchasesFor: aClientId protectedBy: aPassword
 
+	| clientsPurchase |
+
 	self assertClientExistsWith: aClientId and: aPassword.
-	
-	^ (self salesBooksFor: aClientId) inject: Bag new into: [ :purchases :aSalesBook | purchases addAll: aSalesBook items ]! !
+
+	clientsPurchase _ Purchase new.
+
+	(self salesBooksFor: aClientId) do: [ :aSalesBook | 
+		aSalesBook items do: [ :anItem | 
+			clientsPurchase add: anItem costing: (priceList at: anItem) 
+		] 
+	].
+
+	^ clientsPurchase! !
 
 !RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/15/2019 00:57:53'!
 salesBooksFor: aClientId
