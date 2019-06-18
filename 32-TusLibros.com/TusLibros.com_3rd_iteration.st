@@ -259,7 +259,7 @@ setUp
 
 	debitBehavior _ [ :anAmount :aCreditCard | ]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 17:40:47'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:40:34'!
 test01CreatingShoppingCartsReturnsUniqueIDs
 
 	| aShoppingCartId anotherShoppingCartId interface aMerchantProcessor |
@@ -279,7 +279,7 @@ test01CreatingShoppingCartsReturnsUniqueIDs
 		protectedWith: testObjects aValidClientPassword
 		startingOn: testObjects today.
 
-	self deny: (aShoppingCartId equals: anotherShoppingCartId)! !
+	self deny: aShoppingCartId = anotherShoppingCartId! !
 
 !RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 17:40:39'!
 test02CanNotCreateCartWithAnInvalidClientId
@@ -478,76 +478,76 @@ test10CanNotAddItemNotInCatalogueToExistingShoppingCart
 			self assert: (interface listCart: shoppingCartId) isEmpty
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:02:22'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:41:06'!
 test11CanNotAddItemToShoppingCartWithQuantitySmallerThanOne
 
 	| shoppingCartId interface aMerchantProcessor |
 	
 	interface _ RestInterface 
-		withCatalogue: StoreTestObjectsFactory oneItemPriceList
+		withCatalogue: testObjects oneItemPriceList
 		processingThrough: aMerchantProcessor
 		signInUsersWith: self.
 
 	shoppingCartId _ interface 
-		createCartFor: StoreTestObjectsFactory aValidClienId
-		protectedWith: StoreTestObjectsFactory aValidClientPassword
-		startingOn: DateAndTime today.
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword
+		startingOn: testObjects today.
 
 	self 
-		should: [ interface addTo: shoppingCartId aBookWithCode: StoreTestObjectsFactory anotherExistingISBN aQuantityOf: 0 ]
+		should: [ interface addTo: shoppingCartId aBookWithCode: testObjects anotherExistingISBN aQuantityOf: 0 ]
 		raise: Error
 		withExceptionDo: [ :anError |
 			self assert: anError messageText equals: ShoppingCart quantityMustBeBiggerThanOneError.
 			self assert: (interface listCart: shoppingCartId) isEmpty
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:02:22'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:41:25'!
 test12CanNotAddItemToShoppingCartWithANonIntegerAmount
 
 	| shoppingCartId interface aMerchantProcessor |
 	
 	interface _ RestInterface 
-		withCatalogue: StoreTestObjectsFactory oneItemPriceList
+		withCatalogue: testObjects oneItemPriceList
 		processingThrough: aMerchantProcessor
 		signInUsersWith: self.
 
 	shoppingCartId _ interface 
-		createCartFor: StoreTestObjectsFactory aValidClienId
-		protectedWith: StoreTestObjectsFactory aValidClientPassword
-		startingOn: DateAndTime today.
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword
+		startingOn: testObjects today.
 
 	self 
-		should: [ interface addTo: shoppingCartId aBookWithCode: StoreTestObjectsFactory anotherExistingISBN aQuantityOf: 1.5 ]
+		should: [ interface addTo: shoppingCartId aBookWithCode: testObjects anotherExistingISBN aQuantityOf: 1.5 ]
 		raise: Error
 		withExceptionDo: [ :anError |
 			self assert: anError messageText equals: ShoppingCart quantityMustBeAnIntegerValue
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:02:22'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:41:53'!
 test13ListingItemsOfAShoppingCartReturnsACollectionIncludingItsItems
 
 	| shoppingCartId interface aMerchantProcessor shoppingCartList |
 	
 	interface _ RestInterface 
-		withCatalogue: StoreTestObjectsFactory oneItemPriceList
+		withCatalogue: testObjects oneItemPriceList
 		processingThrough: aMerchantProcessor
 		signInUsersWith: self.
 
 	shoppingCartId _ interface 
-		createCartFor: StoreTestObjectsFactory aValidClienId
-		protectedWith: StoreTestObjectsFactory aValidClientPassword
-		startingOn: DateAndTime today.
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword
+		startingOn: testObjects today.
 
 	shoppingCartList _ interface listCart: shoppingCartId.
 	self assert: shoppingCartList isEmpty.
-	interface addTo: shoppingCartId aBookWithCode: StoreTestObjectsFactory existingISBN aQuantityOf: 1.
+	interface addTo: shoppingCartId aBookWithCode: testObjects existingISBN aQuantityOf: 1.
 	
 	shoppingCartList _ interface listCart: shoppingCartId.
 
 	self deny: shoppingCartList isEmpty.
-	self assert: (shoppingCartList includes: StoreTestObjectsFactory existingISBN)! !
+	self assert: (shoppingCartList includes: testObjects existingISBN)! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:02:22'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:42:08'!
 test14CanNotListPurchasesWithAnInvalidClientId
 
 	| interface aMerchantProcessor |
@@ -555,18 +555,18 @@ test14CanNotListPurchasesWithAnInvalidClientId
  	loginBehavior _ [ :aClientId :aPassword | self error: RestInterface invalidClientId ].
 
 	interface _ RestInterface 
-		withCatalogue: StoreTestObjectsFactory oneItemPriceList
+		withCatalogue: testObjects oneItemPriceList
 		processingThrough: aMerchantProcessor
 		signInUsersWith: self.
 
 	self 
-		should: [ interface listPurchasesFor: StoreTestObjectsFactory anInvalidClientId protectedBy: StoreTestObjectsFactory aValidClientPassword ]
+		should: [ interface listPurchasesFor: testObjects anInvalidClientId protectedBy: testObjects aValidClientPassword ]
 		raise: Error
 		withExceptionDo: [ :anError |
 			self assert: anError messageText equals: RestInterface invalidClientId
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:02:22'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:42:23'!
 test15CanNotListPurchasesWithAnInvalidPassword
 
 	| interface aMerchantProcessor |
@@ -574,18 +574,18 @@ test15CanNotListPurchasesWithAnInvalidPassword
  	loginBehavior _ [ :aClientId :aPassword | self error: RestInterface invalidClientPassword ].
 
 	interface _ RestInterface 
-		withCatalogue: StoreTestObjectsFactory oneItemPriceList
+		withCatalogue: testObjects oneItemPriceList
 		processingThrough: aMerchantProcessor
 		signInUsersWith: self.
 
 	self 
-		should: [ interface listPurchasesFor: StoreTestObjectsFactory aValidClienId protectedBy: StoreTestObjectsFactory anInvalidClientPassword ]
+		should: [ interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects anInvalidClientPassword ]
 		raise: Error
 		withExceptionDo: [ :anError |
 			self assert: anError messageText equals: RestInterface invalidClientPassword
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:02:22'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:42:39'!
 test16CanNotListPurchasesForAnNonExistingClient
 
 	| interface aMerchantProcessor |
@@ -593,38 +593,38 @@ test16CanNotListPurchasesForAnNonExistingClient
  	loginBehavior _ [ :aClientId :aPassword | self error: RestInterface clientCredentialsDoNotMatchAnyExistingClient ].
 
 	interface _ RestInterface 
-		withCatalogue: StoreTestObjectsFactory oneItemPriceList
+		withCatalogue: testObjects oneItemPriceList
 		processingThrough: aMerchantProcessor
 		signInUsersWith: self.
 
 	self 
-		should: [ interface listPurchasesFor: StoreTestObjectsFactory aValidClienId protectedBy: StoreTestObjectsFactory aValidClientPassword ]
+		should: [ interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword ]
 		raise: Error
 		withExceptionDo: [ :anError |
 			self assert: anError messageText equals: RestInterface clientCredentialsDoNotMatchAnyExistingClient
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:02:22'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:42:59'!
 test17CanNotCheckOutAnEmptyCart
 
 	| interface aMerchantProcessor shoppingCartId |
 	
 	interface _ RestInterface 
-		withCatalogue: StoreTestObjectsFactory oneItemPriceList
+		withCatalogue: testObjects oneItemPriceList
 		processingThrough: aMerchantProcessor
 		signInUsersWith: self.
 
 	shoppingCartId _ interface 
-		createCartFor: StoreTestObjectsFactory aValidClienId
-		protectedWith: StoreTestObjectsFactory aValidClientPassword
-		startingOn: DateAndTime today.		
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword
+		startingOn: testObjects today.		
 
 	self 
 		should: [ interface 
 			checkOut: shoppingCartId 
-			chargingToACreditCardNumbered: StoreTestObjectsFactory a16DigitsNumber 
-			expiringOn: StoreTestObjectsFactory currentMonthOfYear
-			ownedBy: StoreTestObjectsFactory a30CharactersLongName
+			chargingToACreditCardNumbered: testObjects a16DigitsNumber 
+			expiringOn: testObjects currentMonthOfYear
+			ownedBy: testObjects a30CharactersLongName
 		]
 		raise: Error
 		withExceptionDo: [ :anError |
@@ -632,87 +632,87 @@ test17CanNotCheckOutAnEmptyCart
 			self assert: (interface listCart: shoppingCartId) isEmpty
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:02:22'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:43:20'!
 test18CanNotCheckOutWithAnExpiredCreditCard
 
 	| interface shoppingCartId |
 		
 	interface _ RestInterface 
-		withCatalogue: StoreTestObjectsFactory oneItemPriceList
+		withCatalogue: testObjects oneItemPriceList
 		processingThrough: self
 		signInUsersWith: self.
 
 	shoppingCartId _ interface 
-		createCartFor: StoreTestObjectsFactory aValidClienId
-		protectedWith: StoreTestObjectsFactory aValidClientPassword
-		startingOn: DateAndTime today.		
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword
+		startingOn: testObjects today.		
 
-	interface addTo: shoppingCartId aBookWithCode: StoreTestObjectsFactory existingISBN aQuantityOf: 1.
+	interface addTo: shoppingCartId aBookWithCode: testObjects existingISBN aQuantityOf: 1.
 
 	self 
 		should: [ interface
 			checkOut: shoppingCartId 
-			chargingToACreditCardNumbered: StoreTestObjectsFactory a16DigitsNumber 
-			expiringOn: StoreTestObjectsFactory expiredMonthOfYear 
-			ownedBy: StoreTestObjectsFactory a30CharactersLongName
+			chargingToACreditCardNumbered: testObjects a16DigitsNumber 
+			expiringOn: testObjects expiredMonthOfYear 
+			ownedBy: testObjects a30CharactersLongName
 		]
 		raise: Error
 		withExceptionDo: [ :anError |
 			self assert: anError messageText equals: Cashier expiredCreditCardIsNotValid
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:02:22'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:43:39'!
 test19CanNotCheckOutWithANonExistingShoppingCartId
 
 	| interface shoppingCartId |
 		
 	interface _ RestInterface 
-		withCatalogue: StoreTestObjectsFactory oneItemPriceList
+		withCatalogue: testObjects oneItemPriceList
 		processingThrough: self
 		signInUsersWith: self.
 	
 	shoppingCartId _ interface 
-		createCartFor: StoreTestObjectsFactory aValidClienId
-		protectedWith: StoreTestObjectsFactory aValidClientPassword
-		startingOn: DateAndTime today.		
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword
+		startingOn: testObjects today.		
 
-	interface addTo: shoppingCartId aBookWithCode: StoreTestObjectsFactory existingISBN aQuantityOf: 1.
+	interface addTo: shoppingCartId aBookWithCode: testObjects existingISBN aQuantityOf: 1.
 
 	self 
 		should: [ interface
 			checkOut: 2
-			chargingToACreditCardNumbered: StoreTestObjectsFactory a16DigitsNumber 
-			expiringOn: StoreTestObjectsFactory currentMonthOfYear 
-			ownedBy: StoreTestObjectsFactory a30CharactersLongName
+			chargingToACreditCardNumbered: testObjects a16DigitsNumber 
+			expiringOn: testObjects currentMonthOfYear 
+			ownedBy: testObjects a30CharactersLongName
 		]
 		raise: Error
 		withExceptionDo: [ :anError |
 			self assert: anError messageText equals: RestInterface shoppingCartNotFound
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:02:21'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:44:09'!
 test20CanNotCheckOutWithAnInvalidCreditCardName
 
 	| interface shoppingCartId |
 		
 	interface _ RestInterface 
-		withCatalogue: StoreTestObjectsFactory oneItemPriceList
+		withCatalogue: testObjects oneItemPriceList
 		processingThrough: self
 		signInUsersWith: self.
 	
 	shoppingCartId _ interface 
-		createCartFor: StoreTestObjectsFactory aValidClienId
-		protectedWith: StoreTestObjectsFactory aValidClientPassword
-		startingOn: DateAndTime today.		
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword
+		startingOn: testObjects today.		
 
-	interface addTo: shoppingCartId aBookWithCode: StoreTestObjectsFactory existingISBN aQuantityOf: 1.
+	interface addTo: shoppingCartId aBookWithCode: testObjects existingISBN aQuantityOf: 1.
 
 	self 
 		should: [ interface
 			checkOut: shoppingCartId
-			chargingToACreditCardNumbered: StoreTestObjectsFactory a16DigitsNumber 
-			expiringOn: StoreTestObjectsFactory currentMonthOfYear 
-			ownedBy: StoreTestObjectsFactory a31CharactersLongName 
+			chargingToACreditCardNumbered: testObjects a16DigitsNumber 
+			expiringOn: testObjects currentMonthOfYear 
+			ownedBy: testObjects a31CharactersLongName 
 		]
 		raise: Error
 		withExceptionDo: [ :anError |
@@ -722,38 +722,38 @@ test20CanNotCheckOutWithAnInvalidCreditCardName
 		self 
 		should: [ interface
 			checkOut: shoppingCartId
-			chargingToACreditCardNumbered: StoreTestObjectsFactory a16DigitsNumber 
-			expiringOn: StoreTestObjectsFactory currentMonthOfYear 
-			ownedBy: StoreTestObjectsFactory a0CharactersLongName 
+			chargingToACreditCardNumbered: testObjects a16DigitsNumber 
+			expiringOn: testObjects currentMonthOfYear 
+			ownedBy: testObjects a0CharactersLongName 
 		]
 		raise: Error
 		withExceptionDo: [ :anError |
 			self assert: anError messageText equals: CreditCard ownerNameMustBeBetween1And30CharactersLong 
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:02:22'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:44:39'!
 test21CanNotCheckOutWithAnInvalidCreditCardNumber
 
 	| interface shoppingCartId |
 		
 	interface _ RestInterface 
-		withCatalogue: StoreTestObjectsFactory oneItemPriceList
+		withCatalogue: testObjects oneItemPriceList
 		processingThrough: self
 		signInUsersWith: self.
 		
 	shoppingCartId _ interface 
-		createCartFor: StoreTestObjectsFactory aValidClienId
-		protectedWith: StoreTestObjectsFactory aValidClientPassword
-		startingOn: DateAndTime today.		
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword
+		startingOn: testObjects today.		
 
-	interface addTo: shoppingCartId aBookWithCode: StoreTestObjectsFactory existingISBN aQuantityOf: 1.
+	interface addTo: shoppingCartId aBookWithCode: testObjects existingISBN aQuantityOf: 1.
 
 	self 
 		should: [ interface
 			checkOut: shoppingCartId
-			chargingToACreditCardNumbered: StoreTestObjectsFactory a15DigitsNumber 
-			expiringOn: StoreTestObjectsFactory currentMonthOfYear 
-			ownedBy: StoreTestObjectsFactory a30CharactersLongName 
+			chargingToACreditCardNumbered: testObjects a15DigitsNumber 
+			expiringOn: testObjects currentMonthOfYear 
+			ownedBy: testObjects a30CharactersLongName 
 		]
 		raise: Error
 		withExceptionDo: [ :anError |
@@ -763,9 +763,9 @@ test21CanNotCheckOutWithAnInvalidCreditCardNumber
 	self 
 		should: [ interface
 			checkOut: shoppingCartId
-			chargingToACreditCardNumbered: StoreTestObjectsFactory a17DigitsNumber 
-			expiringOn: StoreTestObjectsFactory currentMonthOfYear 
-			ownedBy: StoreTestObjectsFactory a30CharactersLongName 
+			chargingToACreditCardNumbered: testObjects a17DigitsNumber 
+			expiringOn: testObjects currentMonthOfYear 
+			ownedBy: testObjects a30CharactersLongName 
 		]
 		raise: Error
 		withExceptionDo: [ :anError |
@@ -775,103 +775,103 @@ test21CanNotCheckOutWithAnInvalidCreditCardNumber
 	self 
 		should: [ interface
 			checkOut: shoppingCartId
-			chargingToACreditCardNumbered: StoreTestObjectsFactory a16DigitsStringWithNumbersAndLetters 
-			expiringOn: StoreTestObjectsFactory currentMonthOfYear 
-			ownedBy: StoreTestObjectsFactory a30CharactersLongName 
+			chargingToACreditCardNumbered: testObjects a16DigitsStringWithNumbersAndLetters 
+			expiringOn: testObjects currentMonthOfYear 
+			ownedBy: testObjects a30CharactersLongName 
 		]
 		raise: Error
 		withExceptionDo: [ :anError |
 			self assert: anError messageText equals: CreditCard cardNumberMustContainOnlyNumbers 
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:02:22'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:44:56'!
 test22ListingPurchasesBeforeCheckingOutReturnsEmptyCollection
 
 	| interface shoppingCartId |
 		
 	interface _ RestInterface 
-		withCatalogue: StoreTestObjectsFactory oneItemPriceList
+		withCatalogue: testObjects oneItemPriceList
 		processingThrough: self
 		signInUsersWith: self.
 		
 	shoppingCartId _ interface 
-		createCartFor: StoreTestObjectsFactory aValidClienId
-		protectedWith: StoreTestObjectsFactory aValidClientPassword
-		startingOn: DateAndTime today.		
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword
+		startingOn: testObjects today.		
 
-	interface addTo: shoppingCartId aBookWithCode: StoreTestObjectsFactory existingISBN aQuantityOf: 1.
+	interface addTo: shoppingCartId aBookWithCode: testObjects existingISBN aQuantityOf: 1.
 	
-	self assert: (interface listPurchasesFor: StoreTestObjectsFactory aValidClienId protectedBy: StoreTestObjectsFactory aValidClientPassword) isEmpty! !
+	self assert: (interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword) isEmpty! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:02:22'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:45:23'!
 test23WhenCheckingOutClientNowRegistersANewPurchase
 
 	| interface shoppingCartId |
 		
 	interface _ RestInterface 
-		withCatalogue: StoreTestObjectsFactory oneItemPriceList
+		withCatalogue: testObjects oneItemPriceList
 		processingThrough: self
 		signInUsersWith: self.
 		
 	shoppingCartId _ interface 
-		createCartFor: StoreTestObjectsFactory aValidClienId
-		protectedWith: StoreTestObjectsFactory aValidClientPassword
-		startingOn: DateAndTime today.		
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword
+		startingOn: testObjects today.		
 
-	interface addTo: shoppingCartId aBookWithCode: StoreTestObjectsFactory existingISBN aQuantityOf: 1.
+	interface addTo: shoppingCartId aBookWithCode: testObjects existingISBN aQuantityOf: 1.
 	
-	self assert: (interface listPurchasesFor: StoreTestObjectsFactory aValidClienId protectedBy: StoreTestObjectsFactory aValidClientPassword) isEmpty.
+	self assert: (interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword) isEmpty.
 
 	interface 
 			checkOut: shoppingCartId 
-			chargingToACreditCardNumbered: StoreTestObjectsFactory a16DigitsNumber 
-			expiringOn: StoreTestObjectsFactory currentMonthOfYear
-			ownedBy: StoreTestObjectsFactory a30CharactersLongName.
+			chargingToACreditCardNumbered: testObjects a16DigitsNumber 
+			expiringOn: testObjects currentMonthOfYear
+			ownedBy: testObjects a30CharactersLongName.
 				
-	self deny: (interface listPurchasesFor: StoreTestObjectsFactory aValidClienId protectedBy: StoreTestObjectsFactory aValidClientPassword) isEmpty! !
+	self deny: (interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword) isEmpty! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:02:22'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:46:27'!
 test24WhenCheckingOutDifferentClientsPurchasesAreRegisteredIndividually
 
 	| interface shoppingCartId anotherShoppingCartId |
 		
 	interface _ RestInterface 
-		withCatalogue: StoreTestObjectsFactory twoItemsPriceList 
+		withCatalogue: testObjects twoItemsPriceList 
 		processingThrough: self
 		signInUsersWith: self.
 		
 	shoppingCartId _ interface 
-		createCartFor: StoreTestObjectsFactory aValidClienId
-		protectedWith: StoreTestObjectsFactory aValidClientPassword
-		startingOn: DateAndTime today.		
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword
+		startingOn: testObjects today.		
 
 	anotherShoppingCartId _ interface 
-		createCartFor: StoreTestObjectsFactory anotherValidClienId
-		protectedWith: StoreTestObjectsFactory anotherValidClientPassword
-		startingOn: DateAndTime today.		
+		createCartFor: testObjects anotherValidClienId
+		protectedWith: testObjects anotherValidClientPassword
+		startingOn: testObjects today.		
 
-	interface addTo: shoppingCartId aBookWithCode: StoreTestObjectsFactory existingISBN aQuantityOf: 1.
-	interface addTo: anotherShoppingCartId aBookWithCode: StoreTestObjectsFactory anotherExistingISBN aQuantityOf: 2.
+	interface addTo: shoppingCartId aBookWithCode: testObjects existingISBN aQuantityOf: 1.
+	interface addTo: anotherShoppingCartId aBookWithCode: testObjects anotherExistingISBN aQuantityOf: 2.
 	
 	interface 
 			checkOut: shoppingCartId 
-			chargingToACreditCardNumbered: StoreTestObjectsFactory a16DigitsNumber 
-			expiringOn: StoreTestObjectsFactory currentMonthOfYear
-			ownedBy: StoreTestObjectsFactory a30CharactersLongName.
+			chargingToACreditCardNumbered: testObjects a16DigitsNumber 
+			expiringOn: testObjects currentMonthOfYear
+			ownedBy: testObjects a30CharactersLongName.
 
 	interface 
 			checkOut: anotherShoppingCartId 
-			chargingToACreditCardNumbered: StoreTestObjectsFactory a16DigitsNumber 
-			expiringOn: StoreTestObjectsFactory currentMonthOfYear
-			ownedBy: StoreTestObjectsFactory a30CharactersLongName.
+			chargingToACreditCardNumbered: testObjects a16DigitsNumber 
+			expiringOn: testObjects currentMonthOfYear
+			ownedBy: testObjects a30CharactersLongName.
 
-	self assert: (interface listPurchasesFor: StoreTestObjectsFactory aValidClienId protectedBy: StoreTestObjectsFactory aValidClientPassword) includes: StoreTestObjectsFactory existingISBN.
-	self assert: ((interface listPurchasesFor: StoreTestObjectsFactory aValidClienId protectedBy: StoreTestObjectsFactory aValidClientPassword) occurrencesOf: StoreTestObjectsFactory existingISBN) equals: 1.
-	self assert: ((interface listPurchasesFor: StoreTestObjectsFactory aValidClienId protectedBy: StoreTestObjectsFactory aValidClientPassword) occurrencesOf: StoreTestObjectsFactory anotherExistingISBN) equals: 0.
+	self assert: (interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword) includes: testObjects existingISBN.
+	self assert: ((interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword) occurrencesOf: testObjects existingISBN) equals: 1.
+	self assert: ((interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword) occurrencesOf: testObjects anotherExistingISBN) equals: 0.
 	
-	self assert: (interface listPurchasesFor: StoreTestObjectsFactory anotherValidClienId protectedBy: StoreTestObjectsFactory anotherValidClientPassword) includes: StoreTestObjectsFactory anotherExistingISBN.
-	self assert: ((interface listPurchasesFor: StoreTestObjectsFactory anotherValidClienId protectedBy: StoreTestObjectsFactory anotherValidClientPassword) occurrencesOf: StoreTestObjectsFactory anotherExistingISBN) equals: 2.
-		self assert: ((interface listPurchasesFor: StoreTestObjectsFactory anotherValidClienId protectedBy: StoreTestObjectsFactory anotherValidClientPassword) occurrencesOf: StoreTestObjectsFactory existingISBN) equals: 0! !
+	self assert: (interface listPurchasesFor: testObjects anotherValidClienId protectedBy: testObjects anotherValidClientPassword) includes: testObjects anotherExistingISBN.
+	self assert: ((interface listPurchasesFor: testObjects anotherValidClienId protectedBy: testObjects anotherValidClientPassword) occurrencesOf: testObjects anotherExistingISBN) equals: 2.
+		self assert: ((interface listPurchasesFor: testObjects anotherValidClienId protectedBy: testObjects anotherValidClientPassword) occurrencesOf: testObjects existingISBN) equals: 0! !
 
 
 !classDefinition: #ShoppingCartTest category: #'TusLibros.com'!
@@ -1742,62 +1742,44 @@ emptySalesBook
 
 	^ OrderedCollection new! !
 
+
+!StoreTestObjectsFactory methodsFor: 'clients' stamp: 'AB 6/18/2019 12:38:05'!
+aValidClienId
+	
+	^ 'Valid Client ID'! !
+
+!StoreTestObjectsFactory methodsFor: 'clients' stamp: 'AB 6/18/2019 12:38:24'!
+aValidClientPassword
+
+	^ 'Valid User Password'! !
+
+!StoreTestObjectsFactory methodsFor: 'clients' stamp: 'AB 6/18/2019 12:38:35'!
+anInvalidClientId
+	
+	^ 'Invalid Client ID'! !
+
+!StoreTestObjectsFactory methodsFor: 'clients' stamp: 'AB 6/18/2019 12:38:47'!
+anInvalidClientPassword
+
+	^ 'Invalid Client Password'! !
+
+!StoreTestObjectsFactory methodsFor: 'clients' stamp: 'AB 6/18/2019 12:38:57'!
+anotherValidClienId
+	
+	^ 'Another Valid Client ID'! !
+
+!StoreTestObjectsFactory methodsFor: 'clients' stamp: 'AB 6/18/2019 12:39:09'!
+anotherValidClientPassword
+
+	^ 'Another Valid User Password'! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'StoreTestObjectsFactory class' category: #'TusLibros.com'!
 StoreTestObjectsFactory class
 	instanceVariableNames: ''!
 
-!StoreTestObjectsFactory class methodsFor: 'sales book' stamp: 'AB 6/8/2019 11:18:12'!
-emptySalesBook
-
-	^ OrderedCollection new! !
-
-
-!StoreTestObjectsFactory class methodsFor: 'rest interface' stamp: 'AB 6/17/2019 16:02:22'!
-workingRestInterface
-	
-	| aMerchantProcessor aUsersRecord |
-	
-	^ RestInterface 
-		withCatalogue: StoreTestObjectsFactory emptyPriceList
-		processingThrough: aMerchantProcessor
-		signInUsersWith: aUsersRecord
-		recordingTo: StoreTestObjectsFactory emptySalesBook! !
-
-
 !StoreTestObjectsFactory class methodsFor: 'instance creation' stamp: 'AB 6/17/2019 16:11:38'!
 startingOn: aDateTime
 
 	^ self new initializeStartingOn: aDateTime! !
-
-
-!StoreTestObjectsFactory class methodsFor: 'clients record' stamp: 'AB 6/11/2019 22:59:58'!
-aValidClienId
-	
-	^ 'Valid Client ID'! !
-
-!StoreTestObjectsFactory class methodsFor: 'clients record' stamp: 'AB 6/11/2019 23:00:11'!
-aValidClientPassword
-
-	^ 'Valid User Password'! !
-
-!StoreTestObjectsFactory class methodsFor: 'clients record' stamp: 'AB 6/11/2019 23:00:42'!
-anInvalidClientId
-	
-	^ 'Invalid Client ID'! !
-
-!StoreTestObjectsFactory class methodsFor: 'clients record' stamp: 'AB 6/11/2019 23:00:38'!
-anInvalidClientPassword
-
-	^ 'Invalid Client Password'! !
-
-!StoreTestObjectsFactory class methodsFor: 'clients record' stamp: 'JR 6/12/2019 23:17:26'!
-anotherValidClienId
-	
-	^ 'Another Valid Client ID'! !
-
-!StoreTestObjectsFactory class methodsFor: 'clients record' stamp: 'JR 6/12/2019 23:17:34'!
-anotherValidClientPassword
-
-	^ 'Another Valid User Password'! !
