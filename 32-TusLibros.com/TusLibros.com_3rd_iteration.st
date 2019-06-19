@@ -10,24 +10,24 @@ debit: anAmount from: aCreditCard
 
 	^ debitBehavior value: anAmount value: aCreditCard! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:20:06'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:23:29'!
 setUp
 
-	testObjects _ StoreTestObjectsFactory startingOn: DateAndTime now.
+	testObjects _ StoreTestObjectsFactory new.
 
 	debitBehavior _ [ :anAmount :aCreditCard | ]! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/17/2019 17:12:32'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:30:32'!
 test01CanNotCreateCashierForAnEmptyCart
 
-	| aMerchantProcessor |
+	| aMerchantProcessor aCreditCard aDateAndTime aSalesBook |
 	
-	self should: [ | aMonthOfYear | 
+	self should: [
 		Cashier 
 			with: testObjects emptyShoppingCart 
-			chargingTo: testObjects workingCreditCard 
-			registeringOn: testObjects emptySalesBook
-			startingOn: aMonthOfYear
+			chargingTo: aCreditCard
+			registeringOn: aSalesBook
+			startingOn: aDateAndTime
 			using: aMerchantProcessor
 		]
 	raise: Error
@@ -35,16 +35,16 @@ test01CanNotCreateCashierForAnEmptyCart
 		self assert: anError messageText equals: Cashier shoppingCartCanNotBeEmpty
 	]! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/17/2019 17:13:45'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:30:03'!
 test02CanNotCreateCashierWithExpiredCreditCard
 
-	| aMerchantProcessor |
+	| aMerchantProcessor aSalesBook |
 
 	self should: [ 
 		Cashier 
 			with: testObjects oneItemShoppingCart 
 			chargingTo: testObjects expiredCreditCard 
-			registeringOn: testObjects emptySalesBook
+			registeringOn: aSalesBook
 			startingOn: testObjects today
 			using: aMerchantProcessor
 		]
@@ -73,17 +73,17 @@ test03CheckingOutIncreasesSalesAmount
 
 	self assert: 1 equals: salesBook size! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/17/2019 17:33:55'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:28:51'!
 test04CanNotCreateCashierForATotalCostWithMoreThan15DigitsForItsIntegerPart
 
-	| aMerchantProcessor |
+	| aMerchantProcessor aCreditCard aDateAndTime aSalesBook |
 
 	self should: [ 
 		Cashier 
 			with: testObjects shoppingCartWithTotalCostLongerThan15Digits 
-			chargingTo: testObjects workingCreditCard 
-			registeringOn: testObjects emptySalesBook
-			startingOn: testObjects today
+			chargingTo: aCreditCard
+			registeringOn: aSalesBook
+			startingOn: aDateAndTime
 			using: aMerchantProcessor
 		]
 	raise: Error
@@ -91,17 +91,17 @@ test04CanNotCreateCashierForATotalCostWithMoreThan15DigitsForItsIntegerPart
 		self assert: anError messageText equals: Cashier totalCostCanNotBeLongerThan15DigitsInItsIntegerPart
 	]! !
 
-!CashierTest methodsFor: 'testing' stamp: 'AB 6/17/2019 17:34:10'!
+!CashierTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:28:30'!
 test05CanNotCreateCashierForATotalCostWithMoreThan2DigitsInFractionPart
 
-	| aMerchantProcessor |
+	| aMerchantProcessor aCreditCard aSalesBook aDateAndTime |
 	
-	self should: [ 
+	self should: [
 		Cashier 
 			with: testObjects shoppingCartWithTotalCostThreeDigitsInFractionPart 
-			chargingTo: testObjects workingCreditCard 
-			registeringOn: testObjects emptySalesBook
-			startingOn: testObjects today
+			chargingTo: aCreditCard
+			registeringOn: aSalesBook
+			startingOn: aDateAndTime
 			using: aMerchantProcessor
 		]
 	raise: Error
@@ -163,10 +163,10 @@ TestCase subclass: #CreditCardTest
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!CreditCardTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:06:21'!
+!CreditCardTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:23:20'!
 setUp
 
-	testObjects _ StoreTestObjectsFactory startingOn: DateAndTime now! !
+	testObjects _ StoreTestObjectsFactory new! !
 
 !CreditCardTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:10:47'!
 test01SizeOfNumberMustBeExactly16CharactersLong
@@ -235,7 +235,7 @@ test03CreditCardNumberContainsOnlyNumbers
 
 !classDefinition: #RestInterfaceTest category: #'TusLibros.com'!
 TestCase subclass: #RestInterfaceTest
-	instanceVariableNames: 'loginBehavior debitBehavior testObjects'
+	instanceVariableNames: 'loginBehavior debitBehavior testObjects aRestInterfaceWithAnEmptyPriceList aRestInterfaceWithOneItemPriceList aRestInterfaceWithTwoItemsPriceList'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
@@ -250,24 +250,27 @@ isRegisteredWith: aClientId and: aPassword
 
 	^ loginBehavior value: aClientId value: aPassword! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:20:23'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:39:20'!
 setUp
 
-	testObjects _ StoreTestObjectsFactory startingOn: DateAndTime now.
+	testObjects _ StoreTestObjectsFactory new.
 
 	loginBehavior _ [ :aClientId :aPassword | ].
 
-	debitBehavior _ [ :anAmount :aCreditCard | ]! !
+	debitBehavior _ [ :anAmount :aCreditCard | ].
+	
+	aRestInterfaceWithOneItemPriceList _ RestInterface withCatalogue: testObjects oneItemPriceList processingThrough: self signInUsersWith: self.
+	
+	aRestInterfaceWithAnEmptyPriceList _ RestInterface withCatalogue: testObjects oneItemPriceList processingThrough: self signInUsersWith: self.
+	
+	aRestInterfaceWithTwoItemsPriceList _ RestInterface withCatalogue: testObjects twoItemsPriceList processingThrough: self signInUsersWith: self.! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:40:34'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:37:10'!
 test01CreatingShoppingCartsReturnsUniqueIDs
 
-	| aShoppingCartId anotherShoppingCartId interface aMerchantProcessor |
+	| aShoppingCartId anotherShoppingCartId interface |
 	
-	interface _ RestInterface 
-		withCatalogue: testObjects emptyPriceList 
-		processingThrough: aMerchantProcessor
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithAnEmptyPriceList.
 		
 	aShoppingCartId _ interface 
 		createCartFor: testObjects aValidClienId
@@ -281,17 +284,14 @@ test01CreatingShoppingCartsReturnsUniqueIDs
 
 	self deny: aShoppingCartId = anotherShoppingCartId! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 17:40:39'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:37:23'!
 test02CanNotCreateCartWithAnInvalidClientId
 
-	| interface aMerchantProcessor |
+	| interface |
 	
  	loginBehavior _ [ :aClientId :aPassword | self error: RestInterface invalidClientId ].
 
-	interface _ RestInterface 
-		withCatalogue: testObjects emptyPriceList 
-		processingThrough: aMerchantProcessor
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithAnEmptyPriceList.
 
 	self 
 		should: [ interface 
@@ -304,17 +304,14 @@ test02CanNotCreateCartWithAnInvalidClientId
 			self assert: anError messageText equals: RestInterface invalidClientId
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 17:40:34'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:37:31'!
 test03CanNotCreateCartWithAnInvalidClientPassword
 
-	| interface aMerchantProcessor |
+	| interface |
 	
  	loginBehavior _ [ :aClientId :aPassword | self error: RestInterface invalidClientPassword ].
 
-	interface _ RestInterface 
-		withCatalogue: testObjects emptyPriceList 
-		processingThrough: aMerchantProcessor
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithAnEmptyPriceList.
 
 	self 
 		should: [ interface 
@@ -327,17 +324,14 @@ test03CanNotCreateCartWithAnInvalidClientPassword
 			self assert: anError messageText equals: RestInterface invalidClientPassword
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 17:40:59'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:37:40'!
 test04CanNotCreateCartForAnNonExistingClient
 
-	| interface aMerchantProcessor |
+	| interface |
 	
  	loginBehavior _ [ :aClientId :aPassword | self error: RestInterface clientCredentialsDoNotMatchAnyExistingClient ].
 
-	interface _ RestInterface 
-		withCatalogue: testObjects emptyPriceList 
-		processingThrough: aMerchantProcessor
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithAnEmptyPriceList.
 
 	self 
 		should: [ interface 
@@ -350,15 +344,12 @@ test04CanNotCreateCartForAnNonExistingClient
 			self assert: anError messageText equals: RestInterface clientCredentialsDoNotMatchAnyExistingClient 
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 17:41:07'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:37:59'!
 test05ListingANewShoppingCartReturnsAnEmptyCollection
 
-	| shoppingCartId interface aMerchantProcessor |
+	| shoppingCartId interface |
 	
-	interface _ RestInterface 
-		withCatalogue: testObjects oneItemPriceList
-		processingThrough: aMerchantProcessor
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithOneItemPriceList.
 		
 	shoppingCartId _ interface 
 		createCartFor: testObjects aValidClienId
@@ -367,15 +358,12 @@ test05ListingANewShoppingCartReturnsAnEmptyCollection
 
 	self assert: (interface listCart: shoppingCartId) isEmpty! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 17:41:15'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:38:22'!
 test06CanNotListAShoppingCartWithAnNonExistingCartId
 
-	| interface aMerchantProcessor |
+	| interface |
 	
-	interface _ RestInterface 
-		withCatalogue: testObjects oneItemPriceList
-		processingThrough: aMerchantProcessor
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithAnEmptyPriceList.
 
 	self 
 		should: [ interface listCart: 1 ]
@@ -384,15 +372,12 @@ test06CanNotListAShoppingCartWithAnNonExistingCartId
 			self assert: anError messageText equals: RestInterface shoppingCartNotFound
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 17:41:27'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:36:51'!
 test07CanAddItemInCatalogueToExistingShoppingCart
 
-	| shoppingCartId interface aMerchantProcessor |
+	| shoppingCartId interface |
 	
-	interface _ RestInterface 
-		withCatalogue: testObjects oneItemPriceList
-		processingThrough: aMerchantProcessor
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithOneItemPriceList.
 		
 	shoppingCartId _ interface 
 		createCartFor: testObjects aValidClienId
@@ -405,15 +390,12 @@ test07CanAddItemInCatalogueToExistingShoppingCart
 
 	self assert: (interface listCart: shoppingCartId) includes: testObjects existingISBN! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 15:27:01'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:38:52'!
 test08CanAddMoreThanOneItemToShoppingCart
 
-	| shoppingCartId interface aMerchantProcessor itemsOnCart |
+	| shoppingCartId interface itemsOnCart |
 	
-	interface _ RestInterface 
-		withCatalogue: testObjects twoItemsPriceList
-		processingThrough: aMerchantProcessor
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithTwoItemsPriceList.
 
 	shoppingCartId _ interface 
 		createCartFor: testObjects aValidClienId
@@ -431,15 +413,12 @@ test08CanAddMoreThanOneItemToShoppingCart
 	self assert: itemsOnCart includes: testObjects anotherExistingISBN.
 	self assert: 2 equals: (itemsOnCart occurrencesOf: testObjects anotherExistingISBN)! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 17:41:52'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:39:29'!
 test09CanNotAddItemToNonExistingShoppingCart
 
-	| interface aMerchantProcessor |
+	| interface |
 	
-	interface _ RestInterface 
-		withCatalogue: testObjects oneItemPriceList
-		processingThrough: aMerchantProcessor
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithOneItemPriceList.
 
 	self 
 		should: [ interface 
@@ -451,15 +430,12 @@ test09CanNotAddItemToNonExistingShoppingCart
 			self assert: anError messageText equals: RestInterface shoppingCartNotFound
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/17/2019 17:42:06'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:39:43'!
 test10CanNotAddItemNotInCatalogueToExistingShoppingCart
 
-	| shoppingCartId interface aMerchantProcessor |
+	| shoppingCartId interface |
 	
-	interface _ RestInterface 
-		withCatalogue: testObjects oneItemPriceList
-		processingThrough: aMerchantProcessor
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithOneItemPriceList.
 
 	shoppingCartId _ interface 
 		createCartFor: testObjects aValidClienId
@@ -474,15 +450,12 @@ test10CanNotAddItemNotInCatalogueToExistingShoppingCart
 			self assert: (interface listCart: shoppingCartId) isEmpty
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:41:06'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:39:55'!
 test11CanNotAddItemToShoppingCartWithQuantitySmallerThanOne
 
-	| shoppingCartId interface aMerchantProcessor |
+	| shoppingCartId interface |
 	
-	interface _ RestInterface 
-		withCatalogue: testObjects oneItemPriceList
-		processingThrough: aMerchantProcessor
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithOneItemPriceList.
 
 	shoppingCartId _ interface 
 		createCartFor: testObjects aValidClienId
@@ -497,15 +470,12 @@ test11CanNotAddItemToShoppingCartWithQuantitySmallerThanOne
 			self assert: (interface listCart: shoppingCartId) isEmpty
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 15:27:40'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:40:10'!
 test12CanNotAddItemToShoppingCartWithANonIntegerAmount
 
-	| shoppingCartId interface aMerchantProcessor |
+	| shoppingCartId interface |
 	
-	interface _ RestInterface 
-		withCatalogue: testObjects oneItemPriceList
-		processingThrough: aMerchantProcessor
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithOneItemPriceList.
 
 	shoppingCartId _ interface 
 		createCartFor: testObjects aValidClienId
@@ -520,15 +490,12 @@ test12CanNotAddItemToShoppingCartWithANonIntegerAmount
 			self assert: (interface listCart: shoppingCartId) isEmpty
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:41:53'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:40:27'!
 test13ListingItemsOfAShoppingCartReturnsACollectionIncludingItsItems
 
-	| shoppingCartId interface aMerchantProcessor shoppingCartList |
+	| shoppingCartId interface shoppingCartList |
 	
-	interface _ RestInterface 
-		withCatalogue: testObjects oneItemPriceList
-		processingThrough: aMerchantProcessor
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithOneItemPriceList.
 
 	shoppingCartId _ interface 
 		createCartFor: testObjects aValidClienId
@@ -544,17 +511,14 @@ test13ListingItemsOfAShoppingCartReturnsACollectionIncludingItsItems
 	self deny: shoppingCartList isEmpty.
 	self assert: (shoppingCartList includes: testObjects existingISBN)! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:42:08'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:41:10'!
 test14CanNotListPurchasesWithAnInvalidClientId
 
-	| interface aMerchantProcessor |
+	| interface |
 
  	loginBehavior _ [ :aClientId :aPassword | self error: RestInterface invalidClientId ].
 
-	interface _ RestInterface 
-		withCatalogue: testObjects oneItemPriceList
-		processingThrough: aMerchantProcessor
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithAnEmptyPriceList.
 
 	self 
 		should: [ interface listPurchasesFor: testObjects anInvalidClientId protectedBy: testObjects aValidClientPassword ]
@@ -563,17 +527,14 @@ test14CanNotListPurchasesWithAnInvalidClientId
 			self assert: anError messageText equals: RestInterface invalidClientId
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:42:23'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:41:02'!
 test15CanNotListPurchasesWithAnInvalidPassword
 
-	| interface aMerchantProcessor |
+	| interface |
 
  	loginBehavior _ [ :aClientId :aPassword | self error: RestInterface invalidClientPassword ].
 
-	interface _ RestInterface 
-		withCatalogue: testObjects oneItemPriceList
-		processingThrough: aMerchantProcessor
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithAnEmptyPriceList.
 
 	self 
 		should: [ interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects anInvalidClientPassword ]
@@ -582,17 +543,14 @@ test15CanNotListPurchasesWithAnInvalidPassword
 			self assert: anError messageText equals: RestInterface invalidClientPassword
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:42:39'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:41:26'!
 test16CanNotListPurchasesForAnNonExistingClient
 
-	| interface aMerchantProcessor |
+	| interface |
 
  	loginBehavior _ [ :aClientId :aPassword | self error: RestInterface clientCredentialsDoNotMatchAnyExistingClient ].
 
-	interface _ RestInterface 
-		withCatalogue: testObjects oneItemPriceList
-		processingThrough: aMerchantProcessor
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithAnEmptyPriceList.
 
 	self 
 		should: [ interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword ]
@@ -601,15 +559,12 @@ test16CanNotListPurchasesForAnNonExistingClient
 			self assert: anError messageText equals: RestInterface clientCredentialsDoNotMatchAnyExistingClient
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:42:59'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:41:47'!
 test17CanNotCheckOutAnEmptyCart
 
-	| interface aMerchantProcessor shoppingCartId |
+	| interface shoppingCartId |
 	
-	interface _ RestInterface 
-		withCatalogue: testObjects oneItemPriceList
-		processingThrough: aMerchantProcessor
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithAnEmptyPriceList.
 
 	shoppingCartId _ interface 
 		createCartFor: testObjects aValidClienId
@@ -629,15 +584,12 @@ test17CanNotCheckOutAnEmptyCart
 			self assert: (interface listCart: shoppingCartId) isEmpty
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:43:20'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:42:00'!
 test18CanNotCheckOutWithAnExpiredCreditCard
 
 	| interface shoppingCartId |
 		
-	interface _ RestInterface 
-		withCatalogue: testObjects oneItemPriceList
-		processingThrough: self
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithOneItemPriceList.
 
 	shoppingCartId _ interface 
 		createCartFor: testObjects aValidClienId
@@ -658,15 +610,12 @@ test18CanNotCheckOutWithAnExpiredCreditCard
 			self assert: anError messageText equals: Cashier expiredCreditCardIsNotValid
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:43:39'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:42:09'!
 test19CanNotCheckOutWithANonExistingShoppingCartId
 
 	| interface shoppingCartId |
 		
-	interface _ RestInterface 
-		withCatalogue: testObjects oneItemPriceList
-		processingThrough: self
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithOneItemPriceList.
 	
 	shoppingCartId _ interface 
 		createCartFor: testObjects aValidClienId
@@ -687,15 +636,12 @@ test19CanNotCheckOutWithANonExistingShoppingCartId
 			self assert: anError messageText equals: RestInterface shoppingCartNotFound
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:44:09'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:42:24'!
 test20CanNotCheckOutWithAnInvalidCreditCardName
 
 	| interface shoppingCartId |
 		
-	interface _ RestInterface 
-		withCatalogue: testObjects oneItemPriceList
-		processingThrough: self
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithOneItemPriceList.
 	
 	shoppingCartId _ interface 
 		createCartFor: testObjects aValidClienId
@@ -728,15 +674,12 @@ test20CanNotCheckOutWithAnInvalidCreditCardName
 			self assert: anError messageText equals: CreditCard ownerNameMustBeBetween1And30CharactersLong 
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 12:44:39'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:43:00'!
 test21CanNotCheckOutWithAnInvalidCreditCardNumber
 
 	| interface shoppingCartId |
 		
-	interface _ RestInterface 
-		withCatalogue: testObjects oneItemPriceList
-		processingThrough: self
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithOneItemPriceList.
 		
 	shoppingCartId _ interface 
 		createCartFor: testObjects aValidClienId
@@ -781,15 +724,12 @@ test21CanNotCheckOutWithAnInvalidCreditCardNumber
 			self assert: anError messageText equals: CreditCard cardNumberMustContainOnlyNumbers 
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 17:19:46'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:43:12'!
 test22ListingPurchasesBeforeCheckingOutReturnsEmptyCollection
 
 	| interface shoppingCartId |
 		
-	interface _ RestInterface 
-		withCatalogue: testObjects oneItemPriceList
-		processingThrough: self
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithOneItemPriceList.
 		
 	shoppingCartId _ interface 
 		createCartFor: testObjects aValidClienId
@@ -800,15 +740,12 @@ test22ListingPurchasesBeforeCheckingOutReturnsEmptyCollection
 	
 	self assert: (interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword) items isEmpty! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 17:29:49'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:43:21'!
 test23WhenCheckingOutClientNowRegistersANewPurchase
 
 	| interface shoppingCartId clientPurchases |
 		
-	interface _ RestInterface 
-		withCatalogue: testObjects oneItemPriceList
-		processingThrough: self
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithOneItemPriceList.
 		
 	shoppingCartId _ interface 
 		createCartFor: testObjects aValidClienId
@@ -831,15 +768,12 @@ test23WhenCheckingOutClientNowRegistersANewPurchase
 				
 	self deny: clientPurchases items isEmpty! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 17:32:21'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:44:34'!
 test24WhenCheckingOutClientNowRegistersANewPurchaseAndItsTotalCost
 
 	| interface shoppingCartId clientPurchases |
 		
-	interface _ RestInterface 
-		withCatalogue: testObjects oneItemPriceList
-		processingThrough: self
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithOneItemPriceList.
 		
 	shoppingCartId _ interface 
 		createCartFor: testObjects aValidClienId
@@ -847,11 +781,6 @@ test24WhenCheckingOutClientNowRegistersANewPurchaseAndItsTotalCost
 		startingOn: testObjects today.		
 
 	interface addTo: shoppingCartId aBookWithCode: testObjects existingISBN aQuantityOf: 1.
-	
-	clientPurchases _ interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword.
-
-	self assert: clientPurchases items isEmpty.
-	self assert: 0 = clientPurchases total.
 
 	interface 
 			checkOut: shoppingCartId 
@@ -864,15 +793,12 @@ test24WhenCheckingOutClientNowRegistersANewPurchaseAndItsTotalCost
 	self assert: (clientPurchases items occurrencesOf: testObjects existingISBN) equals: 1.
 	self assert: (testObjects oneItemPriceList at: testObjects existingISBN) = clientPurchases total! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 17:34:43'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:45:17'!
 test25WhenCheckingOutDifferentClientsPurchasesAreRegisteredIndividually
 
 	| interface shoppingCartId anotherShoppingCartId anotherClientPurchases clientPurchases |
 		
-	interface _ RestInterface 
-		withCatalogue: testObjects twoItemsPriceList 
-		processingThrough: self
-		signInUsersWith: self.
+	interface _ aRestInterfaceWithTwoItemsPriceList.
 		
 	shoppingCartId _ interface 
 		createCartFor: testObjects aValidClienId
@@ -885,13 +811,14 @@ test25WhenCheckingOutDifferentClientsPurchasesAreRegisteredIndividually
 		startingOn: testObjects today.		
 
 	interface addTo: shoppingCartId aBookWithCode: testObjects existingISBN aQuantityOf: 1.
-	interface addTo: anotherShoppingCartId aBookWithCode: testObjects anotherExistingISBN aQuantityOf: 2.
 	
 	interface 
 			checkOut: shoppingCartId 
 			chargingToACreditCardNumbered: testObjects a16DigitsNumber 
 			expiringOn: testObjects currentMonthOfYear
 			ownedBy: testObjects a30CharactersLongName.
+
+	interface addTo: anotherShoppingCartId aBookWithCode: testObjects anotherExistingISBN aQuantityOf: 2.
 
 	interface 
 			checkOut: anotherShoppingCartId 
@@ -921,12 +848,12 @@ TestCase subclass: #ShoppingCartTest
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:20:35'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:23:01'!
 setUp
 
-	testObjects _ StoreTestObjectsFactory startingOn: DateAndTime now! !
+	testObjects _ StoreTestObjectsFactory new! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:28:35'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/18/2019 21:06:19'!
 test01CreateNewShoppingCartIsEmptyCart
 
 	| shoppingCart |
@@ -934,6 +861,7 @@ test01CreateNewShoppingCartIsEmptyCart
 	shoppingCart _ ShoppingCart with: testObjects emptyPriceList.
 	
 	self assert: shoppingCart isEmpty.
+
 	self assert: 0 * peso equals: shoppingCart totalCost! !
 
 !ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:31:40'!
@@ -947,7 +875,7 @@ test02WhenAddingBookToShoppingCarItIsNotEmpty
 	
 	self deny: shoppingCart isEmpty! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:45:55'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/18/2019 21:06:52'!
 test03WhenAddingABookToShoppingCartCanCheckIsThere
 
 	| shoppingCart |
@@ -957,18 +885,19 @@ test03WhenAddingABookToShoppingCartCanCheckIsThere
 	shoppingCart add: testObjects existingISBN.
 	
 	self deny: shoppingCart isEmpty.
+
 	self assert: (shoppingCart contains: testObjects existingISBN)! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:46:46'!
-test04AddingTwoBooksMakesSizeTwoAndBothAreContained
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/18/2019 21:07:29'!
+test04AddingTwoBooksIncrementsSizeByTwoAndBothAreContained
 
 	| shoppingCart |
-	
+
 	shoppingCart _ ShoppingCart with: testObjects twoItemsPriceList.
-	
+
 	shoppingCart add: testObjects existingISBN.
 	shoppingCart add: testObjects anotherExistingISBN.
-	
+
 	self deny: shoppingCart isEmpty.
 	self assert: 2 equals: shoppingCart itemsAmount.
 	self assert: (shoppingCart contains: testObjects existingISBN).
@@ -987,37 +916,39 @@ test05AddTwoCopiesOfTheSameBookAssertInclusionInCart
 	self assert: 2 equals: shoppingCart itemsAmount.
 	self assert: (shoppingCart contains: testObjects anotherExistingISBN)! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:48:07'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/18/2019 21:07:50'!
 test06AddingABookWithAQuantityLessThan1ThrowsAnError
 
 	| shoppingCart |
 	
 	shoppingCart _ ShoppingCart with: testObjects oneItemPriceList.
 	
-	self should: [shoppingCart add: testObjects existingISBN quantity: 0]
+	self should: [ shoppingCart add: testObjects existingISBN quantity: 0 ]
 	raise: Error
 	withExceptionDo: [ :anError |
 		self assert: anError messageText equals: ShoppingCart quantityMustBeBiggerThanOneError.
-		self assert: shoppingCart isEmpty.
+		self assert: shoppingCart isEmpty
 		]! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:48:32'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/18/2019 21:08:51'!
 test07AShoppingCartReturnsNumberOfCopiesOfABook 
 
 	| shoppingCart |
 	
-	shoppingCart _ ShoppingCart with: testObjects oneItemPriceList.
+	shoppingCart _ testObjects emptyShoppingCart.
+	
 	self assert: 0 equals: (shoppingCart quantityOf: testObjects existingISBN).
 	
 	shoppingCart add: testObjects existingISBN quantity: 3.
+
 	self assert: 3 equals: (shoppingCart quantityOf: testObjects existingISBN)! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:50:12'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/18/2019 21:12:27'!
 test08AShoppingCartReturnsCollectionWithTheBooksItContains
 
 	| shoppingCart items |
 	
-	shoppingCart _ ShoppingCart with: testObjects threeItemsPriceList.
+	shoppingCart _ ShoppingCart with: testObjects twoItemsPriceList.
 	
 	shoppingCart add: testObjects existingISBN quantity: 1.
 	shoppingCart add: testObjects anotherExistingISBN quantity: 2.
@@ -1057,12 +988,13 @@ test10CanNotAddABookNotIncludedTheCatalogue
 		self assert: shoppingCart isEmpty
 		]! !
 
-!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/17/2019 16:52:03'!
+!ShoppingCartTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:20:49'!
 test11WhenAddingBookToShoppingCartCostIncreases
 
 	| shoppingCart priceList |
 	
 	priceList _ testObjects oneItemPriceList.
+
 	shoppingCart _ ShoppingCart with: priceList.
 
 	self assert: 0 * peso equals: shoppingCart totalCost.
@@ -1798,6 +1730,13 @@ workingCreditCard
 		with: self currentMonthOfYear
 		with: self a30CharactersLongName! !
 
+
+!StoreTestObjectsFactory methodsFor: 'initialization' stamp: 'AB 6/18/2019 22:22:51'!
+initialize
+
+	today _ DateAndTime today.
+
+	super initialize! !
 
 !StoreTestObjectsFactory methodsFor: 'initialization' stamp: 'AB 6/17/2019 16:04:00'!
 initializeStartingOn: aDateTime
