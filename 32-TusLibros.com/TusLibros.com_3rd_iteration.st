@@ -235,7 +235,7 @@ test03CreditCardNumberContainsOnlyNumbers
 
 !classDefinition: #RestInterfaceTest category: #'TusLibros.com'!
 TestCase subclass: #RestInterfaceTest
-	instanceVariableNames: 'loginBehavior debitBehavior testObjects aRestInterfaceWithAnEmptyPriceList aRestInterfaceWithOneItemPriceList aRestInterfaceWithTwoItemsPriceList'
+	instanceVariableNames: 'loginBehavior debitBehavior testObjects aRestInterfaceWithAnEmptyPriceList aRestInterfaceWithOneItemPriceList aRestInterfaceWithTwoItemsPriceList clock aRestInterfaceWithAnEmptyPriceListAndAClock aRestInterfaceWithOneItemPriceListAndAClock'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
@@ -250,7 +250,7 @@ isRegisteredWith: aClientId and: aPassword
 
 	^ loginBehavior value: aClientId value: aPassword! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:39:20'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/19/2019 19:37:15'!
 setUp
 
 	testObjects _ StoreTestObjectsFactory new.
@@ -259,9 +259,15 @@ setUp
 
 	debitBehavior _ [ :anAmount :aCreditCard | ].
 	
-	aRestInterfaceWithOneItemPriceList _ RestInterface withCatalogue: testObjects oneItemPriceList processingThrough: self signInUsersWith: self.
+	clock _ Clock new.
+
+	aRestInterfaceWithAnEmptyPriceList _ RestInterface withCatalogue: testObjects emptyPriceList processingThrough: self signInUsersWith: self.
+
+	aRestInterfaceWithAnEmptyPriceListAndAClock _ RestInterface withCatalogue: testObjects emptyPriceList processingThrough: self signInUsersWith: self calculatingTimeFrom: clock.
 	
-	aRestInterfaceWithAnEmptyPriceList _ RestInterface withCatalogue: testObjects oneItemPriceList processingThrough: self signInUsersWith: self.
+	aRestInterfaceWithOneItemPriceList _ RestInterface withCatalogue: testObjects oneItemPriceList processingThrough: self signInUsersWith: self.
+
+	aRestInterfaceWithOneItemPriceListAndAClock _ RestInterface withCatalogue: testObjects oneItemPriceList processingThrough: self signInUsersWith: self calculatingTimeFrom: clock.
 	
 	aRestInterfaceWithTwoItemsPriceList _ RestInterface withCatalogue: testObjects twoItemsPriceList processingThrough: self signInUsersWith: self.! !
 
@@ -636,7 +642,7 @@ test19CanNotCheckOutWithANonExistingShoppingCartId
 			self assert: anError messageText equals: RestInterface shoppingCartNotFound
 		]! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:42:24'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/19/2019 17:42:31'!
 test20CanNotCheckOutWithAnInvalidCreditCardName
 
 	| interface shoppingCartId |
@@ -662,7 +668,7 @@ test20CanNotCheckOutWithAnInvalidCreditCardName
 			self assert: anError messageText equals: CreditCard ownerNameMustBeBetween1And30CharactersLong 
 		].
 	
-		self 
+	self 
 		should: [ interface
 			checkOut: shoppingCartId
 			chargingToACreditCardNumbered: testObjects a16DigitsNumber 
@@ -768,7 +774,7 @@ test23WhenCheckingOutClientNowRegistersANewPurchase
 				
 	self deny: clientPurchases items isEmpty! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:44:34'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/19/2019 17:52:50'!
 test24WhenCheckingOutClientNowRegistersANewPurchaseAndItsTotalCost
 
 	| interface shoppingCartId clientPurchases |
@@ -791,9 +797,9 @@ test24WhenCheckingOutClientNowRegistersANewPurchaseAndItsTotalCost
 	clientPurchases _ interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword.
 				
 	self assert: (clientPurchases items occurrencesOf: testObjects existingISBN) equals: 1.
-	self assert: (testObjects oneItemPriceList at: testObjects existingISBN) = clientPurchases total! !
+	self assert: (testObjects oneItemPriceList at: testObjects existingISBN) = clientPurchases totalAmount! !
 
-!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/18/2019 22:45:17'!
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/19/2019 17:52:50'!
 test25WhenCheckingOutDifferentClientsPurchasesAreRegisteredIndividually
 
 	| interface shoppingCartId anotherShoppingCartId anotherClientPurchases clientPurchases |
@@ -828,17 +834,155 @@ test25WhenCheckingOutDifferentClientsPurchasesAreRegisteredIndividually
 
 	clientPurchases _ interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword.
 
-	self assert: clientPurchases items includes: testObjects existingISBN.
 	self assert: (clientPurchases items occurrencesOf: testObjects existingISBN) equals: 1.
 	self deny: (clientPurchases items includes: testObjects anotherExistingISBN).
-	self assert: (testObjects twoItemsPriceList at: testObjects existingISBN) = clientPurchases total.
+	self assert: (testObjects twoItemsPriceList at: testObjects existingISBN) = clientPurchases totalAmount.
 
 	anotherClientPurchases _ interface listPurchasesFor: testObjects anotherValidClienId protectedBy: testObjects anotherValidClientPassword.
 	
-	self assert: anotherClientPurchases items includes: testObjects anotherExistingISBN.
 	self assert: (anotherClientPurchases items occurrencesOf: testObjects anotherExistingISBN) equals: 2.
 	self deny: (anotherClientPurchases items includes: testObjects existingISBN).
-	self assert: (testObjects twoItemsPriceList at: testObjects anotherExistingISBN) * 2 = anotherClientPurchases total! !
+	self assert: (testObjects twoItemsPriceList at: testObjects anotherExistingISBN) * 2 = anotherClientPurchases totalAmount! !
+
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/19/2019 19:44:46'!
+test26CreatingAShoppingCartIsNotExpired
+
+	| interface shoppingCartId |
+
+	interface _ aRestInterfaceWithAnEmptyPriceList.
+
+	shoppingCartId _ interface 
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword
+		startingOn: testObjects today.		
+
+	self deny: (interface shoppingCartIsExpired: shoppingCartId)! !
+
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/19/2019 19:45:27'!
+test27AShoppingCartGetsExpiredAfterThirtyMinutes
+
+	| interface shoppingCartId |
+	
+	interface _ aRestInterfaceWithAnEmptyPriceListAndAClock.
+
+	shoppingCartId _ interface 
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword
+		startingOn: testObjects today.		
+
+	clock add: (Duration minutes: 30).
+
+	self assert: (interface shoppingCartIsExpired: shoppingCartId)! !
+
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/19/2019 19:46:16'!
+test28CanNotListContentsOfExpiredShoppingCart
+
+	| interface shoppingCartId |
+	
+	interface _ aRestInterfaceWithAnEmptyPriceListAndAClock.
+
+	shoppingCartId _ interface 
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword
+		startingOn: testObjects today.		
+
+	clock add: (Duration minutes: 30).
+
+	self 
+		should: [ interface listCart: shoppingCartId ]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: RestInterface shoppingCartHasExpired
+		]! !
+
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/19/2019 19:46:23'!
+test29CanNotListAddItemToExpiredShoppingCart
+
+	| interface shoppingCartId |
+	
+	interface _ aRestInterfaceWithAnEmptyPriceListAndAClock.
+
+	shoppingCartId _ interface 
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword
+		startingOn: testObjects today.		
+
+	clock add: (Duration minutes: 30).
+
+	self 
+		should: [ interface addTo: shoppingCartId aBookWithCode: testObjects existingISBN aQuantityOf: 1 ]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: RestInterface shoppingCartHasExpired
+		]! !
+
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/19/2019 19:46:28'!
+test30CanNotCheckOutExpiredShoppingCart
+
+	| interface shoppingCartId |
+	
+	interface _ aRestInterfaceWithOneItemPriceListAndAClock.
+
+	shoppingCartId _ interface 
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword
+		startingOn: testObjects today.		
+
+	interface addTo: shoppingCartId aBookWithCode: testObjects existingISBN aQuantityOf: 1.
+
+	clock add: (Duration minutes: 30).
+
+	self 
+		should: [ interface
+			checkOut: shoppingCartId
+			chargingToACreditCardNumbered: testObjects a16DigitsNumber 
+			expiringOn: testObjects currentMonthOfYear 
+			ownedBy: testObjects a30CharactersLongName 
+		]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: RestInterface shoppingCartHasExpired
+		]! !
+
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/19/2019 19:49:04'!
+test31AShoppingCartExpirationGetsRestartedWhenListingItsContents
+
+	| interface shoppingCartId |
+	
+	interface _ aRestInterfaceWithAnEmptyPriceListAndAClock.
+
+	shoppingCartId _ interface 
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword
+		startingOn: testObjects today.		
+
+	clock add: (Duration minutes: 29).
+
+	interface listCart: shoppingCartId.
+
+	clock add: (Duration minutes: 1).
+	
+	self deny: (interface shoppingCartIsExpired: shoppingCartId)! !
+
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/19/2019 19:58:25'!
+test32AShoppingCartExpirationGetsRestartedWhenAddingAnItem
+
+	| interface shoppingCartId |
+	
+	interface _ aRestInterfaceWithOneItemPriceListAndAClock.
+
+	shoppingCartId _ interface 
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword
+		startingOn: testObjects today.		
+
+	clock add: (Duration minutes: 29).
+
+	interface addTo: shoppingCartId aBookWithCode: testObjects existingISBN aQuantityOf: 1.
+
+	clock add: (Duration minutes: 1).
+	
+	self deny: (interface shoppingCartIsExpired: shoppingCartId)! !
 
 
 !classDefinition: #ShoppingCartTest category: #'TusLibros.com'!
@@ -1014,42 +1158,6 @@ test12CanNotCreateAShoppingCartWithAnItemWithNegativeCostInPriceList
 	! !
 
 
-!classDefinition: #ActiveSession category: #'TusLibros.com'!
-Object subclass: #ActiveSession
-	instanceVariableNames: 'client shoppingCart'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TusLibros.com'!
-
-!ActiveSession methodsFor: 'initialization' stamp: 'AB 6/15/2019 00:50:46'!
-initializeFor: aClientId with: aShoppingCart
-
-	client _ aClientId.
-	shoppingCart _ aShoppingCart! !
-
-
-!ActiveSession methodsFor: 'accessing' stamp: 'AB 6/15/2019 00:45:07'!
-client
-
-	^ client! !
-
-!ActiveSession methodsFor: 'accessing' stamp: 'AB 6/15/2019 00:45:03'!
-shoppingCart
-
-	^ shoppingCart! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'ActiveSession class' category: #'TusLibros.com'!
-ActiveSession class
-	instanceVariableNames: ''!
-
-!ActiveSession class methodsFor: 'instance creation' stamp: 'AB 6/15/2019 00:43:15'!
-for: aClientId with: aShoppingCart
-
-	^ self new initializeFor: aClientId with: aShoppingCart! !
-
-
 !classDefinition: #Cashier category: #'TusLibros.com'!
 Object subclass: #Cashier
 	instanceVariableNames: 'shoppingCart creditCard salesBook date merchantProcessor'
@@ -1171,6 +1279,47 @@ totalCostCanNotBeLongerThan2DigitsInItsFractionPart
 	^ 'Total cost can not be longer than 2 digits in its fractional part'! !
 
 
+!classDefinition: #Clock category: #'TusLibros.com'!
+Object subclass: #Clock
+	instanceVariableNames: 'creationDateAndTime'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!Clock methodsFor: 'initialization' stamp: 'AB 6/19/2019 18:29:06'!
+initialize
+
+	creationDateAndTime _ DateAndTime now! !
+
+!Clock methodsFor: 'initialization' stamp: 'AB 6/19/2019 18:29:54'!
+initializeStartingOn: aDateAndTime
+
+	creationDateAndTime _ aDateAndTime! !
+
+
+!Clock methodsFor: 'adding' stamp: 'AB 6/19/2019 19:08:47'!
+add: aDuration
+	
+	creationDateAndTime _ creationDateAndTime + aDuration! !
+
+
+!Clock methodsFor: 'accessing' stamp: 'AB 6/19/2019 18:50:42'!
+now
+
+	^ creationDateAndTime! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Clock class' category: #'TusLibros.com'!
+Clock class
+	instanceVariableNames: ''!
+
+!Clock class methodsFor: 'as yet unclassified' stamp: 'AB 6/19/2019 18:54:54'!
+startingOn: aDateAndTime
+
+	^ self new initializeStartingOn: aDateAndTime! !
+
+
 !classDefinition: #CreditCard category: #'TusLibros.com'!
 Object subclass: #CreditCard
 	instanceVariableNames: 'number expiration owner'
@@ -1242,7 +1391,7 @@ with: a16DigitsNumber with: aMonthOfYear with: anOwnersName
 
 !classDefinition: #Purchase category: #'TusLibros.com'!
 Object subclass: #Purchase
-	instanceVariableNames: 'total items'
+	instanceVariableNames: 'items totalAmount'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
@@ -1252,48 +1401,61 @@ items
 	
 	^ items! !
 
-!Purchase methodsFor: 'accessing' stamp: 'AB 6/18/2019 17:11:31'!
-total
+!Purchase methodsFor: 'accessing' stamp: 'AB 6/19/2019 17:53:04'!
+totalAmount
 	
-	^ total! !
+	^ totalAmount! !
 
 
-!Purchase methodsFor: 'initialization' stamp: 'AB 6/18/2019 17:12:16'!
+!Purchase methodsFor: 'initialization' stamp: 'AB 6/19/2019 17:53:04'!
 initialize
 
 	items _ Bag new.
-	total _ 0.
+	totalAmount _ 0.
 	
 	super initialize! !
 
 
-!Purchase methodsFor: 'adding' stamp: 'AB 6/18/2019 17:13:23'!
+!Purchase methodsFor: 'adding' stamp: 'AB 6/19/2019 17:53:04'!
 add: anItem costing: anAmount
 
 	items add: anItem.
-	total _ total + anAmount! !
+	totalAmount _ totalAmount + anAmount! !
 
 
 !classDefinition: #RestInterface category: #'TusLibros.com'!
 Object subclass: #RestInterface
-	instanceVariableNames: 'priceList merchantProcessor currentCartId clientsRecord salesBook activeSessions'
+	instanceVariableNames: 'priceList merchantProcessor currentCartId clientsRecord salesBook clock sessions'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!RestInterface methodsFor: 'initialization' stamp: 'AB 6/15/2019 00:41:49'!
+!RestInterface methodsFor: 'initialization' stamp: 'AB 6/19/2019 19:43:33'!
 initializewithCatalogue: aPriceList processingThrough: aMerchantProcessor signInUsersWith: aUsersRecord
 
 	priceList _ aPriceList.
 	merchantProcessor _ aMerchantProcessor.
 	clientsRecord _ aUsersRecord.
+	
+	clock _ Clock new.
+	salesBook _ Dictionary new.
+	sessions _ Dictionary new.
+	currentCartId _ 1! !
+
+!RestInterface methodsFor: 'initialization' stamp: 'AB 6/19/2019 19:43:33'!
+initializewithCatalogue: aPriceList processingThrough: aMerchantProcessor signInUsersWith: aUsersRecord calculatingTimeFrom: aClock
+
+	priceList _ aPriceList.
+	merchantProcessor _ aMerchantProcessor.
+	clientsRecord _ aUsersRecord.
+	clock _ aClock.
 
 	salesBook _ Dictionary new.
-	activeSessions _ Dictionary new.
+	sessions _ Dictionary new.
 	currentCartId _ 1! !
 
 
-!RestInterface methodsFor: 'cart creation' stamp: 'AB 6/15/2019 00:48:46'!
+!RestInterface methodsFor: 'cart creation' stamp: 'AB 6/19/2019 19:43:50'!
 createCartFor: aClientId protectedWith: aPassword startingOn: aDatetime
 
 	| aShoppingCart cartId |
@@ -1304,7 +1466,7 @@ createCartFor: aClientId protectedWith: aPassword startingOn: aDatetime
 
 	cartId _ currentCartId.	
 
-	activeSessions at: currentCartId put: (ActiveSession for: aClientId with: aShoppingCart).
+	sessions at: currentCartId put: (Session for: aClientId with: aShoppingCart expiringOn: clock now + (Duration minutes: 30)).
 
 	currentCartId _ currentCartId + 1.
 
@@ -1317,52 +1479,92 @@ assertClientExistsWith: aClientId and: aPassword
 	 clientsRecord isRegisteredWith: aClientId and: aPassword! !
 
 
-!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/15/2019 00:45:59'!
+!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/19/2019 19:58:46'!
 addTo: aShoppingCartId aBookWithCode: aBookISBN aQuantityOf: anAmount
 
-	(activeSessions at: aShoppingCartId ifAbsent: [ self error: RestInterface shoppingCartNotFound ]) shoppingCart add: aBookISBN quantity: anAmount! !
+	| session |
 
-!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/15/2019 01:19:19'!
+	session _ self sessionFor: aShoppingCartId.
+
+	self assertSessionIsUnexpiredAndelayExpirationForThirtyMinutes: session.
+	
+	session shoppingCart add: aBookISBN quantity: anAmount! !
+
+!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/19/2019 19:49:45'!
+assertSessionIsUnexpired: anActiveSession
+
+	(anActiveSession isExpiredOn: clock now) ifTrue: [ self error: RestInterface shoppingCartHasExpired ]! !
+
+!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/19/2019 19:56:29'!
+assertSessionIsUnexpiredAndelayExpirationForThirtyMinutes: aSession
+
+	self assertSessionIsUnexpired: aSession.
+	self delayExpirationForThirtyMinutes: aSession.! !
+
+!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/19/2019 19:49:45'!
 checkOut: aShoppingCartId chargingToACreditCardNumbered: aCreditCardNumber expiringOn: aMonthOfYear ownedBy: ownersName 
 
 	| cashier creditCard session clientSalesBook |
-	
+
 	creditCard _ CreditCard with: aCreditCardNumber with: aMonthOfYear with: ownersName.
-	
-	session _ activeSessions at: aShoppingCartId ifAbsent: [ self error: RestInterface shoppingCartNotFound ].
-	
+
+	session _ self sessionFor: aShoppingCartId.
+
+	self assertSessionIsUnexpired: session.
+
 	clientSalesBook _ self salesBooksFor: session client.
-	
+
 	cashier _ Cashier with: session shoppingCart chargingTo: creditCard registeringOn: clientSalesBook startingOn: DateAndTime now using: merchantProcessor.
-	
+
 	cashier checkOut! !
 
-!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/15/2019 00:47:11'!
+!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/19/2019 20:06:54'!
+delayExpirationForThirtyMinutes: aSession
+
+	aSession expiringOn: clock now + (Duration minutes: 30)! !
+
+!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/19/2019 19:55:43'!
 listCart: aShoppingCartId
 
-	^ (activeSessions at: aShoppingCartId ifAbsent: [ self error: RestInterface shoppingCartNotFound ]) shoppingCart items! !
+	| session |
 
-!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/18/2019 17:18:50'!
+	session _ self sessionFor: aShoppingCartId.
+
+	self assertSessionIsUnexpiredAndelayExpirationForThirtyMinutes: session.
+	
+	^ session shoppingCart items! !
+
+!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/19/2019 17:51:23'!
 listPurchasesFor: aClientId protectedBy: aPassword
 
-	| clientsPurchase |
+	| clientPurchases |
 
 	self assertClientExistsWith: aClientId and: aPassword.
 
-	clientsPurchase _ Purchase new.
+	clientPurchases _ Purchase new.
 
 	(self salesBooksFor: aClientId) do: [ :aSalesBook | 
 		aSalesBook items do: [ :anItem | 
-			clientsPurchase add: anItem costing: (priceList at: anItem) 
+			clientPurchases add: anItem costing: (priceList at: anItem)
 		] 
 	].
 
-	^ clientsPurchase! !
+	^ clientPurchases! !
 
 !RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/15/2019 00:57:53'!
 salesBooksFor: aClientId
 
 	^ salesBook at: aClientId ifAbsentPut: [ OrderedCollection new ]! !
+
+!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/19/2019 19:43:33'!
+sessionFor: aShoppingCartId
+
+	^ sessions at: aShoppingCartId ifAbsent: [ self error: RestInterface shoppingCartNotFound ]! !
+
+!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/19/2019 19:43:33'!
+shoppingCartIsExpired: aShoppingCartId
+
+	^ (sessions at: aShoppingCartId ifAbsent: [ self error: RestInterface shoppingCartNotFound ]) isExpiredOn: clock now! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1385,6 +1587,11 @@ invalidClientPassword
 	
 	^ 'Client password is invalid'! !
 
+!RestInterface class methodsFor: 'error handling' stamp: 'AB 6/19/2019 19:14:24'!
+shoppingCartHasExpired
+	
+	^ 'Shopping Cart Has Expired'! !
+
 !RestInterface class methodsFor: 'error handling' stamp: 'AB 6/12/2019 17:12:31'!
 shoppingCartNotFound
 	
@@ -1395,6 +1602,11 @@ shoppingCartNotFound
 withCatalogue: aPriceList processingThrough: aMerchantProcessor signInUsersWith: aUsersRecord
 
 	^ self new initializewithCatalogue: aPriceList processingThrough: aMerchantProcessor signInUsersWith: aUsersRecord! !
+
+!RestInterface class methodsFor: 'instance creation' stamp: 'AB 6/19/2019 18:23:23'!
+withCatalogue: aPriceList processingThrough: aMerchantProcessor signInUsersWith: aUsersRecord calculatingTimeFrom: aClock
+
+	^ self new initializewithCatalogue: aPriceList processingThrough: aMerchantProcessor signInUsersWith: aUsersRecord calculatingTimeFrom: aClock! !
 
 
 !classDefinition: #Sale category: #'TusLibros.com'!
@@ -1409,8 +1621,8 @@ items
 	
 	^ items! !
 
-!Sale methodsFor: 'accessing' stamp: 'HernanWilkinson 6/17/2013 18:48'!
-total
+!Sale methodsFor: 'accessing' stamp: 'AB 6/19/2019 17:52:50'!
+totalAmount
 	
 	^ total! !
 
@@ -1431,6 +1643,65 @@ Sale class
 with: aCollectionOfItems costing: aTotal
 
 	^ self new initializeWith: aCollectionOfItems costing: aTotal! !
+
+
+!classDefinition: #Session category: #'TusLibros.com'!
+Object subclass: #Session
+	instanceVariableNames: 'client shoppingCart expiration'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!Session methodsFor: 'initialization' stamp: 'AB 6/15/2019 00:50:46'!
+initializeFor: aClientId with: aShoppingCart
+
+	client _ aClientId.
+	shoppingCart _ aShoppingCart! !
+
+!Session methodsFor: 'initialization' stamp: 'AB 6/19/2019 18:39:05'!
+initializeFor: aClientId with: aShoppingCart expiringOn: aDateAndTime
+
+	client _ aClientId.
+	shoppingCart _ aShoppingCart.
+	expiration _ aDateAndTime ! !
+
+
+!Session methodsFor: 'accessing' stamp: 'AB 6/15/2019 00:45:07'!
+client
+
+	^ client! !
+
+!Session methodsFor: 'accessing' stamp: 'AB 6/15/2019 00:45:03'!
+shoppingCart
+
+	^ shoppingCart! !
+
+
+!Session methodsFor: 'expiration' stamp: 'AB 6/19/2019 20:06:15'!
+expiringOn: anExpirationDateAndTime
+
+	expiration _ anExpirationDateAndTime! !
+
+!Session methodsFor: 'expiration' stamp: 'AB 6/19/2019 19:45:59'!
+isExpiredOn: aDateAndTime
+
+	^ expiration <= aDateAndTime! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Session class' category: #'TusLibros.com'!
+Session class
+	instanceVariableNames: ''!
+
+!Session class methodsFor: 'instance creation' stamp: 'AB 6/15/2019 00:43:15'!
+for: aClientId with: aShoppingCart
+
+	^ self new initializeFor: aClientId with: aShoppingCart! !
+
+!Session class methodsFor: 'instance creation' stamp: 'AB 6/19/2019 18:38:40'!
+for: aClientId with: aShoppingCart expiringOn: aDateAndTime
+
+	^ self new initializeFor: aClientId with: aShoppingCart expiringOn: aDateAndTime! !
 
 
 !classDefinition: #ShoppingCart category: #'TusLibros.com'!
