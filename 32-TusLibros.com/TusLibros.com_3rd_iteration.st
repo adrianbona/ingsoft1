@@ -1479,18 +1479,16 @@ assertClientExistsWith: aClientId and: aPassword
 	 clientsRecord isRegisteredWith: aClientId and: aPassword! !
 
 
-!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/20/2019 00:10:55'!
+!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/20/2019 09:50:12'!
 addTo: aShoppingCartId aBookWithCode: aBookISBN aQuantityOf: anAmount
 
 	| session |
 
 	session _ self sessionFor: aShoppingCartId.
 
-	self assertSessionIsUnexpiredAndelayExpirationTo: session.
-	
 	session shoppingCart add: aBookISBN quantity: anAmount! !
 
-!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/19/2019 19:49:45'!
+!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/20/2019 09:50:28'!
 checkOut: aShoppingCartId chargingToACreditCardNumbered: aCreditCardNumber expiringOn: aMonthOfYear ownedBy: ownersName 
 
 	| cashier creditCard session clientSalesBook |
@@ -1499,22 +1497,18 @@ checkOut: aShoppingCartId chargingToACreditCardNumbered: aCreditCardNumber expir
 
 	session _ self sessionFor: aShoppingCartId.
 
-	self assertSessionIsUnexpired: session.
-
 	clientSalesBook _ self salesBooksFor: session client.
 
 	cashier _ Cashier with: session shoppingCart chargingTo: creditCard registeringOn: clientSalesBook startingOn: DateAndTime now using: merchantProcessor.
 
 	cashier checkOut! !
 
-!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/20/2019 00:10:55'!
+!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/20/2019 09:49:13'!
 listCart: aShoppingCartId
 
 	| session |
 
 	session _ self sessionFor: aShoppingCartId.
-
-	self assertSessionIsUnexpiredAndelayExpirationTo: session.
 	
 	^ session shoppingCart items! !
 
@@ -1546,10 +1540,13 @@ shoppingCartIsExpired: aShoppingCartId
 	^ (sessions at: aShoppingCartId ifAbsent: [ self error: RestInterface shoppingCartNotFound ]) isExpiredOn: clock now! !
 
 
-!RestInterface methodsFor: 'session expiration' stamp: 'AB 6/20/2019 00:11:07'!
+!RestInterface methodsFor: 'session expiration' stamp: 'AB 6/20/2019 09:52:47'!
 assertSessionIsUnexpired: aSession
 
-	(aSession isExpiredOn: clock now) ifTrue: [ self error: RestInterface shoppingCartHasExpired ]! !
+	(aSession isExpiredOn: clock now) ifTrue: [
+		self removeSession: aSession.
+		self error: RestInterface shoppingCartHasExpired
+	]! !
 
 !RestInterface methodsFor: 'session expiration' stamp: 'AB 6/20/2019 00:10:55'!
 assertSessionIsUnexpiredAndelayExpirationTo: aSession
@@ -1563,15 +1560,26 @@ delayExpirationTo: aSession
 
 	aSession expiringOn: clock now + self sessionDuration! !
 
+!RestInterface methodsFor: 'session expiration' stamp: 'AB 6/20/2019 09:57:40'!
+removeSession: aSession
+
+	sessions removeKey: (sessions keyAtValue: aSession)! !
+
 !RestInterface methodsFor: 'session expiration' stamp: 'AB 6/20/2019 00:09:39'!
 sessionDuration
 	
 	^ Duration minutes: 30! !
 
-!RestInterface methodsFor: 'session expiration' stamp: 'AB 6/19/2019 19:43:33'!
+!RestInterface methodsFor: 'session expiration' stamp: 'AB 6/20/2019 09:49:55'!
 sessionFor: aShoppingCartId
 
-	^ sessions at: aShoppingCartId ifAbsent: [ self error: RestInterface shoppingCartNotFound ]! !
+	| session |
+
+	session _ sessions at: aShoppingCartId ifAbsent: [ self error: RestInterface shoppingCartNotFound ].
+	
+	self assertSessionIsUnexpiredAndelayExpirationTo: session.
+
+	^ session! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
