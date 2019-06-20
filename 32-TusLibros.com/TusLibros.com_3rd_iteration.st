@@ -984,6 +984,108 @@ test32AShoppingCartExpirationGetsRestartedWhenAddingAnItem
 	
 	self deny: (interface shoppingCartIsExpired: shoppingCartId)! !
 
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/20/2019 10:01:25'!
+test33CanNotFindShoppingCartAfterListingContentsOfExpiredShoppingCart
+
+	| interface shoppingCartId |
+	
+	interface _ aRestInterfaceWithAnEmptyPriceListAndAClock.
+
+	shoppingCartId _ interface 
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword
+		startingOn: testObjects today.		
+
+	clock add: (Duration minutes: 30).
+
+	self 
+		should: [ interface listCart: shoppingCartId ]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: RestInterface shoppingCartHasExpired
+		].
+
+	self 
+		should: [ interface listCart: shoppingCartId ]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: RestInterface shoppingCartNotFound 
+		]! !
+
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/20/2019 10:02:32'!
+test34CanNotFindShoppingCartAfterAddinAnItemToExpiredShoppingCart
+
+	| interface shoppingCartId |
+	
+	interface _ aRestInterfaceWithAnEmptyPriceListAndAClock.
+
+	shoppingCartId _ interface 
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword
+		startingOn: testObjects today.		
+
+	clock add: (Duration minutes: 30).
+
+	self 
+		should: [ interface addTo: shoppingCartId aBookWithCode: testObjects existingISBN aQuantityOf: 1 ]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: RestInterface shoppingCartHasExpired
+		].
+
+	self 
+		should: [ interface addTo: shoppingCartId aBookWithCode: testObjects existingISBN aQuantityOf: 1 ]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: RestInterface shoppingCartNotFound
+		]! !
+
+!RestInterfaceTest methodsFor: 'testing' stamp: 'AB 6/20/2019 10:09:31'!
+test35SendingMessagesToAnAlreadyCheckedOutShoppingReturnsException
+
+	| interface shoppingCartId |
+	
+	interface _ aRestInterfaceWithOneItemPriceList.
+
+	shoppingCartId _ interface 
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword
+		startingOn: testObjects today.		
+
+	interface addTo: shoppingCartId aBookWithCode: testObjects existingISBN aQuantityOf: 1.
+
+	interface
+			checkOut: shoppingCartId
+			chargingToACreditCardNumbered: testObjects a16DigitsNumber 
+			expiringOn: testObjects currentMonthOfYear 
+			ownedBy: testObjects a30CharactersLongName.
+
+	self 
+		should: [ interface listCart: shoppingCartId ]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: RestInterface shoppingCartNotFound
+		].
+
+	self 
+		should: [ interface addTo: shoppingCartId aBookWithCode: testObjects existingISBN aQuantityOf: 1 ]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: RestInterface shoppingCartNotFound
+		].
+	
+	self 
+		should: [ interface
+			checkOut: shoppingCartId
+			chargingToACreditCardNumbered: testObjects a16DigitsNumber 
+			expiringOn: testObjects currentMonthOfYear 
+			ownedBy: testObjects a30CharactersLongName 
+		]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: RestInterface shoppingCartNotFound
+		]! !
+
 
 !classDefinition: #ShoppingCartTest category: #'TusLibros.com'!
 TestCase subclass: #ShoppingCartTest
@@ -1488,7 +1590,7 @@ addTo: aShoppingCartId aBookWithCode: aBookISBN aQuantityOf: anAmount
 
 	session shoppingCart add: aBookISBN quantity: anAmount! !
 
-!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/20/2019 09:50:28'!
+!RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/20/2019 10:07:40'!
 checkOut: aShoppingCartId chargingToACreditCardNumbered: aCreditCardNumber expiringOn: aMonthOfYear ownedBy: ownersName 
 
 	| cashier creditCard session clientSalesBook |
@@ -1501,7 +1603,9 @@ checkOut: aShoppingCartId chargingToACreditCardNumbered: aCreditCardNumber expir
 
 	cashier _ Cashier with: session shoppingCart chargingTo: creditCard registeringOn: clientSalesBook startingOn: DateAndTime now using: merchantProcessor.
 
-	cashier checkOut! !
+	cashier checkOut.
+	
+	self removeSession: session ! !
 
 !RestInterface methodsFor: 'cart accessing' stamp: 'AB 6/20/2019 09:49:13'!
 listCart: aShoppingCartId
