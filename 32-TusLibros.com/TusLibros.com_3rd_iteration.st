@@ -2060,10 +2060,10 @@ workingCreditCard
 		with: self a30CharactersLongName! !
 
 
-!StoreTestObjectsFactory methodsFor: 'initialization' stamp: 'AB 6/18/2019 22:22:51'!
+!StoreTestObjectsFactory methodsFor: 'initialization' stamp: 'AB 6/24/2019 12:09:40'!
 initialize
 
-	today _ DateAndTime today.
+	self initializeStartingOn: DateAndTime today.
 
 	super initialize! !
 
@@ -2124,14 +2124,3 @@ anotherValidClienId
 anotherValidClientPassword
 
 	^ 'Another Valid User Password'! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'StoreTestObjectsFactory class' category: #'TusLibros.com'!
-StoreTestObjectsFactory class
-	instanceVariableNames: ''!
-
-!StoreTestObjectsFactory class methodsFor: 'instance creation' stamp: 'AB 6/17/2019 16:11:38'!
-startingOn: aDateTime
-
-	^ self new initializeStartingOn: aDateTime! !
