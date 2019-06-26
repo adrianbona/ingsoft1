@@ -61,10 +61,10 @@ test04SourceAndTargetWalletIdsMustBeDifferentForSlowTransfers
 			self assert: anError messageText equals: Fintech sourceAndTargetWalletIdsMustBeDifferent
 		] ! !
 
-!FintechTest methodsFor: 'testing' stamp: 'AB 6/25/2019 20:24:23'!
+!FintechTest methodsFor: 'testing' stamp: 'AB 6/26/2019 16:44:12'!
 test05TargetWalletIdsMustBelongToAnExistingWalletWhenSlowTransferencing
 
-	| fintech aWalletId anAmount |
+	| fintech aWalletId anAmount anotherWalletId |
 	
 	fintech _ Fintech new.
 	
@@ -72,16 +72,16 @@ test05TargetWalletIdsMustBelongToAnExistingWalletWhenSlowTransferencing
 	
 	anAmount _ 1.
 
-	self should: [ | anotherWalletId |
+	self should: [
 			fintech slowTransfer: anAmount from: aWalletId to: anotherWalletId.
 		] raise: Error withExceptionDo: [ :anError |
 			self assert: anError messageText equals: Fintech canNotFindWalletId
 		] ! !
 
-!FintechTest methodsFor: 'testing' stamp: 'AB 6/25/2019 20:24:32'!
+!FintechTest methodsFor: 'testing' stamp: 'AB 6/26/2019 16:30:17'!
 test06SourceWalletIdsMustBelongToAnExistingWalletWhenSlowTransferencing
 
-	| fintech aWalletId anAmount |
+	| fintech aWalletId anAmount anotherWalletId |
 	
 	fintech _ Fintech new.
 	
@@ -89,7 +89,7 @@ test06SourceWalletIdsMustBelongToAnExistingWalletWhenSlowTransferencing
 	
 	anAmount _ 1.
 	
-	self should: [ | anotherWalletId |
+	self should: [
 			fintech slowTransfer: anAmount from: anotherWalletId to: aWalletId.
 		] raise: Error withExceptionDo: [ :anError |
 			self assert: anError messageText equals: Fintech canNotFindWalletId
@@ -170,6 +170,50 @@ test10FastTrasnferChargesAFourPercentCommissionToSender
 	
 	self assert: ((1 - 0.5 - (0.5 * 0.04)) * (BaseUnit named: 'ISW1COIN')) equals: (fintech balanceOf: aWalletId)! !
 
+!FintechTest methodsFor: 'testing' stamp: 'AB 6/26/2019 15:48:20'!
+test11SendingATransferAddsAnElementToTransactionsCollection
+
+	| fintech aWalletId anotherWalletId amountTransactions |
+
+	fintech _ Fintech new.
+
+	aWalletId _ fintech createWallet.
+
+	anotherWalletId _ fintech createWallet.
+
+	amountTransactions _ (fintech allTransactionsOf: aWalletId) size.
+
+	fintech fastTransfer: 0.5 from: aWalletId to: anotherWalletId.
+	
+	self assert: amountTransactions + 1 equals: (fintech allTransactionsOf: aWalletId) size! !
+
+!FintechTest methodsFor: 'testing' stamp: 'AB 6/26/2019 16:47:51'!
+test12BalanceCanNotBeNegativeAfterTransference
+
+	| fintech aWalletId anotherWalletId amountTransactions |
+
+	fintech _ Fintech new.
+
+	aWalletId _ fintech createWallet.
+
+	anotherWalletId _ fintech createWallet.
+
+	amountTransactions _ (fintech allTransactionsOf: aWalletId) size.
+
+	self should: [
+			fintech slowTransfer: 1 from: aWalletId to: anotherWalletId
+		] raise: Error withExceptionDo: [ :anError |
+			self assert: anError messageText equals: Fintech notEnoughFundsForTransfer.
+			self assert: 1 * (BaseUnit named: 'ISW1COIN') equals: (fintech balanceOf: aWalletId)
+		].
+	
+	self should: [
+			fintech fastTransfer: 1 from: aWalletId to: anotherWalletId
+		] raise: Error withExceptionDo: [ :anError |
+			self assert: anError messageText equals: Fintech notEnoughFundsForTransfer.
+			self assert: 1 * (BaseUnit named: 'ISW1COIN') equals: (fintech balanceOf: aWalletId)
+		]! !
+
 
 !classDefinition: #WalletTest category: #'ISW1-Fintech'!
 TestCase subclass: #WalletTest
@@ -233,7 +277,7 @@ assertValueIsBiggerThanMinimum: anAmount
 	
 	(anAmount < self minimum) ifTrue: [ self error: Fintech minimumAmountToBeTransferedIs0000001 ]! !
 
-!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 15:34:43'!
+!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 16:44:38'!
 checkAndRecordATransferenceFor: anAmount from: aSourceWalletId to: aTargetWalletId adding: aTransferCommissionPercentage
 
 	| aSourceWallet aTargetWallet |
@@ -241,10 +285,12 @@ checkAndRecordATransferenceFor: anAmount from: aSourceWalletId to: aTargetWallet
 	self assertValueIsBiggerThanMinimum: anAmount.
 
 	self assertSourceAndTargetAreDifferentFor: aSourceWalletId and: aTargetWalletId.
-
+	
 	aTargetWallet _ self walletFor: aTargetWalletId.
 	
 	aSourceWallet _ self walletFor: aSourceWalletId.
+
+	self assertEnoughFundsForTrasfering: anAmount adding: aTransferCommissionPercentage from: aSourceWalletId.
 	
 	self recordTransference: anAmount from: aSourceWallet to: aTargetWallet adding: aTransferCommissionPercentage! !
 
@@ -316,12 +362,20 @@ walletFor: aWalletId
 	^ wallet! !
 
 
-!Fintech methodsFor: 'transactions' stamp: 'AB 6/25/2019 23:22:45'!
+!Fintech methodsFor: 'transactions' stamp: 'AB 6/26/2019 16:49:28'!
 allTransactionsOf: aWalletId
 
-	^ (self walletFor: aWalletId) transactions
-! !
+	^ (self walletFor: aWalletId) transactions select: [ :aTransaction | aTransaction isCommission not ]! !
 
+
+!Fintech methodsFor: 'transfer' stamp: 'AB 6/26/2019 16:42:36'!
+assertEnoughFundsForTrasfering: anAmount adding: aTransferCommissionPercentage from: aSourceWalletId
+	
+	| transferTotalCharge |
+	
+	transferTotalCharge _ (anAmount + (anAmount * aTransferCommissionPercentage) * (BaseUnit named: 'ISW1COIN')).
+	
+	((self balanceOf: aSourceWalletId) < transferTotalCharge) ifTrue: [ self error: Fintech notEnoughFundsForTransfer ]! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -338,6 +392,11 @@ canNotFindWalletId
 minimumAmountToBeTransferedIs0000001
 
 	^ 'Minimum amount to be transfered is 0.000001'! !
+
+!Fintech class methodsFor: 'exceptions' stamp: 'AB 6/26/2019 16:32:44'!
+notEnoughFundsForTransfer
+
+	^ 'Not enough funds for transfer'! !
 
 !Fintech class methodsFor: 'exceptions' stamp: 'AB 6/25/2019 19:49:36'!
 sourceAndTargetWalletIdsMustBeDifferent
@@ -458,10 +517,10 @@ register: aTransaction
 
 	transactions add: aTransaction! !
 
-!Wallet methodsFor: 'transactions' stamp: 'AB 6/25/2019 23:53:35'!
+!Wallet methodsFor: 'transactions' stamp: 'AB 6/26/2019 15:50:37'!
 transactions
 
-	^ transactions! !
+	^ transactions copy! !
 
 
 !Wallet methodsFor: 'initialization' stamp: 'AB 6/25/2019 23:53:56'!
