@@ -214,6 +214,35 @@ test12BalanceCanNotBeNegativeAfterTransference
 			self assert: 1 * (BaseUnit named: 'ISW1COIN') equals: (fintech balanceOf: aWalletId)
 		]! !
 
+!FintechTest methodsFor: 'testing' stamp: 'AB 6/26/2019 20:20:35'!
+test13ATransferenceIsRejectedWhenGettingCreditedOnForbiddenTimeFrame
+
+	| fintech aWalletId anotherWalletId aClock |
+
+	aClock _ ManualClock startingOn: (DateAndTime now midnight - (Duration hours: 2)).
+
+	fintech _ Fintech measuringWith: aClock.
+
+	aWalletId _ fintech createWallet.
+
+	anotherWalletId _ fintech createWallet.
+
+	self should: [
+			fintech slowTransfer: 0.5 from: aWalletId to: anotherWalletId
+		] raise: Error withExceptionDo: [ :anError |
+			self assert: anError messageText equals: Fintech canNotMakeATransferDuringTimeFrame.
+			self assert: 1 * (BaseUnit named: 'ISW1COIN') equals: (fintech balanceOf: aWalletId)
+		].
+
+	aClock add: (Duration hours: 1).
+	
+	self should: [
+			fintech fastTransfer: 0.5 from: aWalletId to: anotherWalletId
+		] raise: Error withExceptionDo: [ :anError |
+			self assert: anError messageText equals: Fintech canNotMakeATransferDuringTimeFrame.
+			self assert: 1 * (BaseUnit named: 'ISW1COIN') equals: (fintech balanceOf: aWalletId)
+		].! !
+
 
 !classDefinition: #WalletTest category: #'ISW1-Fintech'!
 TestCase subclass: #WalletTest
@@ -248,10 +277,10 @@ Object subclass: #Fintech
 	poolDictionaries: ''
 	category: 'ISW1-Fintech'!
 
-!Fintech methodsFor: 'initialization' stamp: 'AB 6/25/2019 23:36:01'!
+!Fintech methodsFor: 'initialization' stamp: 'AB 6/26/2019 20:03:56'!
 initialize
 
-	self initializeWith: (DateAndTime now)! !
+	self initializeWith: (ManualClock startingOn: DateAndTime now)! !
 
 !Fintech methodsFor: 'initialization' stamp: 'AB 6/25/2019 23:35:29'!
 initializeWith: aClock
@@ -272,13 +301,18 @@ assertSourceAndTargetAreDifferentFor: aSourceWalletId and: aTargetWalletId
 
 	(aSourceWalletId = aTargetWalletId) ifTrue: [ ^ self error: Fintech sourceAndTargetWalletIdsMustBeDifferent ]! !
 
+!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 20:18:35'!
+assertTransferGetsCreditedOutsideTimeFrameWhenTaking: aTransferDuration
+
+	((clock now + aTransferDuration) time between: self timeFrameFrom and: self timeFrameTo) ifTrue: [ self error: Fintech canNotMakeATransferDuringTimeFrame ]! !
+
 !Fintech methodsFor: 'wallet' stamp: 'AB 6/25/2019 20:26:14'!
 assertValueIsBiggerThanMinimum: anAmount
 	
 	(anAmount < self minimum) ifTrue: [ self error: Fintech minimumAmountToBeTransferedIs0000001 ]! !
 
-!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 16:44:38'!
-checkAndRecordATransferenceFor: anAmount from: aSourceWalletId to: aTargetWalletId adding: aTransferCommissionPercentage
+!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 19:55:58'!
+checkAndRecordATransferenceFor: anAmount from: aSourceWalletId to: aTargetWalletId adding: aTransferCommissionPercentage taking: aTransferDuration
 
 	| aSourceWallet aTargetWallet |
 
@@ -289,6 +323,8 @@ checkAndRecordATransferenceFor: anAmount from: aSourceWalletId to: aTargetWallet
 	aTargetWallet _ self walletFor: aTargetWalletId.
 	
 	aSourceWallet _ self walletFor: aSourceWalletId.
+
+	self assertTransferGetsCreditedOutsideTimeFrameWhenTaking: aTransferDuration.
 
 	self assertEnoughFundsForTrasfering: anAmount adding: aTransferCommissionPercentage from: aSourceWalletId.
 	
@@ -305,10 +341,10 @@ createWallet
 
 	^ walletId! !
 
-!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 15:34:17'!
+!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 19:54:21'!
 fastTransfer: anAmount from: aSourceWalletId to: aTargetWalletId
 
-	self checkAndRecordATransferenceFor: anAmount from: aSourceWalletId to: aTargetWalletId adding: self fastTransferCommissionPercentage! !
+	self checkAndRecordATransferenceFor: anAmount from: aSourceWalletId to: aTargetWalletId adding: self fastTransferCommissionPercentage taking: self fastTransferDuration! !
 
 !Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 15:26:12'!
 fastTransferCommissionPercentage
@@ -332,10 +368,10 @@ recordTransference: anAmount from: aSourceWallet to: aTargetWallet adding: aPerc
 
 	Transfer register: anAmount from: aSourceWallet to: aTargetWallet! !
 
-!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 15:34:05'!
+!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 19:53:38'!
 slowTransfer: anAmount from: aSourceWalletId to: aTargetWalletId
 
-	self checkAndRecordATransferenceFor: anAmount from: aSourceWalletId to: aTargetWalletId adding: self slowTransferCommissionPercentage! !
+	self checkAndRecordATransferenceFor: anAmount from: aSourceWalletId to: aTargetWalletId adding: self slowTransferCommissionPercentage taking: self slowTransferDuration! !
 
 !Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 15:26:05'!
 slowTransferCommissionPercentage
@@ -346,6 +382,16 @@ slowTransferCommissionPercentage
 slowTransferDuration
 
 	^ Duration hours: 1! !
+
+!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 20:02:16'!
+timeFrameFrom
+
+	^ Time hour: 23 minute: 00 second: 00! !
+
+!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 20:02:24'!
+timeFrameTo
+
+	^ Time hour: 23 minute: 59 second: 59! !
 
 !Fintech methodsFor: 'wallet' stamp: 'AB 6/25/2019 19:05:38'!
 uniqueWalletId
@@ -387,6 +433,11 @@ Fintech class
 canNotFindWalletId
 
 	^ 'Can not find wallet id'! !
+
+!Fintech class methodsFor: 'exceptions' stamp: 'AB 6/26/2019 19:50:52'!
+canNotMakeATransferDuringTimeFrame
+
+	^ 'Can not make a transfer during time frame'! !
 
 !Fintech class methodsFor: 'exceptions' stamp: 'AB 6/25/2019 20:21:14'!
 minimumAmountToBeTransferedIs0000001
