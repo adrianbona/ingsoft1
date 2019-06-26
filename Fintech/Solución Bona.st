@@ -233,19 +233,8 @@ assertValueIsBiggerThanMinimum: anAmount
 	
 	(anAmount < self minimum) ifTrue: [ self error: Fintech minimumAmountToBeTransferedIs0000001 ]! !
 
-!Fintech methodsFor: 'wallet' stamp: 'AB 6/25/2019 19:34:19'!
-createWallet
-
-	| walletId |
-	
-	walletId _ self uniqueWalletId.
-
-	wallets at: walletId put: Wallet new.
-
-	^ walletId! !
-
-!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 15:26:45'!
-fastTransfer: anAmount from: aSourceWalletId to: aTargetWalletId
+!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 15:34:43'!
+checkAndRecordATransferenceFor: anAmount from: aSourceWalletId to: aTargetWalletId adding: aTransferCommissionPercentage
 
 	| aSourceWallet aTargetWallet |
 
@@ -257,7 +246,23 @@ fastTransfer: anAmount from: aSourceWalletId to: aTargetWalletId
 	
 	aSourceWallet _ self walletFor: aSourceWalletId.
 	
-	self recordTransference: anAmount from: aSourceWallet to: aTargetWallet adding: self fastTransferCommissionPercentage taking: self fastTransferDuration! !
+	self recordTransference: anAmount from: aSourceWallet to: aTargetWallet adding: aTransferCommissionPercentage! !
+
+!Fintech methodsFor: 'wallet' stamp: 'AB 6/25/2019 19:34:19'!
+createWallet
+
+	| walletId |
+	
+	walletId _ self uniqueWalletId.
+
+	wallets at: walletId put: Wallet new.
+
+	^ walletId! !
+
+!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 15:34:17'!
+fastTransfer: anAmount from: aSourceWalletId to: aTargetWalletId
+
+	self checkAndRecordATransferenceFor: anAmount from: aSourceWalletId to: aTargetWalletId adding: self fastTransferCommissionPercentage! !
 
 !Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 15:26:12'!
 fastTransferCommissionPercentage
@@ -274,27 +279,17 @@ minimum
 
 	^ 0.000001! !
 
-!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 15:27:28'!
-recordTransference: anAmount from: aSourceWalletId to: aTargetWalletId adding: aPercentaje taking: aDuration
+!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 15:34:26'!
+recordTransference: anAmount from: aSourceWallet to: aTargetWallet adding: aPercentaje
 
-	Commission register: (anAmount * aPercentaje) on: aSourceWalletId.
+	Commission register: (anAmount * aPercentaje) on: aSourceWallet.
 
-	Transfer register: anAmount from: aSourceWalletId to: aTargetWalletId! !
+	Transfer register: anAmount from: aSourceWallet to: aTargetWallet! !
 
-!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 15:26:05'!
+!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 15:34:05'!
 slowTransfer: anAmount from: aSourceWalletId to: aTargetWalletId
 
-	| aSourceWallet aTargetWallet |
-
-	self assertValueIsBiggerThanMinimum: anAmount.
-
-	self assertSourceAndTargetAreDifferentFor: aSourceWalletId and: aTargetWalletId.
-
-	aTargetWallet _ self walletFor: aTargetWalletId.
-	
-	aSourceWallet _ self walletFor: aSourceWalletId.
-	
-	self recordTransference: anAmount from: aSourceWallet to: aTargetWallet adding: self slowTransferCommissionPercentage taking: self slowTransferDuration! !
+	self checkAndRecordATransferenceFor: anAmount from: aSourceWalletId to: aTargetWalletId adding: self slowTransferCommissionPercentage! !
 
 !Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 15:26:05'!
 slowTransferCommissionPercentage
