@@ -155,6 +155,21 @@ test09SlowTrasnferChargesATwoPercentCommissionToSender
 	
 	self assert: ((1 - 0.5 - (0.5 * 0.02)) * (BaseUnit named: 'ISW1COIN')) equals: (fintech balanceOf: aWalletId)! !
 
+!FintechTest methodsFor: 'testing' stamp: 'AB 6/26/2019 15:24:00'!
+test10FastTrasnferChargesAFourPercentCommissionToSender
+
+	| fintech aWalletId anotherWalletId |
+
+	fintech _ Fintech new.
+
+	aWalletId _ fintech createWallet.
+
+	anotherWalletId _ fintech createWallet.
+
+	fintech fastTransfer: 0.5 from: aWalletId to: anotherWalletId.
+	
+	self assert: ((1 - 0.5 - (0.5 * 0.04)) * (BaseUnit named: 'ISW1COIN')) equals: (fintech balanceOf: aWalletId)! !
+
 
 !classDefinition: #WalletTest category: #'ISW1-Fintech'!
 TestCase subclass: #WalletTest
@@ -229,18 +244,44 @@ createWallet
 
 	^ walletId! !
 
+!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 15:26:45'!
+fastTransfer: anAmount from: aSourceWalletId to: aTargetWalletId
+
+	| aSourceWallet aTargetWallet |
+
+	self assertValueIsBiggerThanMinimum: anAmount.
+
+	self assertSourceAndTargetAreDifferentFor: aSourceWalletId and: aTargetWalletId.
+
+	aTargetWallet _ self walletFor: aTargetWalletId.
+	
+	aSourceWallet _ self walletFor: aSourceWalletId.
+	
+	self recordTransference: anAmount from: aSourceWallet to: aTargetWallet adding: self fastTransferCommissionPercentage taking: self fastTransferDuration! !
+
+!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 15:26:12'!
+fastTransferCommissionPercentage
+
+	^ 0.04! !
+
+!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 15:26:32'!
+fastTransferDuration
+
+	^ Duration minutes: 10! !
+
 !Fintech methodsFor: 'wallet' stamp: 'AB 6/25/2019 20:23:46'!
 minimum
 
 	^ 0.000001! !
 
-!Fintech methodsFor: 'wallet' stamp: 'AB 6/25/2019 23:51:20'!
+!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 15:27:28'!
 recordTransference: anAmount from: aSourceWalletId to: aTargetWalletId adding: aPercentaje taking: aDuration
 
 	Commission register: (anAmount * aPercentaje) on: aSourceWalletId.
+
 	Transfer register: anAmount from: aSourceWalletId to: aTargetWalletId! !
 
-!Fintech methodsFor: 'wallet' stamp: 'AB 6/25/2019 23:59:10'!
+!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 15:26:05'!
 slowTransfer: anAmount from: aSourceWalletId to: aTargetWalletId
 
 	| aSourceWallet aTargetWallet |
@@ -253,10 +294,10 @@ slowTransfer: anAmount from: aSourceWalletId to: aTargetWalletId
 	
 	aSourceWallet _ self walletFor: aSourceWalletId.
 	
-	self recordTransference: anAmount from: aSourceWallet to: aTargetWallet adding: self slowTransferCommissionPercentaje taking: self slowTransferDuration! !
+	self recordTransference: anAmount from: aSourceWallet to: aTargetWallet adding: self slowTransferCommissionPercentage taking: self slowTransferDuration! !
 
-!Fintech methodsFor: 'wallet' stamp: 'AB 6/25/2019 23:49:21'!
-slowTransferCommissionPercentaje
+!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 15:26:05'!
+slowTransferCommissionPercentage
 
 	^ 0.02! !
 
@@ -285,6 +326,7 @@ allTransactionsOf: aWalletId
 
 	^ (self walletFor: aWalletId) transactions
 ! !
+
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
