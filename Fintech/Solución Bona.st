@@ -248,7 +248,7 @@ test13ATransferenceIsRejectedWhenGettingCreditedOnForbiddenTimeFrame
 			self assert: 1 * (BaseUnit named: 'ISW1COIN') equals: (fintech balanceOf: aWalletId)
 		].! !
 
-!FintechTest methodsFor: 'testing' stamp: 'AB 6/26/2019 23:26:37'!
+!FintechTest methodsFor: 'testing' stamp: 'AB 6/27/2019 10:31:46'!
 test14AFastTransferenceGetsCreditedAfterDuration
 
 	| fintech aWalletId anotherWalletId |
@@ -265,8 +265,26 @@ test14AFastTransferenceGetsCreditedAfterDuration
 	
 	manualClock add: (Duration minutes: 10).
 	
-	self assert: (1 + 0.5) * (BaseUnit named: 'ISW1COIN') equals: (fintech balanceOf: anotherWalletId).
-! !
+	self assert: (1 + 0.5) * (BaseUnit named: 'ISW1COIN') equals: (fintech balanceOf: anotherWalletId)! !
+
+!FintechTest methodsFor: 'testing' stamp: 'AB 6/27/2019 10:32:39'!
+test15ASlowTransferenceGetsCreditedAfterDuration
+
+	| fintech aWalletId anotherWalletId |
+
+	fintech _ Fintech measuringWith: manualClock.
+
+	aWalletId _ fintech createWallet.
+
+	anotherWalletId _ fintech createWallet.
+
+	fintech slowTransfer: 0.5 from: aWalletId to: anotherWalletId.
+
+	self assert: 1 * (BaseUnit named: 'ISW1COIN') equals: (fintech balanceOf: anotherWalletId).
+
+	manualClock add: (Duration hours: 1).
+
+	self assert: (1 + 0.5) * (BaseUnit named: 'ISW1COIN') equals: (fintech balanceOf: anotherWalletId)! !
 
 
 !classDefinition: #WalletTest category: #'ISW1-Fintech'!
