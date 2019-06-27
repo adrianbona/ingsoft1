@@ -1,11 +1,16 @@
 !classDefinition: #FintechTest category: #'ISW1-Fintech'!
 TestCase subclass: #FintechTest
-	instanceVariableNames: ''
+	instanceVariableNames: 'manualClock'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'ISW1-Fintech'!
 
-!FintechTest methodsFor: 'testing' stamp: 'AB 6/25/2019 19:39:23'!
+!FintechTest methodsFor: 'testing' stamp: 'AB 6/26/2019 23:23:55'!
+setUp
+
+	manualClock _ ManualClock startingOn: DateAndTime midnight! !
+
+!FintechTest methodsFor: 'testing' stamp: 'AB 6/26/2019 23:24:07'!
 test01CreateWalletReturnsAUniqueId
 
 	| fintech aWalletId anotherWalletId |
@@ -155,12 +160,12 @@ test09SlowTrasnferChargesATwoPercentCommissionToSender
 	
 	self assert: ((1 - 0.5 - (0.5 * 0.02)) * (BaseUnit named: 'ISW1COIN')) equals: (fintech balanceOf: aWalletId)! !
 
-!FintechTest methodsFor: 'testing' stamp: 'AB 6/26/2019 15:24:00'!
+!FintechTest methodsFor: 'testing' stamp: 'AB 6/26/2019 23:24:33'!
 test10FastTrasnferChargesAFourPercentCommissionToSender
 
 	| fintech aWalletId anotherWalletId |
 
-	fintech _ Fintech new.
+	fintech _ Fintech measuringWith: manualClock.
 
 	aWalletId _ fintech createWallet.
 
@@ -170,12 +175,12 @@ test10FastTrasnferChargesAFourPercentCommissionToSender
 	
 	self assert: ((1 - 0.5 - (0.5 * 0.04)) * (BaseUnit named: 'ISW1COIN')) equals: (fintech balanceOf: aWalletId)! !
 
-!FintechTest methodsFor: 'testing' stamp: 'AB 6/26/2019 15:48:20'!
+!FintechTest methodsFor: 'testing' stamp: 'AB 6/26/2019 23:24:42'!
 test11SendingATransferAddsAnElementToTransactionsCollection
 
 	| fintech aWalletId anotherWalletId amountTransactions |
 
-	fintech _ Fintech new.
+	fintech _ Fintech measuringWith: manualClock.
 
 	aWalletId _ fintech createWallet.
 
@@ -187,12 +192,12 @@ test11SendingATransferAddsAnElementToTransactionsCollection
 	
 	self assert: amountTransactions + 1 equals: (fintech allTransactionsOf: aWalletId) size! !
 
-!FintechTest methodsFor: 'testing' stamp: 'AB 6/26/2019 16:47:51'!
+!FintechTest methodsFor: 'testing' stamp: 'AB 6/26/2019 23:24:46'!
 test12BalanceCanNotBeNegativeAfterTransference
 
 	| fintech aWalletId anotherWalletId amountTransactions |
 
-	fintech _ Fintech new.
+	fintech _ Fintech measuringWith: manualClock.
 
 	aWalletId _ fintech createWallet.
 
@@ -243,6 +248,26 @@ test13ATransferenceIsRejectedWhenGettingCreditedOnForbiddenTimeFrame
 			self assert: 1 * (BaseUnit named: 'ISW1COIN') equals: (fintech balanceOf: aWalletId)
 		].! !
 
+!FintechTest methodsFor: 'testing' stamp: 'AB 6/26/2019 23:26:37'!
+test14AFastTransferenceGetsCreditedAfterDuration
+
+	| fintech aWalletId anotherWalletId |
+
+	fintech _ Fintech measuringWith: manualClock.
+
+	aWalletId _ fintech createWallet.
+
+	anotherWalletId _ fintech createWallet.
+
+	fintech fastTransfer: 0.5 from: aWalletId to: anotherWalletId.
+	
+	self assert: 1 * (BaseUnit named: 'ISW1COIN') equals: (fintech balanceOf: anotherWalletId).
+	
+	manualClock add: (Duration minutes: 10).
+	
+	self assert: (1 + 0.5) * (BaseUnit named: 'ISW1COIN') equals: (fintech balanceOf: anotherWalletId).
+! !
+
 
 !classDefinition: #WalletTest category: #'ISW1-Fintech'!
 TestCase subclass: #WalletTest
@@ -290,10 +315,10 @@ initializeWith: aClock
 	clock _ aClock! !
 
 
-!Fintech methodsFor: 'balance' stamp: 'AB 6/25/2019 19:35:58'!
+!Fintech methodsFor: 'balance' stamp: 'AB 6/26/2019 23:29:39'!
 balanceOf: aWalletId
 
-	^ (self walletFor: aWalletId) balance! !
+	^ (self walletFor: aWalletId) balanceAt: clock now! !
 
 
 !Fintech methodsFor: 'wallet' stamp: 'AB 6/25/2019 19:50:06'!
@@ -311,7 +336,7 @@ assertValueIsBiggerThanMinimum: anAmount
 	
 	(anAmount < self minimum) ifTrue: [ self error: Fintech minimumAmountToBeTransferedIs0000001 ]! !
 
-!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 19:55:58'!
+!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 23:16:24'!
 checkAndRecordATransferenceFor: anAmount from: aSourceWalletId to: aTargetWalletId adding: aTransferCommissionPercentage taking: aTransferDuration
 
 	| aSourceWallet aTargetWallet |
@@ -328,7 +353,7 @@ checkAndRecordATransferenceFor: anAmount from: aSourceWalletId to: aTargetWallet
 
 	self assertEnoughFundsForTrasfering: anAmount adding: aTransferCommissionPercentage from: aSourceWalletId.
 	
-	self recordTransference: anAmount from: aSourceWallet to: aTargetWallet adding: aTransferCommissionPercentage! !
+	self recordTransference: anAmount from: aSourceWallet to: aTargetWallet adding: aTransferCommissionPercentage creditedOn: (clock now + aTransferDuration)! !
 
 !Fintech methodsFor: 'wallet' stamp: 'AB 6/25/2019 19:34:19'!
 createWallet
@@ -361,12 +386,12 @@ minimum
 
 	^ 0.000001! !
 
-!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 15:34:26'!
-recordTransference: anAmount from: aSourceWallet to: aTargetWallet adding: aPercentaje
+!Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 23:15:26'!
+recordTransference: anAmount from: aSourceWallet to: aTargetWallet adding: aPercentaje creditedOn: aDateAndTime
 
 	Commission register: (anAmount * aPercentaje) on: aSourceWallet.
 
-	Transfer register: anAmount from: aSourceWallet to: aTargetWallet! !
+	Transfer register: anAmount from: aSourceWallet to: aTargetWallet creditedOn: aDateAndTime! !
 
 !Fintech methodsFor: 'wallet' stamp: 'AB 6/26/2019 19:53:38'!
 slowTransfer: anAmount from: aSourceWalletId to: aTargetWalletId
@@ -504,10 +529,15 @@ startingOn: aDateAndTime
 
 !classDefinition: #Transfer category: #'ISW1-Fintech'!
 Object subclass: #Transfer
-	instanceVariableNames: 'from to value'
+	instanceVariableNames: 'from to value creditedOn'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'ISW1-Fintech'!
+
+!Transfer methodsFor: 'value' stamp: 'AB 6/26/2019 23:21:09'!
+creditedOn
+
+	^ creditedOn! !
 
 !Transfer methodsFor: 'value' stamp: 'AB 5/28/2019 16:45:08'!
 value
@@ -519,6 +549,19 @@ value
 initializeFor: aValue from: sourceWallet to: targetWallet
 
 	value _ aValue.
+
+	from _ TransferWithdraw from: self.
+	sourceWallet register: from.
+
+	to _ TransferDeposit from: self.
+	targetWallet register: to.
+! !
+
+!Transfer methodsFor: 'initialization' stamp: 'AB 6/26/2019 23:17:42'!
+initializeFor: aValue from: sourceWallet to: targetWallet creditedOn: aDateAndTime
+
+	value _ aValue.
+	creditedOn _ aDateAndTime.
 
 	from _ TransferWithdraw from: self.
 	sourceWallet register: from.
@@ -549,6 +592,11 @@ register: aValue from: sourceWallet to: targetWallet
  
 	^ self new initializeFor: aValue from: sourceWallet to: targetWallet! !
 
+!Transfer class methodsFor: 'instance creation' stamp: 'AB 6/26/2019 23:16:57'!
+register: aValue from: sourceWallet to: targetWallet creditedOn: aDateAndTime
+ 
+	^ self new initializeFor: aValue from: sourceWallet to: targetWallet creditedOn: aDateAndTime! !
+
 
 !classDefinition: #Wallet category: #'ISW1-Fintech'!
 Object subclass: #Wallet
@@ -561,6 +609,11 @@ Object subclass: #Wallet
 balance
 
 	^ (transactions inject: 1 into: [ :currentBalance :transaction | transaction affectBalance: currentBalance ]) * (BaseUnit named: 'ISW1COIN')! !
+
+!Wallet methodsFor: 'balance' stamp: 'AB 6/26/2019 23:29:22'!
+balanceAt: aDateAndTime
+
+	^ (transactions inject: 1 into: [ :currentBalance :transaction | transaction affectBalance: currentBalance at: aDateAndTime ]) * (BaseUnit named: 'ISW1COIN')! !
 
 
 !Wallet methodsFor: 'transactions' stamp: 'AB 6/25/2019 23:53:25'!
@@ -595,6 +648,11 @@ value
 
 !WalletTransaction methodsFor: 'balance' stamp: 'HAW 5/25/2019 11:25:39'!
 affectBalance: aBalance
+
+	self subclassResponsibility ! !
+
+!WalletTransaction methodsFor: 'balance' stamp: 'AB 6/26/2019 23:28:59'!
+affectBalance: aBalance at: aDateAndTime
 
 	self subclassResponsibility ! !
 
@@ -636,6 +694,11 @@ value
 
 !Commission methodsFor: 'balance' stamp: 'AB 5/28/2019 20:06:19'!
 affectBalance: aBalance
+
+	^ aBalance - value! !
+
+!Commission methodsFor: 'balance' stamp: 'AB 6/26/2019 23:28:30'!
+affectBalance: aBalance at: aDateAndTime
 
 	^ aBalance - value! !
 
@@ -685,6 +748,11 @@ affectBalance: aBalance
 
 	^ aBalance + self value! !
 
+!TransferDeposit methodsFor: 'balance' stamp: 'AB 6/26/2019 23:28:16'!
+affectBalance: aBalance at: aDateAndTime
+
+	^ (aDateAndTime < (self transference creditedOn)) ifTrue: [ aBalance ] ifFalse: [ aBalance + transference value ]! !
+
 
 !TransferDeposit methodsFor: 'value' stamp: 'AB 5/28/2019 16:43:04'!
 value
@@ -730,6 +798,11 @@ initializeFrom: aTransference
 
 !TransferWithdraw methodsFor: 'balance' stamp: 'AB 5/28/2019 16:43:46'!
 affectBalance: aBalance
+
+	^ aBalance - transference value! !
+
+!TransferWithdraw methodsFor: 'balance' stamp: 'AB 6/26/2019 23:28:47'!
+affectBalance: aBalance at: aDateAndTime
 
 	^ aBalance - transference value! !
 
