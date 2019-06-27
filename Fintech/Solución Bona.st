@@ -286,6 +286,32 @@ test15ASlowTransferenceGetsCreditedAfterDuration
 
 	self assert: (1 + 0.5) * (BaseUnit named: 'ISW1COIN') equals: (fintech balanceOf: anotherWalletId)! !
 
+!FintechTest methodsFor: 'testing' stamp: 'AB 6/27/2019 10:45:04'!
+test16PendingTransactionsIsEmptyCollectionForNewWallets
+
+	| fintech aWalletId |
+
+	fintech _ Fintech new.
+
+	aWalletId _ fintech createWallet.
+
+	self assert: OrderedCollection new equals: (fintech allPendingTransactionsOf: aWalletId)! !
+
+!FintechTest methodsFor: 'testing' stamp: 'AB 6/27/2019 10:52:41'!
+test17PendingTransactionsReturnsAnElementWhenASlowTransferIsPlaced
+
+	| fintech aWalletId anotherWalletId |
+
+	fintech _ Fintech measuringWith: manualClock.
+
+	aWalletId _ fintech createWallet.
+
+	anotherWalletId _ fintech createWallet.
+
+	fintech slowTransfer: 0.5 from: aWalletId to: anotherWalletId.
+
+	self deny: (fintech allPendingTransactionsOf: aWalletId) isEmpty! !
+
 
 !classDefinition: #WalletTest category: #'ISW1-Fintech'!
 TestCase subclass: #WalletTest
@@ -450,6 +476,11 @@ walletFor: aWalletId
 	
 	^ wallet! !
 
+
+!Fintech methodsFor: 'transactions' stamp: 'AB 6/27/2019 10:45:40'!
+allPendingTransactionsOf: aWalletId
+
+	^ OrderedCollection new! !
 
 !Fintech methodsFor: 'transactions' stamp: 'AB 6/26/2019 16:49:28'!
 allTransactionsOf: aWalletId
@@ -698,18 +729,6 @@ WalletTransaction subclass: #Commission
 	poolDictionaries: ''
 	category: 'ISW1-Fintech'!
 
-!Commission methodsFor: 'initialization' stamp: 'AB 5/28/2019 16:28:30'!
-initializeFor: aValue
-
-	value _ aValue! !
-
-
-!Commission methodsFor: 'value' stamp: 'HernanWilkinson 7/13/2011 18:33'!
-value
-
-	^ value! !
-
-
 !Commission methodsFor: 'balance' stamp: 'AB 5/28/2019 20:06:19'!
 affectBalance: aBalance
 
@@ -725,6 +744,18 @@ affectBalance: aBalance at: aDateAndTime
 isCommission
 
 	^ true! !
+
+
+!Commission methodsFor: 'initialization' stamp: 'AB 5/28/2019 16:28:30'!
+initializeFor: aValue
+
+	value _ aValue! !
+
+
+!Commission methodsFor: 'value' stamp: 'HernanWilkinson 7/13/2011 18:33'!
+value
+
+	^ value! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -755,12 +786,6 @@ WalletTransaction subclass: #TransferDeposit
 	poolDictionaries: ''
 	category: 'ISW1-Fintech'!
 
-!TransferDeposit methodsFor: 'initialization' stamp: 'AB 5/28/2019 16:41:40'!
-initializeFrom: aTransference
-
-	transference _ aTransference! !
-
-
 !TransferDeposit methodsFor: 'balance' stamp: 'AB 5/28/2019 16:43:15'!
 affectBalance: aBalance
 
@@ -772,10 +797,16 @@ affectBalance: aBalance at: aDateAndTime
 	^ (aDateAndTime < (self transference creditedOn)) ifTrue: [ aBalance ] ifFalse: [ aBalance + transference value ]! !
 
 
-!TransferDeposit methodsFor: 'value' stamp: 'AB 5/28/2019 16:43:04'!
-value
+!TransferDeposit methodsFor: 'comparing' stamp: 'AB 6/25/2019 23:31:19'!
+isTransferDeposit
 
-	^ transference value! !
+	^ true! !
+
+
+!TransferDeposit methodsFor: 'initialization' stamp: 'AB 5/28/2019 16:41:40'!
+initializeFrom: aTransference
+
+	transference _ aTransference! !
 
 
 !TransferDeposit methodsFor: 'transaction' stamp: 'AB 5/28/2019 17:14:39'!
@@ -784,10 +815,10 @@ transference
 	^ transference! !
 
 
-!TransferDeposit methodsFor: 'comparing' stamp: 'AB 6/25/2019 23:31:19'!
-isTransferDeposit
+!TransferDeposit methodsFor: 'value' stamp: 'AB 5/28/2019 16:43:04'!
+value
 
-	^ true! !
+	^ transference value! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -808,12 +839,6 @@ WalletTransaction subclass: #TransferWithdraw
 	poolDictionaries: ''
 	category: 'ISW1-Fintech'!
 
-!TransferWithdraw methodsFor: 'initialization' stamp: 'AB 5/28/2019 16:42:01'!
-initializeFrom: aTransference
-
-	transference _ aTransference! !
-
-
 !TransferWithdraw methodsFor: 'balance' stamp: 'AB 5/28/2019 16:43:46'!
 affectBalance: aBalance
 
@@ -825,16 +850,22 @@ affectBalance: aBalance at: aDateAndTime
 	^ aBalance - transference value! !
 
 
-!TransferWithdraw methodsFor: 'transaction' stamp: 'AB 5/28/2019 17:15:06'!
-transference
-
-	^ transference! !
-
-
 !TransferWithdraw methodsFor: 'comparing' stamp: 'AB 6/25/2019 23:31:10'!
 isTransferWithdraw
 
 	^ true! !
+
+
+!TransferWithdraw methodsFor: 'initialization' stamp: 'AB 5/28/2019 16:42:01'!
+initializeFrom: aTransference
+
+	transference _ aTransference! !
+
+
+!TransferWithdraw methodsFor: 'transaction' stamp: 'AB 5/28/2019 17:15:06'!
+transference
+
+	^ transference! !
 
 
 !TransferWithdraw methodsFor: 'value' stamp: 'AB 5/28/2019 16:43:24'!
