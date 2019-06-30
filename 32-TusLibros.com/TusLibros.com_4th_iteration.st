@@ -233,6 +233,190 @@ test03CreditCardNumberContainsOnlyNumbers
 	]! !
 
 
+!classDefinition: #RestInterfaceExternalTest category: #'TusLibros.com'!
+TestCase subclass: #RestInterfaceExternalTest
+	instanceVariableNames: 'testObjects loginBehavior debitBehavior clock aRestInterfaceWithAnEmptyPriceList aRestInterfaceWithAnEmptyPriceListAndAClock aRestInterfaceWithOneItemPriceList aRestInterfaceWithOneItemPriceListAndAClock aRestInterfaceWithTwoItemsPriceList'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'JR 6/30/2019 18:20:45'!
+isRegisteredWith: aClientId and: aPassword
+
+	^ loginBehavior value: aClientId value: aPassword! !
+
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'JR 6/30/2019 18:44:09'!
+responseMessageFrom: aString
+
+	^ aString copyFrom: 3 to: aString size.! !
+
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'JR 6/30/2019 19:13:35'!
+setUp
+
+	testObjects _ StoreTestObjectsFactory new.
+
+	loginBehavior _ [ :aClientId :aPassword | ].
+
+	debitBehavior _ [ :anAmount :aCreditCard | ].
+	
+	clock _ Clock new.
+
+	aRestInterfaceWithAnEmptyPriceList _ RestInterfaceExternal withCatalogue: testObjects emptyPriceList processingThrough: self signInUsersWith: self.
+
+	aRestInterfaceWithAnEmptyPriceListAndAClock _ RestInterfaceExternal withCatalogue: testObjects emptyPriceList processingThrough: self signInUsersWith: self calculatingTimeFrom: clock.
+	
+	aRestInterfaceWithOneItemPriceList _ RestInterfaceExternal withCatalogue: testObjects oneItemPriceList processingThrough: self signInUsersWith: self.
+
+	aRestInterfaceWithOneItemPriceListAndAClock _ RestInterfaceExternal withCatalogue: testObjects oneItemPriceList processingThrough: self signInUsersWith: self calculatingTimeFrom: clock.
+	
+	aRestInterfaceWithTwoItemsPriceList _ RestInterfaceExternal withCatalogue: testObjects twoItemsPriceList processingThrough: self signInUsersWith: self.! !
+
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'JR 6/30/2019 18:12:47'!
+test01ExternalInterfaceReturnsEmptyCatalogWhenInitializedWithEmptyCatalog
+
+	| catalog |
+
+	catalog _ aRestInterfaceWithAnEmptyPriceList catalog.
+	
+	self assert: catalog isEmpty.! !
+
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'JR 6/30/2019 18:13:36'!
+test02ExternalInterfaceReturnsAllItemsIncludedInCatalog
+
+	| catalog |
+
+	catalog _ aRestInterfaceWithTwoItemsPriceList catalog.
+	
+	self assert: catalog size equals: testObjects twoItemsPriceList size.
+	self assert: (catalog allSatisfy: [ :anItem | testObjects twoItemsPriceList keys includes: anItem ]).! !
+
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'JR 6/30/2019 18:36:16'!
+test03ExternalInterfaceResponseForSuccessfullCreateCart
+
+	| createCartResponse interface |
+	
+	interface _ aRestInterfaceWithAnEmptyPriceList.
+		
+	createCartResponse _ interface 
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword.
+
+	self assert: interface okResponsePrefix , '1' equals: createCartResponse.! !
+
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'JR 6/30/2019 18:36:51'!
+test04ExternalInterfaceResponseForCreateCartWithInvalidClientId
+
+	| createCartResponse interface |
+	
+ 	loginBehavior _ [ :aClientId :aPassword | self error: RestInterfaceInternal invalidClientId ].
+	
+	interface _ aRestInterfaceWithAnEmptyPriceList.
+	
+	createCartResponse _ interface 
+		createCartFor: testObjects anInvalidClientId
+		protectedWith: testObjects aValidClientPassword.
+	
+	self assert: createCartResponse equals: interface errorResponsePrefix, RestInterfaceInternal invalidClientId ! !
+
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'JR 6/30/2019 18:37:02'!
+test05ExternalInterfaceResponseForCreateCartWithInvalidPassword
+
+	| createCartResponse interface |
+	
+ 	loginBehavior _ [ :aClientId :aPassword | self error: RestInterfaceInternal invalidClientPassword ].
+
+	interface _ aRestInterfaceWithAnEmptyPriceList.
+
+	createCartResponse _ interface
+		createCartFor: testObjects anInvalidClientId
+		protectedWith: testObjects aValidClientPassword.
+	
+	self assert: createCartResponse equals: interface errorResponsePrefix, RestInterfaceInternal invalidClientPassword.
+	
+ 	loginBehavior _ [ :aClientId :aPassword | self error: RestInterfaceInternal clientCredentialsDoNotMatchAnyExistingClient ].
+	
+	createCartResponse _ interface
+		createCartFor: testObjects anInvalidClientId
+		protectedWith: testObjects aValidClientPassword.
+		
+	self assert: createCartResponse equals: interface errorResponsePrefix, RestInterfaceInternal clientCredentialsDoNotMatchAnyExistingClient.! !
+
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'JR 6/30/2019 18:48:09'!
+test06ResponseForListEmptyCart
+
+	| createCartResponse interface shoppingCartId |
+	
+	interface _ aRestInterfaceWithAnEmptyPriceList.
+		
+	createCartResponse _ interface 
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword.
+
+	shoppingCartId _ (self responseMessageFrom: createCartResponse) asInteger.
+	
+	self assert: (interface listCart: shoppingCartId) equals: interface okResponsePrefix.! !
+
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'JR 6/30/2019 18:55:06'!
+test07ErrorResponseForListingUnexistingShoppingCart
+
+	| interface shoppingCartId |
+	
+	interface _ aRestInterfaceWithAnEmptyPriceList.
+	
+	self assert: (interface listCart: shoppingCartId) equals: interface errorResponsePrefix, RestInterfaceInternal shoppingCartNotFound ! !
+
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'JR 6/30/2019 19:19:54'!
+test08OkResponseWhenAddingItemToShoppingCart
+
+	| shoppingCartId interface createCartResponse |
+	
+	interface _ aRestInterfaceWithOneItemPriceList.
+		
+	createCartResponse _ interface 
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword.
+
+	shoppingCartId _ (self responseMessageFrom: createCartResponse) asInteger.
+
+	self assert: (interface addTo: shoppingCartId anItemWithCode: testObjects existingISBN aQuantityOf: 1)
+		equals: interface okResponsePrefix, 'OK'.! !
+
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'JR 6/30/2019 19:22:56'!
+test09ErrorResponseWhenAddingInvalidItemToShoppingCart
+
+	| shoppingCartId interface createCartResponse addItemResponse |
+	
+	interface _ aRestInterfaceWithAnEmptyPriceList.
+		
+	createCartResponse _ interface 
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword.
+
+	shoppingCartId _ (self responseMessageFrom: createCartResponse) asInteger.
+
+	addItemResponse _ interface addTo: shoppingCartId anItemWithCode: testObjects existingISBN aQuantityOf: 1.
+	
+	self assert: addItemResponse equals: interface errorResponsePrefix , ShoppingCart priceListDoestNotIncludeItem.! !
+
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'JR 6/30/2019 19:26:04'!
+test10
+
+	| shoppingCartId interface createCartResponse |
+	
+	interface _ aRestInterfaceWithOneItemPriceList.
+		
+	createCartResponse _ interface 
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword.
+
+	shoppingCartId _ (self responseMessageFrom: createCartResponse) asInteger.
+
+	interface addTo: shoppingCartId anItemWithCode: testObjects existingISBN aQuantityOf: 1.
+	
+	self assert: (interface listCart: shoppingCartId) equals: interface okResponsePrefix, testObjects existingISBN, '|1'.
+! !
+
+
 !classDefinition: #RestInterfaceInternalTest category: #'TusLibros.com'!
 TestCase subclass: #RestInterfaceInternalTest
 	instanceVariableNames: 'loginBehavior debitBehavior testObjects aRestInterfaceWithAnEmptyPriceList aRestInterfaceWithOneItemPriceList aRestInterfaceWithTwoItemsPriceList clock aRestInterfaceWithAnEmptyPriceListAndAClock aRestInterfaceWithOneItemPriceListAndAClock'
@@ -1500,27 +1684,89 @@ Object subclass: #RestInterfaceExternal
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
+!RestInterfaceExternal methodsFor: 'initialization' stamp: 'JR 6/30/2019 19:22:32'!
+addTo: aShoppingCartId anItemWithCode: anISBN aQuantityOf: anAmount
+
+	^ self try: [
+		restInterfaceInternal addTo: aShoppingCartId anItemWithCode: anISBN aQuantityOf: anAmount.
+		^ self okResponsePrefix, 'OK'
+	]! !
+
+!RestInterfaceExternal methodsFor: 'initialization' stamp: 'JR 6/30/2019 19:38:14'!
+bagToString: aBagOfItems
+	
+	| outputString | 
+	
+	outputString _ Dictionary new.
+	
+	aBagOfItems inject: outputString
+		into: [ :items :itemFromBag |
+			items at: itemFromBag put: (aBagOfItems occurrencesOf: itemFromBag) ].
+		
+	^ outputString! !
+
 !RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 6/30/2019 17:45:21'!
 catalog
 
 	^ restInterfaceInternal catalog! !
 
-!RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 6/30/2019 17:52:26'!
+!RestInterfaceExternal methodsFor: 'initialization' stamp: 'JR 6/30/2019 19:04:49'!
 createCartFor: aClientId protectedWith: aPassword
 
-	^ restInterfaceInternal createCartFor: aClientId protectedWith: aPassword! !
+	^ self try: [^ self okResponsePrefix, (restInterfaceInternal createCartFor: aClientId protectedWith: aPassword) printString]! !
+
+!RestInterfaceExternal methodsFor: 'initialization' stamp: 'JR 6/30/2019 18:28:22'!
+errorResponsePrefix
+
+	^ '1|'! !
+
+!RestInterfaceExternal methodsFor: 'initialization' stamp: 'JR 6/30/2019 18:01:40'!
+initializewithCatalogue: aPriceList processingThrough: aMerchantProcessor signInUsersWith: aUsersRecord
+
+	restInterfaceInternal _ RestInterfaceInternal withCatalogue: aPriceList processingThrough: aMerchantProcessor signInUsersWith: aUsersRecord! !
 
 !RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 6/30/2019 17:45:08'!
 initializewithCatalogue: aPriceList processingThrough: aMerchantProcessor signInUsersWith: aUsersRecord calculatingTimeFrom: aClock
 
 	restInterfaceInternal _ RestInterfaceInternal withCatalogue: aPriceList processingThrough: aMerchantProcessor signInUsersWith: aUsersRecord calculatingTimeFrom: aClock! !
 
+!RestInterfaceExternal methodsFor: 'initialization' stamp: 'JR 6/30/2019 19:38:41'!
+listCart: aShoppingCartId
+
+	^ self try:
+	[
+		| bagOfItems |
+		
+		bagOfItems _ (restInterfaceInternal listCart: aShoppingCartId).
+		
+		bagOfItems isEmpty ifTrue: [^ self okResponsePrefix ].
+		
+		^ self bagToString: bagOfItems
+	]
+! !
+
+!RestInterfaceExternal methodsFor: 'initialization' stamp: 'JR 6/30/2019 18:22:58'!
+okResponsePrefix
+
+	^ '0|'! !
+
+!RestInterfaceExternal methodsFor: 'initialization' stamp: 'JR 6/30/2019 19:04:22'!
+try: aBlock
+
+	aBlock
+	on: Error
+	do: [ :anEror | ^ self errorResponsePrefix , anEror messageText ]! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'RestInterfaceExternal class' category: #'TusLibros.com'!
 RestInterfaceExternal class
 	instanceVariableNames: ''!
+
+!RestInterfaceExternal class methodsFor: 'as yet unclassified' stamp: 'JR 6/30/2019 18:00:26'!
+withCatalogue: aPriceList processingThrough: aMerchantProcessor signInUsersWith: aUsersRecord
+
+	^ self new initializewithCatalogue: aPriceList processingThrough: aMerchantProcessor signInUsersWith: aUsersRecord! !
 
 !RestInterfaceExternal class methodsFor: 'as yet unclassified' stamp: 'AB 6/30/2019 17:39:53'!
 withCatalogue: aPriceList processingThrough: aMerchantProcessor signInUsersWith: aUsersRecord calculatingTimeFrom: aClock
@@ -2213,4 +2459,3 @@ port
 	^port ifNil: [port:=8080].
 	
 	! !
-
