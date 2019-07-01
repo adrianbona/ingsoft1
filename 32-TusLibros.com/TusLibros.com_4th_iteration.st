@@ -240,6 +240,11 @@ TestCase subclass: #RestInterfaceExternalTest
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 18:04:40'!
+debit: anAmount from: aCreditCard
+
+	^ debitBehavior value: anAmount value: aCreditCard! !
+
 !RestInterfaceExternalTest methodsFor: 'testing' stamp: 'JR 6/30/2019 18:20:45'!
 isRegisteredWith: aClientId and: aPassword
 
@@ -414,6 +419,69 @@ test10WhenAddingAnItemToShoppingCartListingContainsElementAndQuantity
 	interface addTo: shoppingCartId anItemWithCode: testObjects existingISBN aQuantityOf: 2.
 
 	self assert: (interface listCart: shoppingCartId) equals: interface okResponsePrefix, testObjects existingISBN, '|2'! !
+
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 18:11:12'!
+test11ListingPurchasesWhenNoCheckOutHasBeenDoneReturnsAnOkEmptyResponse
+
+	| interface |
+
+	interface _ aRestInterfaceWithAnEmptyPriceList.
+
+	self assert: (interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword) 
+		equals: interface okResponsePrefix, '0'.! !
+
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 17:41:16'!
+test12ResponseForListPurchasesWithInvalidClientId
+
+	| interface |
+	
+	loginBehavior _ [ :aClientId :aPassword | self error: RestInterfaceInternal invalidClientId ].
+	
+	interface _ aRestInterfaceWithAnEmptyPriceList.
+
+	self assert: (interface listPurchasesFor: testObjects anInvalidClientId protectedBy: testObjects aValidClientPassword) 
+		equals: interface errorResponsePrefix , RestInterfaceInternal invalidClientId.! !
+
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 18:22:45'!
+test13CheckingOutAddsContentToListPurchasesResponse
+
+	| shoppingCartId interface createCartResponse quantity |
+	
+	quantity _ 2.
+	
+	interface _ aRestInterfaceWithOneItemPriceList.
+		
+	createCartResponse _ interface 
+		createCartFor: testObjects aValidClienId
+		protectedWith: testObjects aValidClientPassword.
+
+	shoppingCartId _ (self responseMessageFrom: createCartResponse) asInteger.
+
+	interface addTo: shoppingCartId anItemWithCode: testObjects existingISBN aQuantityOf: quantity.
+		
+	interface 
+		checkOut: shoppingCartId 
+		chargingToACreditCardNumbered: testObjects a16DigitsNumber 
+		expiringOn: testObjects currentMonthOfYear
+		ownedBy: testObjects a30CharactersLongName.
+
+	self assert: (interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword) equals: interface okResponsePrefix, testObjects existingISBN, '|', quantity printString ,'|', ((testObjects oneItemPriceList at: testObjects existingISBN) * quantity) printString! !
+
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 17:59:46'!
+test14ResponseForCheckingOutAnInvalidShoppingCart
+
+	| interface checkOutResponse |
+	
+	interface _ aRestInterfaceWithOneItemPriceList.
+		
+	checkOutResponse _ interface 
+			checkOut: nil 
+			chargingToACreditCardNumbered: testObjects a16DigitsNumber 
+			expiringOn: testObjects currentMonthOfYear
+			ownedBy: testObjects a30CharactersLongName.
+
+	self assert: checkOutResponse equals: '1|', RestInterfaceInternal shoppingCartNotFound.
+	! !
 
 
 !classDefinition: #RestInterfaceInternalTest category: #'TusLibros.com'!
@@ -1713,6 +1781,15 @@ catalog
 
 	^ restInterfaceInternal catalog! !
 
+!RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/1/2019 18:04:14'!
+checkOut: aShoppingCartId chargingToACreditCardNumbered: aCreditCardNumber expiringOn: aSixDigitsExpirationDate ownedBy: ownersName
+
+	^ self try:
+	[
+		restInterfaceInternal checkOut: aShoppingCartId chargingToACreditCardNumbered: aCreditCardNumber expiringOn: aSixDigitsExpirationDate ownedBy: ownersName.
+		^ '0|OK'.
+	]! !
+
 !RestInterfaceExternal methodsFor: 'initialization' stamp: 'JR 6/30/2019 19:04:49'!
 createCartFor: aClientId protectedWith: aPassword
 
@@ -1760,10 +1837,29 @@ listCart: aShoppingCartId
 	]
 ! !
 
+!RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/1/2019 18:20:37'!
+listPurchasesFor: aClientId protectedBy: aPassword
+
+	^ self try:
+	[
+		| purchase |
+		
+		purchase _ (restInterfaceInternal listPurchasesFor: aClientId protectedBy: aPassword).
+		
+		purchase items isEmpty ifTrue: [ ^ self okResponsePrefix, purchase totalAmount printString ].
+
+		^ self purchaseToString: purchase
+	]! !
+
 !RestInterfaceExternal methodsFor: 'initialization' stamp: 'JR 6/30/2019 18:22:58'!
 okResponsePrefix
 
 	^ '0|'! !
+
+!RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/1/2019 18:19:59'!
+purchaseToString: purchase
+
+	^ (self bagToString: purchase items), '|' , (purchase totalAmount printString)! !
 
 !RestInterfaceExternal methodsFor: 'initialization' stamp: 'JR 6/30/2019 19:04:22'!
 try: aBlock
