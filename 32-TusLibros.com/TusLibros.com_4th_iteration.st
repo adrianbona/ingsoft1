@@ -398,8 +398,8 @@ test09ErrorResponseWhenAddingInvalidItemToShoppingCart
 	
 	self assert: addItemResponse equals: interface errorResponsePrefix , ShoppingCart priceListDoestNotIncludeItem.! !
 
-!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'JR 6/30/2019 19:26:04'!
-test10
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 17:03:37'!
+test10WhenAddingAnItemToShoppingCartListingContainsElementAndQuantity
 
 	| shoppingCartId interface createCartResponse |
 	
@@ -411,10 +411,9 @@ test10
 
 	shoppingCartId _ (self responseMessageFrom: createCartResponse) asInteger.
 
-	interface addTo: shoppingCartId anItemWithCode: testObjects existingISBN aQuantityOf: 1.
-	
-	self assert: (interface listCart: shoppingCartId) equals: interface okResponsePrefix, testObjects existingISBN, '|1'.
-! !
+	interface addTo: shoppingCartId anItemWithCode: testObjects existingISBN aQuantityOf: 2.
+
+	self assert: (interface listCart: shoppingCartId) equals: interface okResponsePrefix, testObjects existingISBN, '|2'! !
 
 
 !classDefinition: #RestInterfaceInternalTest category: #'TusLibros.com'!
@@ -1692,18 +1691,22 @@ addTo: aShoppingCartId anItemWithCode: anISBN aQuantityOf: anAmount
 		^ self okResponsePrefix, 'OK'
 	]! !
 
-!RestInterfaceExternal methodsFor: 'initialization' stamp: 'JR 6/30/2019 19:38:14'!
+!RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/1/2019 17:21:16'!
+bagToDictionary: aBagOfItems
+
+	| groupedItems |
+	
+	groupedItems _ Dictionary new.
+	
+	aBagOfItems do: [ :itemFromBag |
+		groupedItems at: itemFromBag put: (aBagOfItems occurrencesOf: itemFromBag) ].
+	
+	^ groupedItems! !
+
+!RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/1/2019 17:22:15'!
 bagToString: aBagOfItems
 	
-	| outputString | 
-	
-	outputString _ Dictionary new.
-	
-	aBagOfItems inject: outputString
-		into: [ :items :itemFromBag |
-			items at: itemFromBag put: (aBagOfItems occurrencesOf: itemFromBag) ].
-		
-	^ outputString! !
+	^ self dictionaryToString: (self bagToDictionary: aBagOfItems)! !
 
 !RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 6/30/2019 17:45:21'!
 catalog
@@ -1714,6 +1717,18 @@ catalog
 createCartFor: aClientId protectedWith: aPassword
 
 	^ self try: [^ self okResponsePrefix, (restInterfaceInternal createCartFor: aClientId protectedWith: aPassword) printString]! !
+
+!RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/1/2019 17:21:59'!
+dictionaryToString: aDictionaryWithItems
+
+	| outputString |
+
+	outputString _ '0|'.
+
+	aDictionaryWithItems keysAndValuesDo: [ :key :value |
+		outputString _ outputString , key , '|' , value printString ].
+
+	^ outputString! !
 
 !RestInterfaceExternal methodsFor: 'initialization' stamp: 'JR 6/30/2019 18:28:22'!
 errorResponsePrefix
