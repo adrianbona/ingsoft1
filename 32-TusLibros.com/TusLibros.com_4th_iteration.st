@@ -493,6 +493,36 @@ test15CheckingOutWithAnExpirationDateWithALengthDifferentToSixReturnsAnErrorResp
 
 	self assert: checkOutResponse equals: '1|', RestInterfaceExternal expirationMonthOfYearMustBeExactlySixDigitsLong! !
 
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 19:37:36'!
+test16CheckingOutWithAnExpirationDateContainingANonNumberReturnsAnErrorResponse
+
+	| interface checkOutResponse shoppingCartId |
+
+	interface _ aRestInterfaceWithOneItemPriceList.
+
+	checkOutResponse _ interface 
+			checkOut: shoppingCartId 
+			chargingToACreditCardNumbered: testObjects a16DigitsNumber 
+			expiringOn: testObjects anExpirationMonthOfYearContainingANonNumber
+			ownedBy: testObjects a30CharactersLongName.
+
+	self assert: checkOutResponse equals: '1|', RestInterfaceExternal expirationMonthOfYearMustContainOnlyNumbers ! !
+
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 19:43:22'!
+test17CheckingOutWithAnExpirationDateContainingANonExistingMonthNumberReturnsAnErrorResponse
+
+	| interface checkOutResponse shoppingCartId |
+
+	interface _ aRestInterfaceWithOneItemPriceList.
+
+	checkOutResponse _ interface 
+			checkOut: shoppingCartId 
+			chargingToACreditCardNumbered: testObjects a16DigitsNumber 
+			expiringOn: testObjects anExpirationMonthOfYearContainingAnInvalidMonth
+			ownedBy: testObjects a30CharactersLongName.
+
+	self assert: checkOutResponse equals: '1|', RestInterfaceExternal expirationMonthOfYearMustContainAValidMonth! !
+
 
 !classDefinition: #RestInterfaceInternalTest category: #'TusLibros.com'!
 TestCase subclass: #RestInterfaceInternalTest
@@ -1769,6 +1799,16 @@ addTo: aShoppingCartId anItemWithCode: anISBN aQuantityOf: anAmount
 		^ self okResponsePrefix, 'OK'
 	]! !
 
+!RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/1/2019 19:41:58'!
+assertExpirationMonthIsValidAsMonthNumber: anExpirationMonthOfYear
+	
+	((anExpirationMonthOfYear copyFrom: 1 to: 2) asInteger between: 1 and: 12) ifFalse: [ self error: RestInterfaceExternal expirationMonthOfYearMustContainAValidMonth ]! !
+
+!RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/1/2019 19:35:34'!
+assertExpirationMonthOfYearContainsOnlyNumbers: anExpirationMonthOfYear
+	
+	(anExpirationMonthOfYear allSatisfy: [ :character | character digitValue between: 0 and: 9 ]) ifFalse: [ self error: RestInterfaceExternal expirationMonthOfYearMustContainOnlyNumbers ]! !
+
 !RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/1/2019 19:09:17'!
 assertExpirationMonthOfYearIsSixCharactersLong: anExpirationMonthOfYear
 	
@@ -1796,15 +1836,28 @@ catalog
 
 	^ restInterfaceInternal catalog! !
 
-!RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/1/2019 19:30:40'!
+!RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/1/2019 19:40:28'!
 checkOut: aShoppingCartId chargingToACreditCardNumbered: aCreditCardNumber expiringOn: aSixDigitsExpirationDate ownedBy: ownersName
 
 	^ self try: [ | expirationAsMonthOfYear |
+		
 		self assertExpirationMonthOfYearIsSixCharactersLong: aSixDigitsExpirationDate.
-		expirationAsMonthOfYear _ GregorianMonthOfYear yearNumber: (aSixDigitsExpirationDate copyFrom: 3 to: 6) asInteger monthNumber: (aSixDigitsExpirationDate copyFrom: 1 to: 2) asInteger.
+
+		self assertExpirationMonthOfYearContainsOnlyNumbers: aSixDigitsExpirationDate.
+
+		self assertExpirationMonthIsValidAsMonthNumber: aSixDigitsExpirationDate.
+
+		expirationAsMonthOfYear _ self convertSixDigitsStringToMonthOfYear: aSixDigitsExpirationDate.
+
 		restInterfaceInternal checkOut: aShoppingCartId chargingToACreditCardNumbered: aCreditCardNumber expiringOn: expirationAsMonthOfYear ownedBy: ownersName.
+
 		^ '0|OK'.
 	]! !
+
+!RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/1/2019 19:33:37'!
+convertSixDigitsStringToMonthOfYear: aSixDigitsExpirationDate
+
+	^ GregorianMonthOfYear yearNumber: (aSixDigitsExpirationDate copyFrom: 3 to: 6) asInteger monthNumber: (aSixDigitsExpirationDate copyFrom: 1 to: 2) asInteger! !
 
 !RestInterfaceExternal methodsFor: 'initialization' stamp: 'JR 6/30/2019 19:04:49'!
 createCartFor: aClientId protectedWith: aPassword
@@ -1894,6 +1947,16 @@ RestInterfaceExternal class
 expirationMonthOfYearMustBeExactlySixDigitsLong
 	
 	^ 'Expiration month of year must be 6 digits long'! !
+
+!RestInterfaceExternal class methodsFor: 'as yet unclassified' stamp: 'AB 7/1/2019 19:42:23'!
+expirationMonthOfYearMustContainAValidMonth
+	
+	^ 'Expiration month of year must contain a valid month'! !
+
+!RestInterfaceExternal class methodsFor: 'as yet unclassified' stamp: 'AB 7/1/2019 19:36:03'!
+expirationMonthOfYearMustContainOnlyNumbers
+	
+	^ 'Expiration month of year must contain only numbers'! !
 
 !RestInterfaceExternal class methodsFor: 'as yet unclassified' stamp: 'JR 6/30/2019 18:00:26'!
 withCatalogue: aPriceList processingThrough: aMerchantProcessor signInUsersWith: aUsersRecord
@@ -2490,6 +2553,16 @@ initializeStartingOn: aDateTime
 
 	today _ aDateTime! !
 
+
+!StoreTestObjectsFactory methodsFor: 'date' stamp: 'AB 7/1/2019 19:38:02'!
+anExpirationMonthOfYearContainingANonNumber
+
+	^ '062o19'! !
+
+!StoreTestObjectsFactory methodsFor: 'date' stamp: 'AB 7/1/2019 19:43:39'!
+anExpirationMonthOfYearContainingAnInvalidMonth
+
+	^ '132019'! !
 
 !StoreTestObjectsFactory methodsFor: 'date' stamp: 'AB 7/1/2019 19:05:33'!
 anExpirationMonthOfYearWithFiveDigits
