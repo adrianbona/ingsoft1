@@ -437,7 +437,7 @@ test12ListingPurchasesForInvalidClientIdReturnsErrorResponse
 	self assert: (interface listPurchasesFor: testObjects anInvalidClientId protectedBy: testObjects aValidClientPassword) 
 		equals: interface errorResponsePrefix , RestInterfaceInternal invalidClientId.! !
 
-!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 18:22:45'!
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 19:20:38'!
 test13CheckingOutAddsContentToListPurchasesResponse
 
 	| shoppingCartId interface createCartResponse quantity |
@@ -457,26 +457,41 @@ test13CheckingOutAddsContentToListPurchasesResponse
 	interface 
 		checkOut: shoppingCartId 
 		chargingToACreditCardNumbered: testObjects a16DigitsNumber 
-		expiringOn: testObjects currentMonthOfYear
+		expiringOn: testObjects currentMonthOfYearInDigits
 		ownedBy: testObjects a30CharactersLongName.
 
 	self assert: (interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword) equals: interface okResponsePrefix, testObjects existingISBN, '|', quantity printString ,'|', ((testObjects oneItemPriceList at: testObjects existingISBN) * quantity) printString! !
 
-!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 18:35:45'!
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 19:10:32'!
 test14CheckingOutAnInvalidShoppingCartGivesAnErrorResponse
 
-	| interface checkOutResponse |
+	| interface checkOutResponse shoppingCartId |
 	
 	interface _ aRestInterfaceWithOneItemPriceList.
 		
 	checkOutResponse _ interface 
-			checkOut: nil 
+			checkOut: shoppingCartId 
 			chargingToACreditCardNumbered: testObjects a16DigitsNumber 
-			expiringOn: testObjects currentMonthOfYear
+			expiringOn: testObjects currentMonthOfYearInDigits 
 			ownedBy: testObjects a30CharactersLongName.
 
 	self assert: checkOutResponse equals: '1|', RestInterfaceInternal shoppingCartNotFound.
 	! !
+
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 19:06:55'!
+test15CheckingOutWithAnExpirationDateWithALengthDifferentToSixReturnsAnErrorResponse
+
+	| interface checkOutResponse shoppingCartId |
+
+	interface _ aRestInterfaceWithOneItemPriceList.
+
+	checkOutResponse _ interface 
+			checkOut: shoppingCartId 
+			chargingToACreditCardNumbered: testObjects a16DigitsNumber 
+			expiringOn: testObjects anExpirationMonthOfYearWithFiveDigits
+			ownedBy: testObjects a30CharactersLongName.
+
+	self assert: checkOutResponse equals: '1|', RestInterfaceExternal expirationMonthOfYearMustBeExactlySixDigitsLong! !
 
 
 !classDefinition: #RestInterfaceInternalTest category: #'TusLibros.com'!
@@ -1754,6 +1769,11 @@ addTo: aShoppingCartId anItemWithCode: anISBN aQuantityOf: anAmount
 		^ self okResponsePrefix, 'OK'
 	]! !
 
+!RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/1/2019 19:09:17'!
+assertExpirationMonthOfYearIsSixCharactersLong: anExpirationMonthOfYear
+	
+	(anExpirationMonthOfYear size = 6) ifFalse: [ self error: RestInterfaceExternal expirationMonthOfYearMustBeExactlySixDigitsLong ]! !
+
 !RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/1/2019 17:21:16'!
 bagToDictionary: aBagOfItems
 
@@ -1776,12 +1796,13 @@ catalog
 
 	^ restInterfaceInternal catalog! !
 
-!RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/1/2019 18:04:14'!
+!RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/1/2019 19:30:40'!
 checkOut: aShoppingCartId chargingToACreditCardNumbered: aCreditCardNumber expiringOn: aSixDigitsExpirationDate ownedBy: ownersName
 
-	^ self try:
-	[
-		restInterfaceInternal checkOut: aShoppingCartId chargingToACreditCardNumbered: aCreditCardNumber expiringOn: aSixDigitsExpirationDate ownedBy: ownersName.
+	^ self try: [ | expirationAsMonthOfYear |
+		self assertExpirationMonthOfYearIsSixCharactersLong: aSixDigitsExpirationDate.
+		expirationAsMonthOfYear _ GregorianMonthOfYear yearNumber: (aSixDigitsExpirationDate copyFrom: 3 to: 6) asInteger monthNumber: (aSixDigitsExpirationDate copyFrom: 1 to: 2) asInteger.
+		restInterfaceInternal checkOut: aShoppingCartId chargingToACreditCardNumbered: aCreditCardNumber expiringOn: expirationAsMonthOfYear ownedBy: ownersName.
 		^ '0|OK'.
 	]! !
 
@@ -1868,6 +1889,11 @@ try: aBlock
 !classDefinition: 'RestInterfaceExternal class' category: #'TusLibros.com'!
 RestInterfaceExternal class
 	instanceVariableNames: ''!
+
+!RestInterfaceExternal class methodsFor: 'as yet unclassified' stamp: 'AB 7/1/2019 19:06:44'!
+expirationMonthOfYearMustBeExactlySixDigitsLong
+	
+	^ 'Expiration month of year must be 6 digits long'! !
 
 !RestInterfaceExternal class methodsFor: 'as yet unclassified' stamp: 'JR 6/30/2019 18:00:26'!
 withCatalogue: aPriceList processingThrough: aMerchantProcessor signInUsersWith: aUsersRecord
@@ -2465,10 +2491,28 @@ initializeStartingOn: aDateTime
 	today _ aDateTime! !
 
 
+!StoreTestObjectsFactory methodsFor: 'date' stamp: 'AB 7/1/2019 19:05:33'!
+anExpirationMonthOfYearWithFiveDigits
+
+	^ '62019'! !
+
 !StoreTestObjectsFactory methodsFor: 'date' stamp: 'AB 6/17/2019 17:39:07'!
 currentMonthOfYear
 
 	^ GregorianMonthOfYear yearNumber: (today yearNumber) monthNumber: (today monthIndex)! !
+
+!StoreTestObjectsFactory methodsFor: 'date' stamp: 'AB 7/1/2019 19:23:51'!
+currentMonthOfYearInDigits
+
+	| monthNumber monthNumberAsString |
+	
+	monthNumber _ today monthIndex.
+
+	monthNumberAsString _ ''.
+
+	(monthNumber < 10) ifTrue: [ monthNumberAsString _ '0' ].
+
+	^ monthNumberAsString , monthNumber printString , today yearNumber printString! !
 
 !StoreTestObjectsFactory methodsFor: 'date' stamp: 'AB 6/17/2019 17:27:20'!
 expiredMonthOfYear
