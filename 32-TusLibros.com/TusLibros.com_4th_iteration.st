@@ -2658,13 +2658,13 @@ stopListening
 	webServer stopListener! !
 
 
-!TusLibrosServer methodsFor: 'initialization' stamp: 'AB 6/30/2019 17:39:27'!
+!TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/1/2019 20:36:44'!
 initialize
 
 	| aClock aMerchantProcessor aPriceList aUsersRecord |
-	
+
 	aPriceList _ StoreTestObjectsFactory new twoItemsPriceList.
-	
+
 	restInterface _ RestInterfaceExternal new initializewithCatalogue: aPriceList processingThrough: aMerchantProcessor signInUsersWith: aUsersRecord calculatingTimeFrom: aClock.
 
 	webServer _ WebServer new listenOn: self port.
