@@ -235,7 +235,7 @@ test03CreditCardNumberContainsOnlyNumbers
 
 !classDefinition: #RestInterfaceExternalTest category: #'TusLibros.com'!
 TestCase subclass: #RestInterfaceExternalTest
-	instanceVariableNames: 'testObjects loginBehavior debitBehavior clock aRestInterfaceWithAnEmptyPriceList aRestInterfaceWithAnEmptyPriceListAndAClock aRestInterfaceWithOneItemPriceList aRestInterfaceWithOneItemPriceListAndAClock aRestInterfaceWithTwoItemsPriceList'
+	instanceVariableNames: 'testObjects loginBehavior debitBehavior aRestInterfaceWithAnEmptyPriceList aRestInterfaceWithOneItemPriceList aRestInterfaceWithTwoItemsPriceList'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
@@ -255,7 +255,7 @@ responseMessageFrom: aString
 
 	^ aString copyFrom: 3 to: aString size.! !
 
-!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'JR 6/30/2019 19:13:35'!
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 18:52:31'!
 setUp
 
 	testObjects _ StoreTestObjectsFactory new.
@@ -264,20 +264,14 @@ setUp
 
 	debitBehavior _ [ :anAmount :aCreditCard | ].
 	
-	clock _ Clock new.
-
 	aRestInterfaceWithAnEmptyPriceList _ RestInterfaceExternal withCatalogue: testObjects emptyPriceList processingThrough: self signInUsersWith: self.
 
-	aRestInterfaceWithAnEmptyPriceListAndAClock _ RestInterfaceExternal withCatalogue: testObjects emptyPriceList processingThrough: self signInUsersWith: self calculatingTimeFrom: clock.
-	
 	aRestInterfaceWithOneItemPriceList _ RestInterfaceExternal withCatalogue: testObjects oneItemPriceList processingThrough: self signInUsersWith: self.
 
-	aRestInterfaceWithOneItemPriceListAndAClock _ RestInterfaceExternal withCatalogue: testObjects oneItemPriceList processingThrough: self signInUsersWith: self calculatingTimeFrom: clock.
-	
-	aRestInterfaceWithTwoItemsPriceList _ RestInterfaceExternal withCatalogue: testObjects twoItemsPriceList processingThrough: self signInUsersWith: self.! !
+	aRestInterfaceWithTwoItemsPriceList _ RestInterfaceExternal withCatalogue: testObjects twoItemsPriceList processingThrough: self signInUsersWith: self! !
 
-!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'JR 6/30/2019 18:12:47'!
-test01ExternalInterfaceReturnsEmptyCatalogWhenInitializedWithEmptyCatalog
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 18:40:42'!
+test01ListingAnEmptyCatalogReturnAnOkResponseWithEmptyCatalog
 
 	| catalog |
 
@@ -285,18 +279,19 @@ test01ExternalInterfaceReturnsEmptyCatalogWhenInitializedWithEmptyCatalog
 	
 	self assert: catalog isEmpty.! !
 
-!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'JR 6/30/2019 18:13:36'!
-test02ExternalInterfaceReturnsAllItemsIncludedInCatalog
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 18:46:12'!
+test02ListingACatalogReturnsAResponseIncludingListOfItems
 
 	| catalog |
 
 	catalog _ aRestInterfaceWithTwoItemsPriceList catalog.
 	
 	self assert: catalog size equals: testObjects twoItemsPriceList size.
+
 	self assert: (catalog allSatisfy: [ :anItem | testObjects twoItemsPriceList keys includes: anItem ]).! !
 
-!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'JR 6/30/2019 18:36:16'!
-test03ExternalInterfaceResponseForSuccessfullCreateCart
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 18:46:19'!
+test03CreatingACartForValidClientReturnsOkRespondeWithCartId
 
 	| createCartResponse interface |
 	
@@ -306,10 +301,10 @@ test03ExternalInterfaceResponseForSuccessfullCreateCart
 		createCartFor: testObjects aValidClienId
 		protectedWith: testObjects aValidClientPassword.
 
-	self assert: interface okResponsePrefix , '1' equals: createCartResponse.! !
+	self assert: interface okResponsePrefix , '1' equals: createCartResponse! !
 
-!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'JR 6/30/2019 18:36:51'!
-test04ExternalInterfaceResponseForCreateCartWithInvalidClientId
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 18:39:18'!
+test04CreatingACartWithInvalidClientIdReturnsAnErrorResponse
 
 	| createCartResponse interface |
 	
@@ -323,8 +318,8 @@ test04ExternalInterfaceResponseForCreateCartWithInvalidClientId
 	
 	self assert: createCartResponse equals: interface errorResponsePrefix, RestInterfaceInternal invalidClientId ! !
 
-!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'JR 6/30/2019 18:37:02'!
-test05ExternalInterfaceResponseForCreateCartWithInvalidPassword
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 18:38:58'!
+test05CreatingACartWithInvalidPasswordReturnsAnErrorResponse
 
 	| createCartResponse interface |
 	
@@ -346,8 +341,8 @@ test05ExternalInterfaceResponseForCreateCartWithInvalidPassword
 		
 	self assert: createCartResponse equals: interface errorResponsePrefix, RestInterfaceInternal clientCredentialsDoNotMatchAnyExistingClient.! !
 
-!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'JR 6/30/2019 18:48:09'!
-test06ResponseForListEmptyCart
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 18:37:25'!
+test06ListingAnEmptyCartReturnsAnOkResponseEmpty
 
 	| createCartResponse interface shoppingCartId |
 	
@@ -361,8 +356,8 @@ test06ResponseForListEmptyCart
 	
 	self assert: (interface listCart: shoppingCartId) equals: interface okResponsePrefix.! !
 
-!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'JR 6/30/2019 18:55:06'!
-test07ErrorResponseForListingUnexistingShoppingCart
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 18:36:41'!
+test07ListingUnexistingShoppingCartReturnsAnErrorResponse
 
 	| interface shoppingCartId |
 	
@@ -430,8 +425,8 @@ test11ListingPurchasesWhenNoCheckOutHasBeenDoneReturnsAnOkEmptyResponse
 	self assert: (interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword) 
 		equals: interface okResponsePrefix, '0'.! !
 
-!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 17:41:16'!
-test12ResponseForListPurchasesWithInvalidClientId
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 18:36:18'!
+test12ListingPurchasesForInvalidClientIdReturnsErrorResponse
 
 	| interface |
 	
@@ -467,8 +462,8 @@ test13CheckingOutAddsContentToListPurchasesResponse
 
 	self assert: (interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword) equals: interface okResponsePrefix, testObjects existingISBN, '|', quantity printString ,'|', ((testObjects oneItemPriceList at: testObjects existingISBN) * quantity) printString! !
 
-!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 17:59:46'!
-test14ResponseForCheckingOutAnInvalidShoppingCart
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 18:35:45'!
+test14CheckingOutAnInvalidShoppingCartGivesAnErrorResponse
 
 	| interface checkOutResponse |
 	
