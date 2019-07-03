@@ -55,7 +55,6 @@ Object subclass: #Customer
 	poolDictionaries: ''
 	category: 'IS1-Showable'!
 
-
 !Customer methodsFor: 'initialization' stamp: 'HAW 5/8/2019 18:47:08'!
 initializeNamed: aFirstName surnamed: aLastName 
 
@@ -68,11 +67,6 @@ initializeNamed: aFirstName with: aLastName bornOn: aDateOfBirth
 	firstName := aFirstName. 
 	lastName := aLastName.
 	dateOfBirth := aDateOfBirth! !
-
-
-
-
-
 
 
 !Customer methodsFor: 'accessing' stamp: 'HAW 5/8/2019 18:56:10'!
