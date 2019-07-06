@@ -2658,7 +2658,7 @@ stopListening
 	webServer stopListener! !
 
 
-!TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/1/2019 20:36:44'!
+!TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/6/2019 13:43:38'!
 initialize
 
 	| aClock aMerchantProcessor aPriceList aUsersRecord |
@@ -2671,7 +2671,65 @@ initialize
 
 	webServer addService: '/catalog' action: [ :request |
 		request send200Response: (WebUtils jsonEncode: (restInterface catalog))
-	]! !
+	].
+
+	webServer addService: '/createCart' action: [ :request | | clientId password | [
+			clientId _ (request fields at:'clientId').		
+			password _ (request fields at:'password').
+			request send200Response: (WebUtils jsonEncode: (restInterface catalog))
+		 ]
+		on: Error 
+		do: [ :anError |
+			request send404Response: (anError messageText)
+		]
+	].
+
+	webServer addService: '/addToCart' action: [ :request | | cartId bookIsbn bookQuantity | [
+			cartId _ (request fields at:'cartId').		
+			bookIsbn _ (request fields at:'bookIsbn').
+			bookQuantity _ (request fields at:'bookQuantity').
+			request send200Response: (WebUtils jsonEncode: (restInterface catalog))
+		 ]
+		on: Error 
+		do: [ :anError |
+			request send404Response: (anError messageText)
+		]
+	].
+
+	webServer addService: '/listCart' action: [ :request | | cartId | [
+			cartId _ (request fields at:'cartId').		
+			request send200Response: (WebUtils jsonEncode: (restInterface catalog))
+		 ]
+		on: Error 
+		do: [ :anError |
+			request send404Response: (anError messageText)
+		]
+	].
+
+	webServer addService: '/checkOutCart ' action: [ :request | | cartId creditCardNumber expirationMonthOfYear ownersName | [
+			cartId _ (request fields at:'cartId').		
+			creditCardNumber _ (request fields at:'ccn').
+			expirationMonthOfYear _ (request fields at:'cced').
+			ownersName _ (request fields at:'cco').
+			request send200Response: (WebUtils jsonEncode: (restInterface catalog))
+		 ]
+		on: Error 
+		do: [ :anError |
+			request send404Response: (anError messageText)
+		]
+	].
+
+	webServer addService: '/listPurchases ' action: [ :request | | clientId password | [
+			clientId _ (request fields at:'clientId').		
+			password _ (request fields at:'password').
+			request send200Response: (WebUtils jsonEncode: (restInterface catalog))
+		 ]
+		on: Error 
+		do: [ :anError |
+			request send404Response: (anError messageText)
+		]
+	].
+! !
 
 !TusLibrosServer methodsFor: 'initialization' stamp: 'NR 6/25/2019 22:14:59'!
 port
