@@ -1,3 +1,111 @@
+!classDefinition: #TusLibrosClientWindow category: #'TusLibros.com'!
+Panel subclass: #TusLibrosClientWindow
+	instanceVariableNames: 'sentenceTextBox substringsList'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!TusLibrosClientWindow methodsFor: 'initialization' stamp: 'NR 6/24/2019 03:31:46'!
+defaultExtent
+
+	^ 630@435
+	! !
+
+!TusLibrosClientWindow methodsFor: 'initialization' stamp: 'AB 7/6/2019 19:31:30'!
+initializeWith: aTitle
+
+	self titleMorph showButtonsNamed: #( close collapse ).
+	self setLabel: aTitle.
+	self model: (TusLibrosClientWindowModel new).
+	self morphExtent: (self defaultExtent).
+	self buildMorphicWindow.
+	self openInWorld.
+	self yourself.
+			
+	self model when: #newSubstringsArrived send: #refreshSubstringList to: self.! !
+
+
+!TusLibrosClientWindow methodsFor: 'access' stamp: 'NR 6/25/2019 23:27:24'!
+refreshSubstringList
+	
+	substringsList updateList.
+	substringsList setSelectionIndex: 0.
+	! !
+
+
+!TusLibrosClientWindow methodsFor: 'GUI building' stamp: 'NR 6/25/2019 22:12:15'!
+build1stColumn2ndRow
+	| firstColumnLayoutOfSecondRow |
+	
+	substringsList := PluggableListMorph model: self model listGetter: #substringList indexGetter: #substringsListIndex indexSetter: #substringsListIndex:.
+	substringsList  borderColor: Color skyBlue.
+	substringsList  borderWidth: 1.
+		
+	firstColumnLayoutOfSecondRow := LayoutMorph newColumn.
+	firstColumnLayoutOfSecondRow separation: 5;
+	padding: #left;
+	addMorph: (StringMorph contents:'Results');
+	addMorph: substringsList.
+		
+	^firstColumnLayoutOfSecondRow.
+	! !
+
+!TusLibrosClientWindow methodsFor: 'GUI building' stamp: 'NR 6/25/2019 22:12:35'!
+build1stRow
+	| sendRequestButton firstRowLayout |
+	
+	sendRequestButton := PluggableButtonMorph model: self model stateGetter: nil  action: #sendSubtringsRequest  label: 'Send Request To Server'.
+	
+	sentenceTextBox := TextModelMorph textProvider: self model textGetter: #sentenceText textSetter: #sentenceText:. 
+	sentenceTextBox textMorph setProperty: #keyStroke: toValue: [ :key | sentenceTextBox textMorph acceptContents ] .
+	sentenceTextBox  borderWidth: 1; borderColor: Color skyBlue.
+		
+	firstRowLayout := LayoutMorph newRow.
+	firstRowLayout separation: 25;
+	padding: #left;
+	addMorph: (StringMorph contents:'Enter sentence:');
+	addMorph: sentenceTextBox;
+ 	addMorph: sendRequestButton.
+	
+	^firstRowLayout.! !
+
+!TusLibrosClientWindow methodsFor: 'GUI building' stamp: 'NR 6/25/2019 22:13:02'!
+build2ndRow
+	| showInTranscriptButton secondRowLayout |
+	
+	showInTranscriptButton := PluggableButtonMorph model: self model stateGetter: nil  action: #showWordInTranscript label: 'Show Selected Word In Transcript'.	
+	
+	secondRowLayout := LayoutMorph newRow.
+	secondRowLayout separation: 25;
+	padding: #left;
+	addMorph: self build1stColumn2ndRow;
+	addMorph: showInTranscriptButton.
+	
+	^secondRowLayout.
+	! !
+
+!TusLibrosClientWindow methodsFor: 'GUI building' stamp: 'NR 6/24/2019 06:59:15'!
+buildMorphicWindow
+		
+	self layoutMorph beColumn;
+	separation: 15;
+	padding: #left;
+	addMorph: self build1stRow;
+	addMorph: self build2ndRow.
+	! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TusLibrosClientWindow class' category: #'TusLibros.com'!
+TusLibrosClientWindow class
+	instanceVariableNames: ''!
+
+!TusLibrosClientWindow class methodsFor: 'instance creation' stamp: 'NR 6/24/2019 02:25:18'!
+open
+	
+	^self new initializeWith: 'Substrings-Service Client Window'.! !
+
+
 !classDefinition: #CashierTest category: #'TusLibros.com'!
 TestCase subclass: #CashierTest
 	instanceVariableNames: 'debitBehavior testObjects'
@@ -2636,6 +2744,71 @@ anotherValidClientPassword
 	^ 'Another Valid User Password'! !
 
 
+!classDefinition: #TusLibrosClientWindowModel category: #'TusLibros.com'!
+Object subclass: #TusLibrosClientWindowModel
+	instanceVariableNames: 'sentence listOfWords selectedIndex webClient'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!TusLibrosClientWindowModel methodsFor: 'PluggableListSelectors' stamp: 'NR 6/24/2019 06:26:32'!
+substringList
+	
+	^listOfWords.
+! !
+
+!TusLibrosClientWindowModel methodsFor: 'PluggableListSelectors' stamp: 'NR 6/25/2019 21:44:28'!
+substringsListIndex
+	
+	^selectedIndex.! !
+
+!TusLibrosClientWindowModel methodsFor: 'PluggableListSelectors' stamp: 'NR 6/25/2019 21:45:21'!
+substringsListIndex: anIndex
+	
+	selectedIndex := anIndex.! !
+
+
+!TusLibrosClientWindowModel methodsFor: 'initialization' stamp: 'AB 7/6/2019 19:31:19'!
+initialize
+
+	listOfWords := OrderedCollection new.
+	sentence:=''.
+	selectedIndex:=0.
+	webClient := TusLibrosWebClient new.! !
+
+
+!TusLibrosClientWindowModel methodsFor: 'TextModelMorphSelectors' stamp: 'NR 6/25/2019 21:43:32'!
+sentenceText
+	
+	^sentence.! !
+
+!TusLibrosClientWindowModel methodsFor: 'TextModelMorphSelectors' stamp: 'NR 6/25/2019 21:43:51'!
+sentenceText: aSentence
+
+	sentence:=aSentence.
+	^true.! !
+
+
+!TusLibrosClientWindowModel methodsFor: 'PluggableButtonSelectors' stamp: 'NR 6/25/2019 21:45:45'!
+sendSubtringsRequest
+		
+	listOfWords := webClient sendRequest: sentence.
+	
+	self triggerEvent: #newSubstringsArrived with: self.
+	! !
+
+!TusLibrosClientWindowModel methodsFor: 'PluggableButtonSelectors' stamp: 'NR 6/25/2019 22:13:32'!
+showWordInTranscript
+	
+	(selectedIndex = 0) ifFalse: 
+		[TranscriptWindow openTranscript.
+		Transcript clear.
+		Transcript show: 'The word selected is: '.
+		Transcript show: (listOfWords at: selectedIndex).
+		Transcript show: ' '.].
+! !
+
+
 !classDefinition: #TusLibrosServer category: #'TusLibros.com'!
 Object subclass: #TusLibrosServer
 	instanceVariableNames: 'webServer port restInterface merchantProcessor priceList kerberos'
@@ -2759,3 +2932,41 @@ initializeServices
 port
 
 	^ port ifNil: [ port _ 8080 ]! !
+
+
+!classDefinition: #TusLibrosWebClient category: #'TusLibros.com'!
+Object subclass: #TusLibrosWebClient
+	instanceVariableNames: 'port'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!TusLibrosWebClient methodsFor: 'sending requests' stamp: 'NR 6/25/2019 22:25:36'!
+correctlyEncodeSpacesForUrlRequestParameter: aParameter
+	
+	^ aParameter copyReplaceAll: ' ' with: '%20'. ! !
+
+!TusLibrosWebClient methodsFor: 'sending requests' stamp: 'NR 6/25/2019 22:25:21'!
+sendRequest: sentence
+
+	| fieldDict resp urlEncodedSentence |
+	
+	urlEncodedSentence := self correctlyEncodeSpacesForUrlRequestParameter: sentence.	
+	fieldDict := Dictionary newFromPairs: {'sentence'. urlEncodedSentence.}.		
+	
+	resp:= WebClient htmlSubmit: (self url,'/substrings') fields: fieldDict.
+	
+	resp isSuccess 
+		ifTrue:[^(WebUtils jsonDecode: ((resp content) readStream)) asOrderedCollection .] 
+		ifFalse:[^self error: resp content].! !
+
+
+!TusLibrosWebClient methodsFor: 'initialization' stamp: 'NR 6/25/2019 22:15:16'!
+port
+	
+	^port ifNil: [port:=8080].! !
+
+!TusLibrosWebClient methodsFor: 'initialization' stamp: 'NR 6/24/2019 06:52:37'!
+url
+	
+	^'http://localhost:', self port asString! !
