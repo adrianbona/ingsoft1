@@ -1814,23 +1814,6 @@ assertExpirationMonthOfYearIsSixCharactersLong: anExpirationMonthOfYear
 	
 	(anExpirationMonthOfYear size = 6) ifFalse: [ self error: RestInterfaceExternal expirationMonthOfYearMustBeExactlySixDigitsLong ]! !
 
-!RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/1/2019 17:21:16'!
-bagToDictionary: aBagOfItems
-
-	| groupedItems |
-	
-	groupedItems _ Dictionary new.
-	
-	aBagOfItems do: [ :itemFromBag |
-		groupedItems at: itemFromBag put: (aBagOfItems occurrencesOf: itemFromBag) ].
-	
-	^ groupedItems! !
-
-!RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/1/2019 17:22:15'!
-bagToString: aBagOfItems
-	
-	^ self dictionaryToString: (self bagToDictionary: aBagOfItems)! !
-
 !RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 6/30/2019 17:45:21'!
 catalog
 
@@ -1863,18 +1846,6 @@ convertSixDigitsStringToMonthOfYear: aSixDigitsExpirationDate
 createCartFor: aClientId protectedWith: aPassword
 
 	^ self try: [ ^ self okResponsePrefix, (restInterfaceInternal createCartFor: aClientId protectedWith: aPassword) printString ]! !
-
-!RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/1/2019 17:21:59'!
-dictionaryToString: aDictionaryWithItems
-
-	| outputString |
-
-	outputString _ '0|'.
-
-	aDictionaryWithItems keysAndValuesDo: [ :key :value |
-		outputString _ outputString , key , '|' , value printString ].
-
-	^ outputString! !
 
 !RestInterfaceExternal methodsFor: 'initialization' stamp: 'JR 6/30/2019 18:28:22'!
 errorResponsePrefix
@@ -1936,6 +1907,36 @@ try: aBlock
 	aBlock
 	on: Error
 	do: [ :anEror | ^ self errorResponsePrefix , anEror messageText ]! !
+
+
+!RestInterfaceExternal methodsFor: 'conversions' stamp: 'AB 7/1/2019 17:21:16'!
+bagToDictionary: aBagOfItems
+
+	| groupedItems |
+	
+	groupedItems _ Dictionary new.
+	
+	aBagOfItems do: [ :itemFromBag |
+		groupedItems at: itemFromBag put: (aBagOfItems occurrencesOf: itemFromBag) ].
+	
+	^ groupedItems! !
+
+!RestInterfaceExternal methodsFor: 'conversions' stamp: 'AB 7/1/2019 17:22:15'!
+bagToString: aBagOfItems
+	
+	^ self dictionaryToString: (self bagToDictionary: aBagOfItems)! !
+
+!RestInterfaceExternal methodsFor: 'conversions' stamp: 'AB 7/6/2019 16:50:02'!
+dictionaryToString: aDictionaryWithItems
+
+	| outputString |
+
+	outputString _ '0|'.
+
+	aDictionaryWithItems keysAndValuesDo: [ :key :value |
+		outputString _ outputString , key , '|' , value printString, '|' ].
+
+	^ outputString! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -2682,7 +2683,7 @@ initialize
 
 	self initializeServices! !
 
-!TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/6/2019 16:33:57'!
+!TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/6/2019 16:50:48'!
 initializeServices
 
 	webServer _ WebServer new listenOn: self port.
@@ -2698,7 +2699,7 @@ initializeServices
 		 ]
 		on: Error 
 		do: [ :anError |
-			request send404Response: (anError messageText)
+			request send404Response: (WebUtils jsonEncode: ('1|' , anError messageText))
 		]
 	].
 
@@ -2710,7 +2711,7 @@ initializeServices
 		 ]
 		on: Error 
 		do: [ :anError |
-			request send404Response: (anError messageText)
+			request send404Response: (WebUtils jsonEncode: ('1|' , anError messageText))
 		]
 	].
 
@@ -2720,7 +2721,7 @@ initializeServices
 		 ]
 		on: Error 
 		do: [ :anError |
-			request send404Response: (anError messageText)
+			request send404Response: (WebUtils jsonEncode: ('1|' , anError messageText))
 		]
 	].
 
@@ -2733,18 +2734,18 @@ initializeServices
 		 ]
 		on: Error 
 		do: [ :anError |
-			request send404Response: (anError messageText)
+			request send404Response: (WebUtils jsonEncode: ('1|' , anError messageText))
 		]
 	].
 
 	webServer addService: '/listPurchases ' action: [ :request | | clientId password | [
-			clientId _ (request fields at:'clientId').		
+			clientId _ (request fields at:'clientId').
 			password _ (request fields at:'password').
 			request send200Response: (WebUtils jsonEncode: (restInterface listPurchasesFor: clientId protectedBy: password))
 		 ]
 		on: Error 
 		do: [ :anError |
-			request send404Response: (anError messageText)
+			request send404Response: (WebUtils jsonEncode: ('1|' , anError messageText))
 		]
 	]! !
 
