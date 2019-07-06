@@ -1859,10 +1859,10 @@ convertSixDigitsStringToMonthOfYear: aSixDigitsExpirationDate
 
 	^ GregorianMonthOfYear yearNumber: (aSixDigitsExpirationDate copyFrom: 3 to: 6) asInteger monthNumber: (aSixDigitsExpirationDate copyFrom: 1 to: 2) asInteger! !
 
-!RestInterfaceExternal methodsFor: 'initialization' stamp: 'JR 6/30/2019 19:04:49'!
+!RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/6/2019 16:10:30'!
 createCartFor: aClientId protectedWith: aPassword
 
-	^ self try: [^ self okResponsePrefix, (restInterfaceInternal createCartFor: aClientId protectedWith: aPassword) printString]! !
+	^ self try: [ ^ self okResponsePrefix, (restInterfaceInternal createCartFor: aClientId protectedWith: aPassword) printString ]! !
 
 !RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/1/2019 17:21:59'!
 dictionaryToString: aDictionaryWithItems
@@ -2637,10 +2637,21 @@ anotherValidClientPassword
 
 !classDefinition: #TusLibrosServer category: #'TusLibros.com'!
 Object subclass: #TusLibrosServer
-	instanceVariableNames: 'webServer port restInterface'
+	instanceVariableNames: 'webServer port restInterface merchantProcessor priceList kerberos'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
+
+!TusLibrosServer methodsFor: 'third party apps' stamp: 'AB 7/6/2019 16:28:45'!
+debit: anAmount from: aCreditCard
+
+	^ merchantProcessor value: anAmount value: aCreditCard! !
+
+!TusLibrosServer methodsFor: 'third party apps' stamp: 'AB 7/6/2019 16:28:55'!
+isRegisteredWith: aClientId and: aPassword
+
+	^ kerberos value: aClientId value: aPassword! !
+
 
 !TusLibrosServer methodsFor: 'enabling services' stamp: 'NR 6/24/2019 06:51:52'!
 destroy
@@ -2658,14 +2669,21 @@ stopListening
 	webServer stopListener! !
 
 
-!TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/6/2019 15:51:47'!
+!TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/6/2019 16:31:05'!
 initialize
 
-	| aClock aMerchantProcessor aPriceList aUsersRecord |
+	kerberos _ [ :aClientId :aPassword | ].
 
-	aPriceList _ StoreTestObjectsFactory new twoItemsPriceList.
+	merchantProcessor _ [ :anAmount :aCreditCard | ].
 
-	restInterface _ RestInterfaceExternal new initializewithCatalogue: aPriceList processingThrough: aMerchantProcessor signInUsersWith: aUsersRecord calculatingTimeFrom: aClock.
+	priceList _ StoreTestObjectsFactory new twoItemsPriceList.
+
+	restInterface _ RestInterfaceExternal new initializewithCatalogue: priceList processingThrough: self signInUsersWith: self.
+
+	self initializeServices! !
+
+!TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/6/2019 16:33:57'!
+initializeServices
 
 	webServer _ WebServer new listenOn: self port.
 
@@ -2685,9 +2703,9 @@ initialize
 	].
 
 	webServer addService: '/addToCart' action: [ :request | | cartId bookIsbn bookQuantity | [
-			cartId _ (request fields at:'cartId').		
+			cartId _ (request fields at:'cartId') asInteger.
 			bookIsbn _ (request fields at:'bookIsbn').
-			bookQuantity _ (request fields at:'bookQuantity').
+			bookQuantity _ (request fields at:'bookQuantity') asInteger.
 			request send200Response: (WebUtils jsonEncode: (restInterface addTo: cartId anItemWithCode: bookIsbn aQuantityOf: bookQuantity))
 		 ]
 		on: Error 
@@ -2697,7 +2715,7 @@ initialize
 	].
 
 	webServer addService: '/listCart' action: [ :request | | cartId | [
-			cartId _ (request fields at:'cartId').		
+			cartId _ (request fields at:'cartId') asInteger.
 			request send200Response: (WebUtils jsonEncode: (restInterface listCart: cartId))
 		 ]
 		on: Error 
@@ -2707,7 +2725,7 @@ initialize
 	].
 
 	webServer addService: '/checkOutCart ' action: [ :request | | cartId creditCardNumber expirationMonthOfYear ownersName | [
-			cartId _ (request fields at:'cartId').		
+			cartId _ (request fields at:'cartId') asInteger.
 			creditCardNumber _ (request fields at:'ccn').
 			expirationMonthOfYear _ (request fields at:'cced').
 			ownersName _ (request fields at:'cco').
@@ -2730,12 +2748,10 @@ initialize
 		]
 	]! !
 
-!TusLibrosServer methodsFor: 'initialization' stamp: 'NR 6/25/2019 22:14:59'!
+!TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/6/2019 16:04:11'!
 port
 	"Use a random port to minimise chances of concurrently running test suites clashing."
 	"^ port
 		ifNil: [port := (10000 to: 50000) atRandom]"
 	
-	^port ifNil: [port:=8080].
-	
-	! !
+	^ port ifNil: [ port _ 8080 ]! !
