@@ -2658,7 +2658,7 @@ stopListening
 	webServer stopListener! !
 
 
-!TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/6/2019 13:43:38'!
+!TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/6/2019 15:51:47'!
 initialize
 
 	| aClock aMerchantProcessor aPriceList aUsersRecord |
@@ -2676,7 +2676,7 @@ initialize
 	webServer addService: '/createCart' action: [ :request | | clientId password | [
 			clientId _ (request fields at:'clientId').		
 			password _ (request fields at:'password').
-			request send200Response: (WebUtils jsonEncode: (restInterface catalog))
+			request send200Response: (WebUtils jsonEncode: (restInterface createCartFor: clientId protectedWith: password))
 		 ]
 		on: Error 
 		do: [ :anError |
@@ -2688,7 +2688,7 @@ initialize
 			cartId _ (request fields at:'cartId').		
 			bookIsbn _ (request fields at:'bookIsbn').
 			bookQuantity _ (request fields at:'bookQuantity').
-			request send200Response: (WebUtils jsonEncode: (restInterface catalog))
+			request send200Response: (WebUtils jsonEncode: (restInterface addTo: cartId anItemWithCode: bookIsbn aQuantityOf: bookQuantity))
 		 ]
 		on: Error 
 		do: [ :anError |
@@ -2698,7 +2698,7 @@ initialize
 
 	webServer addService: '/listCart' action: [ :request | | cartId | [
 			cartId _ (request fields at:'cartId').		
-			request send200Response: (WebUtils jsonEncode: (restInterface catalog))
+			request send200Response: (WebUtils jsonEncode: (restInterface listCart: cartId))
 		 ]
 		on: Error 
 		do: [ :anError |
@@ -2711,7 +2711,7 @@ initialize
 			creditCardNumber _ (request fields at:'ccn').
 			expirationMonthOfYear _ (request fields at:'cced').
 			ownersName _ (request fields at:'cco').
-			request send200Response: (WebUtils jsonEncode: (restInterface catalog))
+			request send200Response: (WebUtils jsonEncode: (restInterface checkOut: cartId chargingToACreditCardNumbered: creditCardNumber expiringOn: expirationMonthOfYear ownedBy: ownersName))
 		 ]
 		on: Error 
 		do: [ :anError |
@@ -2722,14 +2722,13 @@ initialize
 	webServer addService: '/listPurchases ' action: [ :request | | clientId password | [
 			clientId _ (request fields at:'clientId').		
 			password _ (request fields at:'password').
-			request send200Response: (WebUtils jsonEncode: (restInterface catalog))
+			request send200Response: (WebUtils jsonEncode: (restInterface listPurchasesFor: clientId protectedBy: password))
 		 ]
 		on: Error 
 		do: [ :anError |
 			request send404Response: (anError messageText)
 		]
-	].
-! !
+	]! !
 
 !TusLibrosServer methodsFor: 'initialization' stamp: 'NR 6/25/2019 22:14:59'!
 port
