@@ -2683,7 +2683,7 @@ initialize
 
 	self initializeServices! !
 
-!TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/6/2019 18:54:30'!
+!TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/6/2019 19:22:38'!
 initializeServices
 
 	webServer _ WebServer new listenOn: self port.
@@ -2728,23 +2728,9 @@ initializeServices
 		]
 	].
 
-	webServer addService: '/checkOutCart ' action: [ :request | [
-			| cartId creditCardNumber expirationMonthOfYear ownersName |
-			cartId _ (request fields at:'cartId') asInteger.
-			creditCardNumber _ (request fields at:'ccn').
-			expirationMonthOfYear _ (request fields at:'cced').
-			ownersName _ (request fields at:'cco').
-			request send200Response: (WebUtils jsonEncode: (restInterface checkOut: cartId chargingToACreditCardNumbered: creditCardNumber expiringOn: expirationMonthOfYear ownedBy: ownersName))
-		 ]
-		on: Error 
-		do: [ :anError |
-			request send404Response: (WebUtils jsonEncode: ('1|' , anError messageText))
-		]
-	].
-
-	webServer addService: '/listPurchases ' action: [ :request | [
+	webServer addService: '/listPurchases' action: [ :request | [
 			| clientId password |
-			clientId _ (request fields at:'clientId').
+			clientId _ (request fields at:'clientId').		
 			password _ (request fields at:'password').
 			request send200Response: (WebUtils jsonEncode: (restInterface listPurchasesFor: clientId protectedBy: password))
 		 ]
@@ -2752,7 +2738,22 @@ initializeServices
 		do: [ :anError |
 			request send404Response: (WebUtils jsonEncode: ('1|' , anError messageText))
 		]
-	]! !
+	].
+
+	webServer addService: '/checkOutCart' action: [ :request | [
+			| cartId creditCardNumber expiration owner |
+			cartId _ (request fields at:'cartId') asInteger.	
+			creditCardNumber _ (request fields at:'ccn').
+			expiration _ (request fields at:'cced').
+			owner _ (request fields at:'cco').
+			request send200Response: (WebUtils jsonEncode: (restInterface checkOut: cartId chargingToACreditCardNumbered: creditCardNumber expiringOn: expiration ownedBy: owner))
+		 ]
+		on: Error 
+		do: [ :anError |
+			request send404Response: (WebUtils jsonEncode: ('1|' , anError messageText))
+		]
+	].
+! !
 
 !TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/6/2019 18:52:02'!
 port
