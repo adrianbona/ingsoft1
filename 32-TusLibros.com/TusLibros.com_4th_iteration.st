@@ -2654,10 +2654,10 @@ isRegisteredWith: aClientId and: aPassword
 	^ kerberos value: aClientId value: aPassword! !
 
 
-!TusLibrosServer methodsFor: 'enabling services' stamp: 'NR 6/24/2019 06:51:52'!
+!TusLibrosServer methodsFor: 'enabling services' stamp: 'AB 7/6/2019 18:51:41'!
 destroy
 	
-	webServer ifNotNil:[webServer destroy].! !
+	webServer ifNotNil: [ webServer destroy ].! !
 
 !TusLibrosServer methodsFor: 'enabling services' stamp: 'NR 6/24/2019 06:52:06'!
 startListening
@@ -2683,7 +2683,7 @@ initialize
 
 	self initializeServices! !
 
-!TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/6/2019 16:50:48'!
+!TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/6/2019 18:54:30'!
 initializeServices
 
 	webServer _ WebServer new listenOn: self port.
@@ -2692,7 +2692,8 @@ initializeServices
 		request send200Response: (WebUtils jsonEncode: (restInterface catalog))
 	].
 
-	webServer addService: '/createCart' action: [ :request | | clientId password | [
+	webServer addService: '/createCart' action: [ :request | [
+			| clientId password |
 			clientId _ (request fields at:'clientId').		
 			password _ (request fields at:'password').
 			request send200Response: (WebUtils jsonEncode: (restInterface createCartFor: clientId protectedWith: password))
@@ -2703,7 +2704,8 @@ initializeServices
 		]
 	].
 
-	webServer addService: '/addToCart' action: [ :request | | cartId bookIsbn bookQuantity | [
+	webServer addService: '/addToCart' action: [ :request | [
+			| cartId bookIsbn bookQuantity |
 			cartId _ (request fields at:'cartId') asInteger.
 			bookIsbn _ (request fields at:'bookIsbn').
 			bookQuantity _ (request fields at:'bookQuantity') asInteger.
@@ -2715,7 +2717,8 @@ initializeServices
 		]
 	].
 
-	webServer addService: '/listCart' action: [ :request | | cartId | [
+	webServer addService: '/listCart' action: [ :request | [
+			| cartId |
 			cartId _ (request fields at:'cartId') asInteger.
 			request send200Response: (WebUtils jsonEncode: (restInterface listCart: cartId))
 		 ]
@@ -2725,7 +2728,8 @@ initializeServices
 		]
 	].
 
-	webServer addService: '/checkOutCart ' action: [ :request | | cartId creditCardNumber expirationMonthOfYear ownersName | [
+	webServer addService: '/checkOutCart ' action: [ :request | [
+			| cartId creditCardNumber expirationMonthOfYear ownersName |
 			cartId _ (request fields at:'cartId') asInteger.
 			creditCardNumber _ (request fields at:'ccn').
 			expirationMonthOfYear _ (request fields at:'cced').
@@ -2738,7 +2742,8 @@ initializeServices
 		]
 	].
 
-	webServer addService: '/listPurchases ' action: [ :request | | clientId password | [
+	webServer addService: '/listPurchases ' action: [ :request | [
+			| clientId password |
 			clientId _ (request fields at:'clientId').
 			password _ (request fields at:'password').
 			request send200Response: (WebUtils jsonEncode: (restInterface listPurchasesFor: clientId protectedBy: password))
@@ -2749,10 +2754,7 @@ initializeServices
 		]
 	]! !
 
-!TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/6/2019 16:04:11'!
+!TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/6/2019 18:52:02'!
 port
-	"Use a random port to minimise chances of concurrently running test suites clashing."
-	"^ port
-		ifNil: [port := (10000 to: 50000) atRandom]"
-	
+
 	^ port ifNil: [ port _ 8080 ]! !
