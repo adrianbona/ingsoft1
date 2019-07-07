@@ -2961,6 +2961,12 @@ stopListening
 	webServer stopListener! !
 
 
+!TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/7/2019 20:26:12'!
+createEndPointName: endPoint executing: anActionBlock
+
+	webServer addService: endPoint action: [ :request | self resolveWithDefaultErrorResponseFor: anActionBlock using: request ]
+! !
+
 !TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/6/2019 16:31:05'!
 initialize
 
@@ -2974,99 +2980,73 @@ initialize
 
 	self initializeServices! !
 
-!TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/7/2019 19:42:11'!
+!TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/7/2019 20:29:18'!
 initializeServices
 
 	webServer _ WebServer new listenOn: self port.
 
-	webServer addService: '/catalog' action: [ :request |
+	self createEndPointName: '/catalog' executing: [ :request |
 		request send200Response: (WebUtils jsonEncode: (restInterface catalog))
 	].
 
-	webServer addService: '/logInClient' action: [ :request | [
-			| clientId password |
+	self createEndPointName: '/loginClient' executing: [ :request |
+		| clientId password |
 
-			clientId _ (request fields at:'clientId').
-			(clientId size = 0) ifTrue: [ self error: 'Missing Client ID' ].
+		clientId _ (request fields at:'clientId').
+		(clientId size = 0) ifTrue: [ self error: 'Missing Client ID' ].
 
-			password _ (request fields at:'password').
-			(password size = 0) ifTrue: [ self error: 'Missing password' ].
+		password _ (request fields at:'password').
+		(password size = 0) ifTrue: [ self error: 'Missing password' ].
 
-			request send200Response: (WebUtils jsonEncode: '0|OK')
-		 ]
-		on: Error 
-		do: [ :anError |
-			request send404Response: (WebUtils jsonEncode: ('1|' , anError messageText))
-		]
+		request send200Response: (WebUtils jsonEncode: '0|OK')
 	].
 
-	webServer addService: '/createCart' action: [ :request | [
-			| clientId password |
-			clientId _ (request fields at:'clientId').		
-			password _ (request fields at:'password').
-			request send200Response: (WebUtils jsonEncode: (restInterface createCartFor: clientId protectedWith: password))
-		 ]
-		on: Error 
-		do: [ :anError |
-			request send404Response: (WebUtils jsonEncode: ('1|' , anError messageText))
-		]
+	self createEndPointName:  '/createCart' executing: [ :request |
+		| clientId password |
+		clientId _ (request fields at:'clientId').		
+		password _ (request fields at:'password').
+		request send200Response: (WebUtils jsonEncode: (restInterface createCartFor: clientId protectedWith: password))
 	].
 
-	webServer addService: '/addToCart' action: [ :request | [
-			| cartId bookIsbn bookQuantity |
-			cartId _ (request fields at:'cartId') asInteger.
-			bookIsbn _ (request fields at:'bookIsbn').
-			bookQuantity _ (request fields at:'bookQuantity') asInteger.
-			request send200Response: (WebUtils jsonEncode: (restInterface addTo: cartId anItemWithCode: bookIsbn aQuantityOf: bookQuantity))
-		 ]
-		on: Error 
-		do: [ :anError |
-			request send404Response: (WebUtils jsonEncode: ('1|' , anError messageText))
-		]
+	self createEndPointName: '/addToCart'  executing: [ :request |
+		| cartId bookIsbn bookQuantity |
+		cartId _ (request fields at:'cartId') asInteger.
+		bookIsbn _ (request fields at:'bookIsbn').
+		bookQuantity _ (request fields at:'bookQuantity') asInteger.
+		request send200Response: (WebUtils jsonEncode: (restInterface addTo: cartId anItemWithCode: bookIsbn aQuantityOf: bookQuantity))
 	].
 
-	webServer addService: '/listCart' action: [ :request | [
-			| cartId |
-			cartId _ (request fields at:'cartId') asInteger.
-			request send200Response: (WebUtils jsonEncode: (restInterface listCart: cartId))
-		 ]
-		on: Error 
-		do: [ :anError |
-			request send404Response: (WebUtils jsonEncode: ('1|' , anError messageText))
-		]
+	self createEndPointName: '/listCart' executing: [ :request |
+		| cartId |
+		cartId _ (request fields at:'cartId') asInteger.
+		request send200Response: (WebUtils jsonEncode: (restInterface listCart: cartId))
 	].
 
-	webServer addService: '/listPurchases' action: [ :request | [
-			| clientId password |
-			clientId _ (request fields at:'clientId').		
-			password _ (request fields at:'password').
-			request send200Response: (WebUtils jsonEncode: (restInterface listPurchasesFor: clientId protectedBy: password))
-		 ]
-		on: Error 
-		do: [ :anError |
-			request send404Response: (WebUtils jsonEncode: ('1|' , anError messageText))
-		]
+	self createEndPointName: '/listPurchases'  executing: [ :request |
+		| clientId password |
+		clientId _ (request fields at:'clientId').		
+		password _ (request fields at:'password').
+		request send200Response: (WebUtils jsonEncode: (restInterface listPurchasesFor: clientId protectedBy: password))
 	].
 
-	webServer addService: '/checkOutCart' action: [ :request | [
-			| cartId creditCardNumber expiration owner |
-			cartId _ (request fields at:'cartId') asInteger.	
-			creditCardNumber _ (request fields at:'ccn').
-			expiration _ (request fields at:'cced').
-			owner _ (request fields at:'cco').
-			request send200Response: (WebUtils jsonEncode: (restInterface checkOut: cartId chargingToACreditCardNumbered: creditCardNumber expiringOn: expiration ownedBy: owner))
-		 ]
-		on: Error 
-		do: [ :anError |
-			request send404Response: (WebUtils jsonEncode: ('1|' , anError messageText))
-		]
-	].
-! !
+	self createEndPointName: '/checkOutCart' executing: [ :request |
+		| cartId creditCardNumber expiration owner |
+		cartId _ (request fields at:'cartId') asInteger.	
+		creditCardNumber _ (request fields at:'ccn').
+		expiration _ (request fields at:'cced').
+		owner _ (request fields at:'cco').
+		request send200Response: (WebUtils jsonEncode: (restInterface checkOut: cartId chargingToACreditCardNumbered: creditCardNumber expiringOn: expiration ownedBy: owner))
+	]! !
 
 !TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/6/2019 18:52:02'!
 port
 
 	^ port ifNil: [ port _ 8080 ]! !
+
+!TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/7/2019 20:26:12'!
+resolveWithDefaultErrorResponseFor: aBlock using: aRequest
+
+	[ aBlock value: aRequest ] on: Error do: [ :anError | aRequest send404Response: (WebUtils jsonEncode: ('1|' , anError messageText)) ]! !
 
 
 !classDefinition: #TusLibrosWebClient category: #'TusLibros.com'!
