@@ -1,3 +1,80 @@
+!classDefinition: #TusLibrosDashboardWindow category: #'TusLibros.com'!
+Panel subclass: #TusLibrosDashboardWindow
+	instanceVariableNames: 'listPurchasesButton createCartButton'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!TusLibrosDashboardWindow methodsFor: 'initialization' stamp: 'AB 7/7/2019 19:33:02'!
+defaultExtent
+
+	^ 350 @ 350! !
+
+!TusLibrosDashboardWindow methodsFor: 'initialization' stamp: 'AB 7/7/2019 19:23:37'!
+initialize
+
+	super initialize.
+	
+	self titleMorph showButtonsNamed: #(close collapse).
+	self setLabel: 'Client Dashboard'.
+	self model: (TusLibrosDashboardWindowModel new).
+	self morphExtent: (self defaultExtent).
+	self buildMorphicWindow.
+	self openInWorld.
+	self yourself.! !
+
+
+!TusLibrosDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/7/2019 19:26:58'!
+build1stRow
+
+	| firstRowLayout |
+
+	firstRowLayout _ LayoutMorph newRow.
+
+	createCartButton _ PluggableButtonMorph model: self model stateGetter: nil action: #createCart label: 'Create Cart'.
+
+	firstRowLayout separation: 25;
+ 	addMorph: createCartButton;
+	padding: #center.
+	
+	^ firstRowLayout! !
+
+!TusLibrosDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/7/2019 19:25:47'!
+build2ndRow
+
+	| secondRowLayout |
+
+	secondRowLayout _ LayoutMorph newRow.
+
+	listPurchasesButton _ PluggableButtonMorph model: self model stateGetter: nil action: #listPurchases label: 'List Purchases'.
+
+	secondRowLayout separation: 25;
+ 	addMorph: listPurchasesButton;
+	padding: #center.
+	
+	^ secondRowLayout! !
+
+!TusLibrosDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/7/2019 19:25:55'!
+buildMorphicWindow
+
+	self layoutMorph beColumn;
+	padding: #left;
+
+	addMorph: self build1stRow;
+	addMorph: self build2ndRow! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TusLibrosDashboardWindow class' category: #'TusLibros.com'!
+TusLibrosDashboardWindow class
+	instanceVariableNames: ''!
+
+!TusLibrosDashboardWindow class methodsFor: 'instance creation' stamp: 'AB 7/7/2019 19:22:40'!
+open
+	
+	^ self new! !
+
+
 !classDefinition: #TusLibrosLoginWindow category: #'TusLibros.com'!
 Panel subclass: #TusLibrosLoginWindow
 	instanceVariableNames: 'clientIdTextBox passwordTextBox resultLabel submitButton'
@@ -5,23 +82,32 @@ Panel subclass: #TusLibrosLoginWindow
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!TusLibrosLoginWindow methodsFor: 'events' stamp: 'AB 7/7/2019 18:45:55'!
-updateLogin
+!TusLibrosLoginWindow methodsFor: 'events' stamp: 'AB 7/7/2019 19:31:13'!
+updateLogIn
 
-	resultLabel contents: 'Access granted'.
+	resultLabel contents: model loginResponse.
 	clientIdTextBox disableEditing; borderColor: Color green.
 	passwordTextBox disableEditing; borderColor: Color green.
 
-	submitButton model: self model stateGetter: nil action: #submitLogOut  label: 'Logout'! !
+	submitButton model: self model stateGetter: nil action: #submitLogOut  label: 'Logout'.
+	
+	TusLibrosDashboardWindow open! !
 
-!TusLibrosLoginWindow methodsFor: 'events' stamp: 'AB 7/7/2019 18:46:57'!
-updateLogout
+!TusLibrosLoginWindow methodsFor: 'events' stamp: 'AB 7/7/2019 19:03:29'!
+updateLogOut
 
 	resultLabel contents: ''.
 	clientIdTextBox enableEditing; borderColor: Color skyBlue.
 	passwordTextBox enableEditing; borderColor: Color skyBlue.
 
-	submitButton model: self model stateGetter: nil action: #submitLogin  label: 'Login'! !
+	submitButton model: self model stateGetter: nil action: #submitLogIn  label: 'Login'! !
+
+!TusLibrosLoginWindow methodsFor: 'events' stamp: 'AB 7/7/2019 19:12:43'!
+wrongCredentials
+
+	resultLabel contents: model loginResponse.
+	clientIdTextBox borderColor: Color red.
+	passwordTextBox borderColor: Color red! !
 
 
 !TusLibrosLoginWindow methodsFor: 'initialization' stamp: 'AB 7/7/2019 17:00:46'!
@@ -29,7 +115,7 @@ defaultExtent
 
 	^ 450 @ 250! !
 
-!TusLibrosLoginWindow methodsFor: 'initialization' stamp: 'AB 7/7/2019 18:44:06'!
+!TusLibrosLoginWindow methodsFor: 'initialization' stamp: 'AB 7/7/2019 19:12:16'!
 initialize
 
 	super initialize.
@@ -42,11 +128,13 @@ initialize
 	self openInWorld.
 	self yourself.
 
-	self model when: #credentialsReceived send: #updateLogin to: self.
-	self model when: #credentialsRemoved send: #updateLogout to: self.! !
+	self model when: #credentialsReceived send: #updateLogIn to: self.
+	self model when: #credentialsRemoved send: #updateLogOut to: self.
+	self model when: #wrongCredentials send: #wrongCredentials to: self.
+! !
 
 
-!TusLibrosLoginWindow methodsFor: 'graphic user interface' stamp: 'AB 7/7/2019 18:48:44'!
+!TusLibrosLoginWindow methodsFor: 'graphic user interface' stamp: 'AB 7/7/2019 19:20:28'!
 build1stRow
 
 	| firstRowLayout |
@@ -58,13 +146,13 @@ build1stRow
 	clientIdTextBox  borderWidth: 1; borderColor: Color skyBlue; morphExtent: 250@30; emptyTextDisplayMessage: 'Client ID'.
 
 	firstRowLayout separation: 25;
-	addMorph: (StringMorph contents:'Enter Client ID:');
+	addMorph: (StringMorph contents:'Enter Client ID');
 	addMorph: clientIdTextBox;
 	padding: #left.
 
 	^ firstRowLayout! !
 
-!TusLibrosLoginWindow methodsFor: 'graphic user interface' stamp: 'AB 7/7/2019 18:48:56'!
+!TusLibrosLoginWindow methodsFor: 'graphic user interface' stamp: 'AB 7/7/2019 19:20:25'!
 build2ndRow
 
 	| secondRowLayout |
@@ -76,20 +164,20 @@ build2ndRow
 	passwordTextBox  borderWidth: 1; borderColor: Color skyBlue; morphExtent: 250@30; emptyTextDisplayMessage: 'Password'.
 	
 	secondRowLayout separation: 25;
-	addMorph: (StringMorph contents:'Enter Password:');
+	addMorph: (StringMorph contents:'Enter Password');
 	addMorph: passwordTextBox;
 	padding: #left.
 
 	^ secondRowLayout! !
 
-!TusLibrosLoginWindow methodsFor: 'graphic user interface' stamp: 'AB 7/7/2019 18:36:26'!
+!TusLibrosLoginWindow methodsFor: 'graphic user interface' stamp: 'AB 7/7/2019 19:19:42'!
 build3rdRow
 
 	| thirdRowLayout |
 
 	thirdRowLayout _ LayoutMorph newRow.
 
-	submitButton _ PluggableButtonMorph model: self model stateGetter: nil action: #submitLoginDetails  label: 'Login'.
+	submitButton _ PluggableButtonMorph model: self model stateGetter: nil action: #submitLogIn label: 'Login'.
 
 	resultLabel _ StringMorph contents: ''.
 
@@ -2760,6 +2848,19 @@ anotherValidClientPassword
 	^ 'Another Valid User Password'! !
 
 
+!classDefinition: #TusLibrosDashboardWindowModel category: #'TusLibros.com'!
+Object subclass: #TusLibrosDashboardWindowModel
+	instanceVariableNames: 'webClient'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!TusLibrosDashboardWindowModel methodsFor: 'as yet unclassified' stamp: 'AB 7/7/2019 19:27:42'!
+initialize
+
+	webClient _ TusLibrosWebClient new! !
+
+
 !classDefinition: #TusLibrosLoginWindowModel category: #'TusLibros.com'!
 Object subclass: #TusLibrosLoginWindowModel
 	instanceVariableNames: 'webClient loginResponse clientId password'
@@ -2780,11 +2881,10 @@ clientId
 
 	^ clientId! !
 
-!TusLibrosLoginWindowModel methodsFor: 'events' stamp: 'AB 7/7/2019 15:33:30'!
+!TusLibrosLoginWindowModel methodsFor: 'events' stamp: 'AB 7/7/2019 19:16:27'!
 clientId: aClientId
 
 	clientId _ aClientId.
-	
 	^ true! !
 
 !TusLibrosLoginWindowModel methodsFor: 'events' stamp: 'AB 7/7/2019 18:02:37'!
@@ -2797,26 +2897,34 @@ password
 
 	^ password! !
 
-!TusLibrosLoginWindowModel methodsFor: 'events' stamp: 'AB 7/7/2019 15:34:29'!
+!TusLibrosLoginWindowModel methodsFor: 'events' stamp: 'AB 7/7/2019 19:16:16'!
 password: aPassword
 
 	password _ aPassword.
-
 	^ true! !
 
-!TusLibrosLoginWindowModel methodsFor: 'events' stamp: 'AB 7/7/2019 18:38:50'!
+!TusLibrosLoginWindowModel methodsFor: 'events' stamp: 'AB 7/7/2019 19:16:55'!
+submitLogIn
+		
+	| response |
+	
+	response _ webClient signIn: clientId with: password.
+	
+	(response = '0|OK')
+		ifTrue: [
+			loginResponse _ 'Access granted'.
+			self triggerEvent: #credentialsReceived with: self
+		] ifFalse: [
+			loginResponse _ response copyFrom: 3 to: response size.
+			self triggerEvent: #wrongCredentials with: self		
+		]! !
+
+!TusLibrosLoginWindowModel methodsFor: 'events' stamp: 'AB 7/7/2019 18:54:07'!
 submitLogOut
 
 	loginResponse _ ''.
-	self triggerEvent: #credentialsRemoved with: self.! !
 
-!TusLibrosLoginWindowModel methodsFor: 'events' stamp: 'AB 7/7/2019 18:43:58'!
-submitLoginDetails
-		
-	loginResponse _ webClient signIn: clientId with: password.
-	
-	self triggerEvent: #credentialsReceived with: self.
-	! !
+	self triggerEvent: #credentialsRemoved with: self! !
 
 
 !classDefinition: #TusLibrosServer category: #'TusLibros.com'!
@@ -2866,13 +2974,30 @@ initialize
 
 	self initializeServices! !
 
-!TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/6/2019 19:22:38'!
+!TusLibrosServer methodsFor: 'initialization' stamp: 'AB 7/7/2019 19:42:11'!
 initializeServices
 
 	webServer _ WebServer new listenOn: self port.
 
 	webServer addService: '/catalog' action: [ :request |
 		request send200Response: (WebUtils jsonEncode: (restInterface catalog))
+	].
+
+	webServer addService: '/logInClient' action: [ :request | [
+			| clientId password |
+
+			clientId _ (request fields at:'clientId').
+			(clientId size = 0) ifTrue: [ self error: 'Missing Client ID' ].
+
+			password _ (request fields at:'password').
+			(password size = 0) ifTrue: [ self error: 'Missing password' ].
+
+			request send200Response: (WebUtils jsonEncode: '0|OK')
+		 ]
+		on: Error 
+		do: [ :anError |
+			request send404Response: (WebUtils jsonEncode: ('1|' , anError messageText))
+		]
 	].
 
 	webServer addService: '/createCart' action: [ :request | [
@@ -2969,18 +3094,14 @@ getCatalog
 		
 		ifFalse: [ ^ (WebUtils jsonDecode: ((response content) readStream)) ]! !
 
-!TusLibrosWebClient methodsFor: 'sending requests' stamp: 'AB 7/7/2019 15:13:07'!
+!TusLibrosWebClient methodsFor: 'sending requests' stamp: 'AB 7/7/2019 19:15:00'!
 signIn: aClientId with: aPassword
 
 	| response |
 
-	response _ WebClient htmlSubmit: (self url,'/createCart') fields: { 'clientId' -> aClientId. 'password' -> aPassword }.
+	response _ WebClient htmlSubmit: (self url,'/logInClient') fields: { 'clientId' -> aClientId. 'password' -> aPassword }.
 
-	response isSuccess 
-		
-		ifTrue: [ ^ (WebUtils jsonDecode: ((response content) readStream)) ]
-		
-		ifFalse: [ ^ (WebUtils jsonDecode: ((response content) readStream)) ]! !
+	^ WebUtils jsonDecode: ((response content) readStream)! !
 
 
 !TusLibrosWebClient methodsFor: 'initialization' stamp: 'AB 7/6/2019 19:34:17'!
