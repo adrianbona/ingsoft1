@@ -103,7 +103,7 @@ open
 
 !classDefinition: #TusLibrosDashboardWindow category: #'TusLibros.com'!
 Panel subclass: #TusLibrosDashboardWindow
-	instanceVariableNames: 'listPurchasesButton createCartButton'
+	instanceVariableNames: 'listPurchasesButton createCartButton client password'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
@@ -113,18 +113,19 @@ defaultExtent
 
 	^ 350 @ 350! !
 
-!TusLibrosDashboardWindow methodsFor: 'initialization' stamp: 'AB 7/7/2019 19:23:37'!
-initialize
+!TusLibrosDashboardWindow methodsFor: 'initialization' stamp: 'AB 7/8/2019 14:11:25'!
+initializeFor: aClient using: aPassword
 
-	super initialize.
-	
 	self titleMorph showButtonsNamed: #(close collapse).
 	self setLabel: 'Client Dashboard'.
 	self model: (TusLibrosDashboardWindowModel new).
 	self morphExtent: (self defaultExtent).
 	self buildMorphicWindow.
 	self openInWorld.
-	self yourself.! !
+	self yourself.
+	
+	client _ aClient.
+	password _ aPassword! !
 
 
 !TusLibrosDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/7/2019 19:26:58'!
@@ -172,10 +173,10 @@ buildMorphicWindow
 TusLibrosDashboardWindow class
 	instanceVariableNames: ''!
 
-!TusLibrosDashboardWindow class methodsFor: 'instance creation' stamp: 'AB 7/7/2019 19:22:40'!
-open
+!TusLibrosDashboardWindow class methodsFor: 'instance creation' stamp: 'AB 7/8/2019 14:10:37'!
+openFor: aClient using: aPassword
 	
-	^ self new! !
+	^ self new initializeFor: aClient using: aPassword! !
 
 
 !classDefinition: #TusLibrosLoginWindow category: #'TusLibros.com'!
@@ -185,7 +186,7 @@ Panel subclass: #TusLibrosLoginWindow
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
-!TusLibrosLoginWindow methodsFor: 'events' stamp: 'AB 7/7/2019 19:31:13'!
+!TusLibrosLoginWindow methodsFor: 'events' stamp: 'AB 7/8/2019 14:10:02'!
 updateLogIn
 
 	resultLabel contents: model loginResponse.
@@ -194,7 +195,7 @@ updateLogIn
 
 	submitButton model: self model stateGetter: nil action: #submitLogOut  label: 'Logout'.
 	
-	TusLibrosDashboardWindow open! !
+	TusLibrosDashboardWindow openFor: self model clientId using: self model password! !
 
 !TusLibrosLoginWindow methodsFor: 'events' stamp: 'AB 7/7/2019 19:03:29'!
 updateLogOut
@@ -3043,7 +3044,6 @@ initialize
 	sentence:=''.
 	selectedIndex:=0.
 	webClient := TusLibrosWebClient new.! !
-
 
 
 !TusLibrosCartWindowModel methodsFor: 'PluggableButtonSelectors' stamp: 'JR 7/8/2019 00:43:40'!
