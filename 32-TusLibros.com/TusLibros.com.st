@@ -1,3 +1,106 @@
+!classDefinition: #TusLibrosCartWindow category: #'TusLibros.com'!
+Panel subclass: #TusLibrosCartWindow
+	instanceVariableNames: 'catalog'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!TusLibrosCartWindow methodsFor: 'initialization' stamp: 'NR 6/24/2019 03:31:46'!
+defaultExtent
+
+	^ 630@435
+	! !
+
+!TusLibrosCartWindow methodsFor: 'initialization' stamp: 'JR 7/8/2019 00:52:22'!
+initializeWith: aTitle
+
+	self titleMorph showButtonsNamed: #( close collapse ).
+	self setLabel: aTitle.
+	self model: (TusLibrosCartWindowModel new).
+	self morphExtent: (self defaultExtent).
+	self buildMorphicWindow.
+	self openInWorld.
+	self yourself.
+			
+	self model when: #newCatalogArrived send: #refreshCatalogList to: self.! !
+
+
+!TusLibrosCartWindow methodsFor: 'access' stamp: 'JR 7/8/2019 00:52:30'!
+refreshCatalogList
+	
+	catalog updateList.
+	catalog setSelectionIndex: 0.
+	! !
+
+
+!TusLibrosCartWindow methodsFor: 'GUI building' stamp: 'JR 7/8/2019 00:50:06'!
+build1stColumn2ndRow
+	| firstColumnLayoutOfSecondRow |
+	
+	catalog := PluggableListMorph model: self model listGetter: #catalog indexGetter: #catalogIndex indexSetter: #catalogIndex:.
+	catalog  borderColor: Color skyBlue.
+	catalog  borderWidth: 1.
+		
+	firstColumnLayoutOfSecondRow := LayoutMorph newColumn.
+	firstColumnLayoutOfSecondRow separation: 5;
+	padding: #left;
+	addMorph: (StringMorph contents:'Catalog');
+	addMorph: catalog.
+		
+	^firstColumnLayoutOfSecondRow.
+	! !
+
+!TusLibrosCartWindow methodsFor: 'GUI building' stamp: 'JR 7/8/2019 00:50:44'!
+build1stRow
+	| sendRequestButton firstRowLayout |
+	
+	sendRequestButton := PluggableButtonMorph model: self model stateGetter: nil  action: #sendCatalogRequest  label: 'Get Catalog'.
+	
+	firstRowLayout := LayoutMorph newRow.
+	firstRowLayout separation: 25;
+	padding: #left;
+	addMorph: sendRequestButton;
+	addMorph: self build1stColumn2ndRow.
+ 
+	
+	^firstRowLayout.! !
+
+!TusLibrosCartWindow methodsFor: 'GUI building' stamp: 'JR 7/8/2019 00:45:18'!
+build2ndRow
+	| showInTranscriptButton secondRowLayout |
+	
+	showInTranscriptButton := PluggableButtonMorph model: self model stateGetter: nil  action: #addSelectedBookToCart label: 'Add To Cart'.	
+	
+	secondRowLayout := LayoutMorph newRow.
+	secondRowLayout separation: 25;
+	padding: #left;
+	addMorph: showInTranscriptButton.
+	
+	^secondRowLayout.
+	! !
+
+!TusLibrosCartWindow methodsFor: 'GUI building' stamp: 'NR 6/24/2019 06:59:15'!
+buildMorphicWindow
+		
+	self layoutMorph beColumn;
+	separation: 15;
+	padding: #left;
+	addMorph: self build1stRow;
+	addMorph: self build2ndRow.
+	! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TusLibrosCartWindow class' category: #'TusLibros.com'!
+TusLibrosCartWindow class
+	instanceVariableNames: ''!
+
+!TusLibrosCartWindow class methodsFor: 'instance creation' stamp: 'NR 6/24/2019 02:25:18'!
+open
+	
+	^self new initializeWith: 'Substrings-Service Client Window'.! !
+
+
 !classDefinition: #TusLibrosDashboardWindow category: #'TusLibros.com'!
 Panel subclass: #TusLibrosDashboardWindow
 	instanceVariableNames: 'listPurchasesButton createCartButton'
@@ -205,6 +308,67 @@ TusLibrosLoginWindow class
 	instanceVariableNames: ''!
 
 !TusLibrosLoginWindow class methodsFor: 'instance creation' stamp: 'AB 7/7/2019 15:22:58'!
+open
+	
+	^ self new! !
+
+
+!classDefinition: #TusLibrosPurchasesWindow category: #'TusLibros.com'!
+Panel subclass: #TusLibrosPurchasesWindow
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!TusLibrosPurchasesWindow methodsFor: 'initialization' stamp: 'JR 7/7/2019 23:25:51'!
+defaultExtent
+
+	^ 350 @ 350! !
+
+!TusLibrosPurchasesWindow methodsFor: 'initialization' stamp: 'JR 7/8/2019 00:10:52'!
+initialize
+
+	super initialize.
+	
+	self titleMorph showButtonsNamed: #(close collapse).
+	self setLabel: 'Client Purchases'.
+	self model: (TusLibrosPurchasesWindowModel new).
+	self morphExtent: (self defaultExtent).
+	self buildMorphicWindow.
+	self openInWorld.
+	self yourself.! !
+
+
+!TusLibrosPurchasesWindow methodsFor: 'graphic user interface' stamp: 'JR 7/8/2019 00:02:22'!
+build1stRow
+
+	| firstRowLayout |
+
+	purchasesList _ TextModelMorph withText: self model purchasesList.
+
+	firstRowLayout _ LayoutMorph newRow.
+
+	firstRowLayout separation: 25;
+ 	addMorph: purchasesList;
+	padding: #center.
+	
+	^ firstRowLayout! !
+
+!TusLibrosPurchasesWindow methodsFor: 'graphic user interface' stamp: 'JR 7/7/2019 23:36:13'!
+buildMorphicWindow
+
+	self layoutMorph beColumn;
+	padding: #left;
+
+	addMorph: self build1stRow! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TusLibrosPurchasesWindow class' category: #'TusLibros.com'!
+TusLibrosPurchasesWindow class
+	instanceVariableNames: ''!
+
+!TusLibrosPurchasesWindow class methodsFor: 'instance creation' stamp: 'JR 7/7/2019 23:25:51'!
 open
 	
 	^ self new! !
@@ -2848,6 +3012,63 @@ anotherValidClientPassword
 	^ 'Another Valid User Password'! !
 
 
+!classDefinition: #TusLibrosCartWindowModel category: #'TusLibros.com'!
+Object subclass: #TusLibrosCartWindowModel
+	instanceVariableNames: 'selectedIndex webClient catalog'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!TusLibrosCartWindowModel methodsFor: 'PluggableListSelectors' stamp: 'JR 7/8/2019 00:27:17'!
+catalog
+	
+	^ catalog
+! !
+
+!TusLibrosCartWindowModel methodsFor: 'PluggableListSelectors' stamp: 'JR 7/8/2019 00:47:45'!
+catalogIndex
+	
+	^selectedIndex.! !
+
+!TusLibrosCartWindowModel methodsFor: 'PluggableListSelectors' stamp: 'JR 7/8/2019 00:47:53'!
+catalogIndex: anIndex
+	
+	selectedIndex := anIndex.! !
+
+
+!TusLibrosCartWindowModel methodsFor: 'initialization' stamp: 'JR 7/8/2019 00:29:30'!
+initialize
+
+	catalog _ OrderedCollection new.
+	sentence:=''.
+	selectedIndex:=0.
+	webClient := TusLibrosWebClient new.! !
+
+
+
+!TusLibrosCartWindowModel methodsFor: 'PluggableButtonSelectors' stamp: 'JR 7/8/2019 00:43:40'!
+addSelectedBookToCart
+
+	(selectedIndex = 0) ifFalse:
+	[	
+	webClient addToCart: 1 book: (catalog at: selectedIndex).
+	
+	TranscriptWindow openTranscript.
+		Transcript clear.
+		Transcript show: 'The cart includes: '.
+		Transcript show: (webClient listCart: 1).
+		Transcript show: ' '.
+	]! !
+
+!TusLibrosCartWindowModel methodsFor: 'PluggableButtonSelectors' stamp: 'JR 7/8/2019 00:51:47'!
+sendCatalogRequest
+		
+	catalog _ webClient getCatalog.
+	
+	self triggerEvent: #newCatalogArrived with: self.
+	! !
+
+
 !classDefinition: #TusLibrosDashboardWindowModel category: #'TusLibros.com'!
 Object subclass: #TusLibrosDashboardWindowModel
 	instanceVariableNames: 'webClient'
@@ -2855,10 +3076,20 @@ Object subclass: #TusLibrosDashboardWindowModel
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
+!TusLibrosDashboardWindowModel methodsFor: 'as yet unclassified' stamp: 'JR 7/8/2019 00:53:39'!
+createCart
+
+	TusLibrosCartWindow open! !
+
 !TusLibrosDashboardWindowModel methodsFor: 'as yet unclassified' stamp: 'AB 7/7/2019 19:27:42'!
 initialize
 
 	webClient _ TusLibrosWebClient new! !
+
+!TusLibrosDashboardWindowModel methodsFor: 'as yet unclassified' stamp: 'JR 7/8/2019 00:04:10'!
+listPurchases
+
+	TusLibrosPurchasesWindow open! !
 
 
 !classDefinition: #TusLibrosLoginWindowModel category: #'TusLibros.com'!
@@ -2925,6 +3156,26 @@ submitLogOut
 	loginResponse _ ''.
 
 	self triggerEvent: #credentialsRemoved with: self! !
+
+
+!classDefinition: #TusLibrosPurchasesWindowModel category: #'TusLibros.com'!
+Object subclass: #TusLibrosPurchasesWindowModel
+	instanceVariableNames: 'webClient purchasesList'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com'!
+
+!TusLibrosPurchasesWindowModel methodsFor: 'as yet unclassified' stamp: 'JR 7/7/2019 23:55:21'!
+initialize
+
+	webClient _ TusLibrosWebClient new.
+	purchasesList _ webClient listPurchasesFor: 1 with: 123456.! !
+
+!TusLibrosPurchasesWindowModel methodsFor: 'as yet unclassified' stamp: 'JR 7/7/2019 23:42:57'!
+purchasesList
+	
+	^ purchasesList
+! !
 
 
 !classDefinition: #TusLibrosServer category: #'TusLibros.com'!
@@ -3056,6 +3307,15 @@ Object subclass: #TusLibrosWebClient
 	poolDictionaries: ''
 	category: 'TusLibros.com'!
 
+!TusLibrosWebClient methodsFor: 'sending requests' stamp: 'JR 7/8/2019 00:36:07'!
+addToCart: aCartId book: aBook
+
+	| response |
+
+	response _ WebClient htmlSubmit: (self url,'/addToCart') fields: { 'cartId' -> aCartId . 'bookIsbn' -> aBook . 'bookQuantity' -> 1 }.
+
+	^ WebUtils jsonDecode: ((response content) readStream)! !
+
 !TusLibrosWebClient methodsFor: 'sending requests' stamp: 'NR 6/25/2019 22:25:36'!
 correctlyEncodeSpacesForUrlRequestParameter: aParameter
 	
@@ -3074,6 +3334,15 @@ getCatalog
 		
 		ifFalse: [ ^ (WebUtils jsonDecode: ((response content) readStream)) ]! !
 
+!TusLibrosWebClient methodsFor: 'sending requests' stamp: 'JR 7/7/2019 23:54:35'!
+listPurchasesFor: aClientId with: aPassword
+
+	| response |
+
+	response _ WebClient htmlSubmit: (self url,'/listPurchases') fields: { 'clientId' -> aClientId. 'password' -> aPassword }.
+
+	^ WebUtils jsonDecode: ((response content) readStream)! !
+
 !TusLibrosWebClient methodsFor: 'sending requests' stamp: 'AB 7/7/2019 19:15:00'!
 signIn: aClientId with: aPassword
 
@@ -3083,6 +3352,15 @@ signIn: aClientId with: aPassword
 
 	^ WebUtils jsonDecode: ((response content) readStream)! !
 
+
+!TusLibrosWebClient methodsFor: 'initialization' stamp: 'JR 7/8/2019 00:42:49'!
+listCart: cartId
+
+	| response |
+
+	response _ WebClient htmlSubmit: (self url,'/listCart') fields: { 'cartId' -> cartId }.
+
+	^ WebUtils jsonDecode: ((response content) readStream)! !
 
 !TusLibrosWebClient methodsFor: 'initialization' stamp: 'AB 7/6/2019 19:34:17'!
 port
