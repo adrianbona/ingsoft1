@@ -5,13 +5,12 @@ Panel subclass: #TLCartWindow
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
 
-!TLCartWindow methodsFor: 'initialization' stamp: 'NR 6/24/2019 03:31:46'!
+!TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/9/2019 13:14:57'!
 defaultExtent
 
-	^ 630@435
-	! !
+	^ 550 @ 250! !
 
-!TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/8/2019 17:33:52'!
+!TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/9/2019 12:50:40'!
 initializeFor: aClient using: aPassword
 
 	self titleMorph showButtonsNamed: #( close collapse ).
@@ -22,7 +21,7 @@ initializeFor: aClient using: aPassword
 	self openInWorld.
 	self yourself.
 
-	self model when: #newCatalogArrived send: #refreshCatalogList to: self.! !
+	self model when: #catalogArrived send: #refreshCatalogList to: self.! !
 
 
 !TLCartWindow methodsFor: 'access' stamp: 'JR 7/8/2019 00:52:30'!
@@ -33,62 +32,33 @@ refreshCatalogList
 	! !
 
 
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/8/2019 17:09:26'!
-build1stColumn2ndRow
-
-	| firstColumnLayoutOfSecondRow |
-
-	catalog _ PluggableListMorph model: self model listGetter: #catalog indexGetter: #catalogIndex indexSetter: #catalogIndex:.
-	catalog  borderColor: Color skyBlue.
-	catalog  borderWidth: 1.
-
-	firstColumnLayoutOfSecondRow _ LayoutMorph newColumn.
-	firstColumnLayoutOfSecondRow separation: 5;
-	padding: #left;
-	addMorph: (StringMorph contents:'Catalog');
-	addMorph: catalog.
-
-	^ firstColumnLayoutOfSecondRow! !
-
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/8/2019 17:08:49'!
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/9/2019 13:13:47'!
 build1stRow
 
-	| getCatalogButton firstRowLayout |
+	| firstRowLayout addToCartButton |
 
-	getCatalogButton _ PluggableButtonMorph model: self model stateGetter: nil  action: #sendCatalogRequest  label: 'Get Catalog'.
+	addToCartButton _ PluggableButtonMorph model: self model stateGetter: nil  action: #addSelectedBookToCart label: 'Add To Cart'.
+
+	catalog _ PluggableListMorph model: self model listGetter: #catalog indexGetter: #catalogIndex indexSetter: #catalogIndex:.
+	catalog  borderColor: Color skyBlue; borderWidth: 1.
 
 	firstRowLayout _ LayoutMorph newRow.
 	firstRowLayout separation: 25;
 	padding: #left;
-	addMorph: getCatalogButton;
-	addMorph: self build1stColumn2ndRow.
+	addMorph: (StringMorph contents:'Catalog');
+	addMorph: catalog;
+	addMorph: addToCartButton.
 
 	^ firstRowLayout! !
 
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/8/2019 17:08:37'!
-build2ndRow
-
-	| addToCartButton secondRowLayout |
-
-	addToCartButton _ PluggableButtonMorph model: self model stateGetter: nil  action: #addSelectedBookToCart label: 'Add To Cart'.
-
-	secondRowLayout _ LayoutMorph newRow.
-	secondRowLayout separation: 25;
-	padding: #left;
-	addMorph: addToCartButton.
-
-	^ secondRowLayout! !
-
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/8/2019 17:10:01'!
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/9/2019 13:13:58'!
 buildMorphicWindow
 		
 	self layoutMorph beColumn;
 	separation: 15;
 	padding: #left;
 
-	addMorph: self build1stRow;
-	addMorph: self build2ndRow.
-! !
+	addMorph: self build1stRow! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -422,13 +392,15 @@ catalogIndex: anIndex
 	selectedIndex _ anIndex! !
 
 
-!TLCartWindowModel methodsFor: 'initialization' stamp: 'AB 7/8/2019 17:39:09'!
+!TLCartWindowModel methodsFor: 'initialization' stamp: 'AB 7/9/2019 12:50:14'!
 initializeFor: aClient using: aPassword
 
 	catalog _ OrderedCollection new.
 	selectedIndex _ 0.
 	webClient _ TLWebClient new.
-	cartId _ self cartIdFor: aClient protectedWith: aPassword.! !
+	cartId _ self cartIdFor: aClient protectedWith: aPassword.
+	
+	self sendCatalogRequest.! !
 
 
 !TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/8/2019 16:29:01'!
@@ -444,12 +416,12 @@ addSelectedBookToCart
 			Transcript show: ' '.
 	]! !
 
-!TLCartWindowModel methodsFor: 'events' stamp: 'JR 7/8/2019 00:51:47'!
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/9/2019 12:50:26'!
 sendCatalogRequest
 		
 	catalog _ webClient getCatalog.
 	
-	self triggerEvent: #newCatalogArrived with: self.
+	self triggerEvent: #catalogArrived with: self.
 	! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
