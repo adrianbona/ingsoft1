@@ -1,16 +1,16 @@
 !classDefinition: #TLCartWindow category: #'TusLibros.com-Client Server'!
 Panel subclass: #TLCartWindow
-	instanceVariableNames: 'catalog client password'
+	instanceVariableNames: 'catalog client password cartStatus'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
 
-!TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/9/2019 13:14:57'!
+!TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/9/2019 15:27:36'!
 defaultExtent
 
-	^ 550 @ 250! !
+	^ 500 @ 350! !
 
-!TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/9/2019 12:50:40'!
+!TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/9/2019 15:14:22'!
 initializeFor: aClient using: aPassword
 
 	self titleMorph showButtonsNamed: #( close collapse ).
@@ -21,44 +21,77 @@ initializeFor: aClient using: aPassword
 	self openInWorld.
 	self yourself.
 
-	self model when: #catalogArrived send: #refreshCatalogList to: self.! !
+	self model when: #catalogArrived send: #refreshCatalogList to: self.
+	self model when: #cartUpdated send: #refreshCartContents to: self.! !
 
 
-!TLCartWindow methodsFor: 'access' stamp: 'JR 7/8/2019 00:52:30'!
+!TLCartWindow methodsFor: 'access' stamp: 'AB 7/9/2019 15:18:36'!
+refreshCartContents
+
+	cartStatus contents: self model cartContents! !
+
+!TLCartWindow methodsFor: 'access' stamp: 'AB 7/9/2019 15:15:05'!
 refreshCatalogList
-	
+
 	catalog updateList.
-	catalog setSelectionIndex: 0.
-	! !
+	catalog setSelectionIndex: 0! !
 
 
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/9/2019 13:16:49'!
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/9/2019 15:27:16'!
 build1stRow
 
-	| firstRowLayout addToCartButton |
+	| rowLayout |
+
+	rowLayout _ LayoutMorph newRow.
+	rowLayout separation: 15;
+	padding: #center;
+	addMorph: (StringMorph contents: 'Select and item from Catalog').
+
+	^ rowLayout! !
+
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/9/2019 15:24:17'!
+build2ndRow
+
+	| rowLayout addToCartButton |
 
 	addToCartButton _ PluggableButtonMorph model: self model stateGetter: nil action: #addSelectedBookToCart label: 'Add To Cart'.
 
 	catalog _ PluggableListMorph model: self model listGetter: #catalog indexGetter: #catalogIndex indexSetter: #catalogIndex:.
 	catalog  borderColor: Color skyBlue; borderWidth: 1.
 
-	firstRowLayout _ LayoutMorph newRow.
-	firstRowLayout separation: 25;
+	rowLayout _ LayoutMorph newRow.
+	rowLayout separation: 25;
 	padding: #left;
 	addMorph: (StringMorph contents:'Catalog');
 	addMorph: catalog;
 	addMorph: addToCartButton.
 
-	^ firstRowLayout! !
+	^ rowLayout! !
 
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/9/2019 13:13:58'!
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/9/2019 15:27:29'!
+build3rdRow
+
+	| rowLayout |
+
+	cartStatus _ StringMorph contents: 'Shopping cart is Empty'.
+
+	rowLayout _ LayoutMorph newRow.
+	rowLayout separation: 15;
+	padding: #center;
+	addMorph: cartStatus.
+
+	^ rowLayout! !
+
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/9/2019 15:22:11'!
 buildMorphicWindow
 		
 	self layoutMorph beColumn;
 	separation: 15;
 	padding: #left;
 
-	addMorph: self build1stRow! !
+	addMorph: self build1stRow;
+	addMorph: self build2ndRow;
+	addMorph: self build3rdRow.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -109,14 +142,14 @@ listPurchases
 	TLPurchasesWindow openFor: client using: password! !
 
 
-!TLDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/8/2019 16:12:39'!
+!TLDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/9/2019 13:44:22'!
 build1stRow
 
 	| firstRowLayout |
 
 	firstRowLayout _ LayoutMorph newRow.
 
-	createCartButton _ PluggableButtonMorph model: self stateGetter: nil action: #createCart label: 'Create Cart'.
+	createCartButton _ PluggableButtonMorph model: self stateGetter: nil action: #createCart label: 'Start Shopping'.
 
 	firstRowLayout separation: 25;
  	addMorph: createCartButton;
@@ -178,13 +211,13 @@ updateLogIn
 	
 	TLDashboardWindow openFor: self model clientId using: self model password! !
 
-!TLLoginWindow methodsFor: 'events' stamp: 'AB 7/7/2019 19:03:29'!
+!TLLoginWindow methodsFor: 'events' stamp: 'AB 7/9/2019 14:51:22'!
 updateLogOut
 
 	resultLabel contents: ''.
 	clientIdTextBox enableEditing; borderColor: Color skyBlue.
 	passwordTextBox enableEditing; borderColor: Color skyBlue.
-
+	
 	submitButton model: self model stateGetter: nil action: #submitLogIn  label: 'Login'! !
 
 !TLLoginWindow methodsFor: 'events' stamp: 'AB 7/7/2019 19:12:43'!
@@ -356,10 +389,15 @@ openFor: aClient using: aPassword
 
 !classDefinition: #TLCartWindowModel category: #'TusLibros.com-Client Server'!
 Object subclass: #TLCartWindowModel
-	instanceVariableNames: 'selectedIndex webClient catalog cartId'
+	instanceVariableNames: 'selectedIndex webClient catalog cartId cartContents'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
+
+!TLCartWindowModel methodsFor: 'accessing' stamp: 'AB 7/9/2019 15:10:15'!
+cartContents
+
+	^ cartContents! !
 
 !TLCartWindowModel methodsFor: 'accessing' stamp: 'AB 7/8/2019 17:28:23'!
 cartId
@@ -403,7 +441,7 @@ initializeFor: aClient using: aPassword
 	self sendCatalogRequest.! !
 
 
-!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/9/2019 13:35:31'!
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/9/2019 15:10:02'!
 addSelectedBookToCart
 
 	(selectedIndex = 0) ifFalse: [
@@ -414,20 +452,18 @@ addSelectedBookToCart
 
 		webClient addToCart: self cartId book: book.
 
-		TranscriptWindow openTranscript.
-			Transcript clear.
-			Transcript show: 'The cart includes: '.
-			Transcript show: (webClient listCart: self cartId).
-			Transcript show: ' '.
+		cartContents _ webClient listCart: self cartId.
+		
+		self triggerEvent: #cartUpdated with: self.
 	]! !
 
-!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/9/2019 12:50:26'!
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/9/2019 15:09:19'!
 sendCatalogRequest
 		
 	catalog _ webClient getCatalog.
 	
 	self triggerEvent: #catalogArrived with: self.
-	! !
+! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
