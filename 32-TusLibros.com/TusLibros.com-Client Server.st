@@ -49,7 +49,7 @@ build1stRow
 
 	^ rowLayout! !
 
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/9/2019 15:24:17'!
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/9/2019 15:30:02'!
 build2ndRow
 
 	| rowLayout addToCartButton |
@@ -60,7 +60,7 @@ build2ndRow
 	catalog  borderColor: Color skyBlue; borderWidth: 1.
 
 	rowLayout _ LayoutMorph newRow.
-	rowLayout separation: 25;
+	rowLayout separation: 15;
 	padding: #left;
 	addMorph: (StringMorph contents:'Catalog');
 	addMorph: catalog;
@@ -68,17 +68,20 @@ build2ndRow
 
 	^ rowLayout! !
 
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/9/2019 15:27:29'!
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/9/2019 15:31:04'!
 build3rdRow
 
-	| rowLayout |
+	| rowLayout addToCartButton |
+
+	addToCartButton _ PluggableButtonMorph model: self model stateGetter: nil action: #checkOutCart label: 'Check out'.
 
 	cartStatus _ StringMorph contents: 'Shopping cart is Empty'.
 
 	rowLayout _ LayoutMorph newRow.
 	rowLayout separation: 15;
 	padding: #center;
-	addMorph: cartStatus.
+	addMorph: cartStatus;
+	addMorph: addToCartButton.
 
 	^ rowLayout! !
 
