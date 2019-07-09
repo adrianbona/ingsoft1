@@ -32,12 +32,12 @@ refreshCatalogList
 	! !
 
 
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/9/2019 13:13:47'!
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/9/2019 13:16:49'!
 build1stRow
 
 	| firstRowLayout addToCartButton |
 
-	addToCartButton _ PluggableButtonMorph model: self model stateGetter: nil  action: #addSelectedBookToCart label: 'Add To Cart'.
+	addToCartButton _ PluggableButtonMorph model: self model stateGetter: nil action: #addSelectedBookToCart label: 'Add To Cart'.
 
 	catalog _ PluggableListMorph model: self model listGetter: #catalog indexGetter: #catalogIndex indexSetter: #catalogIndex:.
 	catalog  borderColor: Color skyBlue; borderWidth: 1.
@@ -79,10 +79,10 @@ Panel subclass: #TLDashboardWindow
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
 
-!TLDashboardWindow methodsFor: 'initialization' stamp: 'AB 7/7/2019 19:33:02'!
+!TLDashboardWindow methodsFor: 'initialization' stamp: 'AB 7/9/2019 13:38:45'!
 defaultExtent
 
-	^ 350 @ 350! !
+	^ 250 @ 350! !
 
 !TLDashboardWindow methodsFor: 'initialization' stamp: 'AB 7/8/2019 16:23:22'!
 initializeFor: aClient using: aPassword
@@ -307,7 +307,7 @@ defaultExtent
 
 	^ 350 @ 350! !
 
-!TLPurchasesWindow methodsFor: 'initialization' stamp: 'AB 7/8/2019 17:14:33'!
+!TLPurchasesWindow methodsFor: 'initialization' stamp: 'AB 7/9/2019 13:37:29'!
 initializeFor: aClient using: aPassword
 
 	self titleMorph showButtonsNamed: #(close collapse).
@@ -392,27 +392,32 @@ catalogIndex: anIndex
 	selectedIndex _ anIndex! !
 
 
-!TLCartWindowModel methodsFor: 'initialization' stamp: 'AB 7/9/2019 12:50:14'!
+!TLCartWindowModel methodsFor: 'initialization' stamp: 'AB 7/9/2019 13:17:22'!
 initializeFor: aClient using: aPassword
 
-	catalog _ OrderedCollection new.
 	selectedIndex _ 0.
+	catalog _ OrderedCollection new.
 	webClient _ TLWebClient new.
 	cartId _ self cartIdFor: aClient protectedWith: aPassword.
 	
 	self sendCatalogRequest.! !
 
 
-!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/8/2019 16:29:01'!
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/9/2019 13:35:31'!
 addSelectedBookToCart
 
 	(selectedIndex = 0) ifFalse: [
-		webClient addToCart: 1 book: (catalog at: selectedIndex).
+		| book fromCatalog |
+
+		fromCatalog _ catalog at: selectedIndex.
+		book _ fromCatalog substrings at: 1.
+
+		webClient addToCart: self cartId book: book.
 
 		TranscriptWindow openTranscript.
 			Transcript clear.
 			Transcript show: 'The cart includes: '.
-			Transcript show: (webClient listCart: 1).
+			Transcript show: (webClient listCart: self cartId).
 			Transcript show: ' '.
 	]! !
 
