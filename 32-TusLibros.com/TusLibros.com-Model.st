@@ -293,10 +293,16 @@ assertExpirationMonthOfYearIsSixCharactersLong: anExpirationMonthOfYear
 	
 	(anExpirationMonthOfYear size = 6) ifFalse: [ self error: RestInterfaceExternal expirationMonthOfYearMustBeExactlySixDigitsLong ]! !
 
-!RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 6/30/2019 17:45:21'!
+!RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/9/2019 12:39:44'!
 catalog
 
-	^ restInterfaceInternal catalog! !
+	| catalog |
+
+	catalog _ OrderedCollection new.
+
+	restInterfaceInternal catalog keysAndValuesDo: [ :aKey :aValue | catalog add: (aKey , ' | ' , aValue printString) ].
+
+	^ catalog! !
 
 !RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/1/2019 19:40:28'!
 checkOut: aShoppingCartId chargingToACreditCardNumbered: aCreditCardNumber expiringOn: aSixDigitsExpirationDate ownedBy: ownersName
@@ -508,10 +514,10 @@ addTo: aShoppingCartId anItemWithCode: anISBN aQuantityOf: anAmount
 
 	session shoppingCart add: anISBN quantity: anAmount! !
 
-!RestInterfaceInternal methodsFor: 'cart accessing' stamp: 'AB 6/30/2019 17:44:45'!
+!RestInterfaceInternal methodsFor: 'cart accessing' stamp: 'AB 7/9/2019 12:39:00'!
 catalog
 
-	^ priceList keys! !
+	^ priceList! !
 
 !RestInterfaceInternal methodsFor: 'cart accessing' stamp: 'AB 6/22/2019 12:48:01'!
 checkOut: aShoppingCartId chargingToACreditCardNumbered: aCreditCardNumber expiringOn: aMonthOfYear ownedBy: ownersName 

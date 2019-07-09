@@ -270,7 +270,7 @@ setUp
 
 	aRestInterfaceWithTwoItemsPriceList _ RestInterfaceExternal withCatalogue: testObjects twoItemsPriceList processingThrough: self signInUsersWith: self! !
 
-!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 18:40:42'!
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/9/2019 12:04:01'!
 test01ListingAnEmptyCatalogReturnAnOkResponseWithEmptyCatalog
 
 	| catalog |
@@ -279,7 +279,7 @@ test01ListingAnEmptyCatalogReturnAnOkResponseWithEmptyCatalog
 	
 	self assert: catalog isEmpty.! !
 
-!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 18:46:12'!
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/9/2019 12:29:48'!
 test02ListingACatalogReturnsAResponseIncludingListOfItems
 
 	| catalog |
@@ -288,7 +288,9 @@ test02ListingACatalogReturnsAResponseIncludingListOfItems
 	
 	self assert: catalog size equals: testObjects twoItemsPriceList size.
 
-	self assert: (catalog allSatisfy: [ :anItem | testObjects twoItemsPriceList keys includes: anItem ]).! !
+	self assert: (catalog allSatisfy: [ :anItem | testObjects twoItemsPriceList keys anySatisfy: [ :aKey | (anItem indexOfSubCollection: aKey startingAt: 1) = 1 ] ]).
+	
+	self assert: (catalog allSatisfy: [ :anItem | testObjects twoItemsPriceList values anySatisfy: [ :aValue | (anItem indexOfSubCollection: aValue printString startingAt: 1) > 1 ] ]).! !
 
 !RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 18:46:19'!
 test03CreatingACartForValidClientReturnsOkRespondeWithCartId

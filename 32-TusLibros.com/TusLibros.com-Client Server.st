@@ -616,13 +616,13 @@ initialize
 
 	self initializeServices! !
 
-!TLServer methodsFor: 'initialization' stamp: 'AB 7/7/2019 20:29:18'!
+!TLServer methodsFor: 'initialization' stamp: 'AB 7/9/2019 12:34:20'!
 initializeServices
 
 	webServer _ WebServer new listenOn: self port.
 
 	self createEndPointName: '/catalog' executing: [ :request |
-		request send200Response: (WebUtils jsonEncode: (restInterface catalog))
+		request send200Response: (WebUtils jsonEncode: restInterface catalog asArray)
 	].
 
 	self createEndPointName: '/loginClient' executing: [ :request |
@@ -710,18 +710,14 @@ createCartFor: aClientId protectedWith: aPassword
 
 	^ WebUtils jsonDecode: ((response content) readStream)! !
 
-!TLWebClient methodsFor: 'sending requests' stamp: 'AB 7/7/2019 15:12:46'!
+!TLWebClient methodsFor: 'sending requests' stamp: 'AB 7/9/2019 11:04:24'!
 getCatalog
 
 	| response |
 
 	response _ WebClient htmlSubmit: (self url,'/catalog') fields: {}.
 	
-	response isSuccess 
-		
-		ifTrue: [ ^ (WebUtils jsonDecode: ((response content) readStream)) asOrderedCollection ]
-		
-		ifFalse: [ ^ (WebUtils jsonDecode: ((response content) readStream)) ]! !
+	^ (WebUtils jsonDecode: ((response content) readStream)) asOrderedCollection! !
 
 !TLWebClient methodsFor: 'sending requests' stamp: 'JR 7/8/2019 00:42:49'!
 listCart: cartId
