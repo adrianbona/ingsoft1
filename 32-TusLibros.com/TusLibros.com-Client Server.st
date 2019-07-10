@@ -161,47 +161,40 @@ openFor: aClient using: aPassword from: aPanel
 
 !classDefinition: #TLCheckOutWindow category: #'TusLibros.com-Client Server'!
 Panel subclass: #TLCheckOutWindow
-	instanceVariableNames: 'resultLabel creditCardNumberTextBox expirationMonthTextBox expirationYearTextBox ownersNameTextBox clientId cartId password'
+	instanceVariableNames: 'creditCardNumberTextBox expirationMonthTextBox expirationYearTextBox ownersNameTextBox clientId cartId password paymentStatus processPaymentButton'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
 
-!TLCheckOutWindow methodsFor: 'events' stamp: 'AB 7/10/2019 12:45:03'!
+!TLCheckOutWindow methodsFor: 'events' stamp: 'AB 7/10/2019 16:34:37'!
 closeButtonClicked
 
 	TLDashboardWindow openFor: clientId using: password.
+
 	self delete! !
 
-!TLCheckOutWindow methodsFor: 'events' stamp: 'AB 7/10/2019 12:21:23'!
-updateLogIn
+!TLCheckOutWindow methodsFor: 'events' stamp: 'AB 7/10/2019 16:45:21'!
+paymentDone
 
-	resultLabel contents: model loginResponse.
+	paymentStatus contents: model paymentResponse.
 	creditCardNumberTextBox disableEditing; borderColor: Color green.
 	expirationMonthTextBox disableEditing; borderColor: Color green.
+	expirationYearTextBox disableEditing; borderColor: Color green.
+	ownersNameTextBox disableEditing; borderColor: Color green.
 
-	submitButton model: self model stateGetter: nil action: #submitLogOut  label: 'Logout'.
-	
-	openDashboard _ TLDashboardWindow openFor: self model clientId using: self model password! !
+	processPaymentButton model: self stateGetter: nil action: #closeButtonClicked label: 'Go back to dashboard'.! !
 
-!TLCheckOutWindow methodsFor: 'events' stamp: 'AB 7/10/2019 12:21:23'!
-updateLogOut
+!TLCheckOutWindow methodsFor: 'events' stamp: 'AB 7/10/2019 16:32:14'!
+showPaymentStatus
 
-	resultLabel contents: ''.
-	creditCardNumberTextBox enableEditing; borderColor: Color skyBlue.
-	expirationMonthTextBox enableEditing; borderColor: Color skyBlue.
-	
-	submitButton model: self model stateGetter: nil action: #submitLogIn  label: 'Login'.
-	openDashboard ifNotNil: [ openDashboard closeButtonClicked ]! !
-
-!TLCheckOutWindow methodsFor: 'events' stamp: 'AB 7/10/2019 12:21:23'!
-wrongCredentials
-
-	resultLabel contents: model loginResponse.
+	paymentStatus contents: model paymentResponse.
 	creditCardNumberTextBox borderColor: Color red.
-	expirationMonthTextBox borderColor: Color red! !
+	expirationMonthTextBox borderColor: Color red.
+	expirationYearTextBox borderColor: Color red.
+	ownersNameTextBox borderColor: Color red.! !
 
 
-!TLCheckOutWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 13:01:58'!
+!TLCheckOutWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 16:28:44'!
 initializeFor: aClientId using: aPassword with: aCartId
 
 	self titleMorph showButtonsNamed: #(close collapse).
@@ -214,7 +207,11 @@ initializeFor: aClientId using: aPassword with: aCartId
 	
 	clientId _ aClientId.
 	password _ aPassword.
-	cartId _ aCartId! !
+	cartId _ aCartId.
+	
+	self model when: #paymentDone send: #paymentDone to: self.
+	self model when: #paymentRevoked send: #showPaymentStatus to: self.
+! !
 
 !TLCheckOutWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 12:41:28'!
 initializeFor: aClient using: aPassword with: aCartId from: aPanel
@@ -260,7 +257,7 @@ build2ndRow
 
 	^ rowLayout! !
 
-!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 13:07:24'!
+!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 16:40:13'!
 build3rdRow
 
 	| rowLayout |
@@ -272,7 +269,7 @@ build3rdRow
 	expirationYearTextBox  borderWidth: 1; borderColor: Color skyBlue; morphExtent: 250@30; emptyTextDisplayMessage: 'Four digits for year'.
 	
 	rowLayout separation: 15;
-	addMorph: (StringMorph contents:'Enter expiration month');
+	addMorph: (StringMorph contents:'Enter expiration year');
 	addMorph: expirationYearTextBox;
 	padding: #left.
 
@@ -309,20 +306,20 @@ buildBeginRow
 	
 	^ rowLayout! !
 
-!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 12:27:22'!
+!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 16:33:48'!
 buildEndRow
 
-	| rowLayout processPaymentButton |
+	| rowLayout |
 
 	rowLayout _ LayoutMorph newRow.
 
 	processPaymentButton _ PluggableButtonMorph model: self model stateGetter: nil action: #processPayment label: 'Process Payment'.
 
-	resultLabel _ StringMorph contents: ''.
+	paymentStatus _ StringMorph contents: ''.
 
 	rowLayout separation: 15;
  	addMorph: processPaymentButton;
-	addMorph: resultLabel;
+	addMorph: paymentStatus;
 	padding: #left.
 	
 	^ rowLayout! !
@@ -340,10 +337,10 @@ buildMorphicWindow
 	addMorph: self build4thRow;
 	addMorph: self buildEndRow! !
 
-!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 13:13:26'!
+!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 16:46:04'!
 defaultExtent
 
-	^ 500 @ 400! !
+	^ 650 @ 400! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -782,7 +779,7 @@ for: aClient using: aPassword
 
 !classDefinition: #TLCheckOutWindowModel category: #'TusLibros.com-Client Server'!
 Object subclass: #TLCheckOutWindowModel
-	instanceVariableNames: 'creditCardNumber clientId password cartId creditCardExpirationMonth creditCardExpirationYear creditCardOwnerName webClient'
+	instanceVariableNames: 'creditCardNumber clientId password cartId creditCardExpirationMonth creditCardExpirationYear creditCardOwnerName webClient paymentResponse'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
@@ -827,14 +824,40 @@ creditCardOwnerName: aCreditCardOwnerName
 
 	creditCardOwnerName _ aCreditCardOwnerName! !
 
+!TLCheckOutWindowModel methodsFor: 'accessing' stamp: 'AB 7/10/2019 16:26:34'!
+paymentResponse
 
-!TLCheckOutWindowModel methodsFor: 'initialization' stamp: 'AB 7/10/2019 12:54:44'!
+	^ paymentResponse! !
+
+
+!TLCheckOutWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 16:26:34'!
+processPayment
+
+	| response |
+
+	response _ webClient checkOut: cartId 
+		chargingToACreditCardNumbered: creditCardNumber 
+		expiringOn: (creditCardExpirationMonth , creditCardExpirationYear) 
+		ownedBy: creditCardOwnerName.
+
+	(response = '0|OK')
+		ifTrue: [
+			paymentResponse _ 'Payment was correctly processed'.
+			self triggerEvent: #paymentDone with: self
+		] ifFalse: [
+			paymentResponse _ response copyFrom: 3 to: response size.
+			self triggerEvent: #paymentRevoked with: self		
+		]! !
+
+
+!TLCheckOutWindowModel methodsFor: 'initialization' stamp: 'AB 7/10/2019 16:26:34'!
 initializeFor: aClientId using: aPassword with: aCartId
 
 	clientId _ aClientId.
 	password _ aPassword.
 	cartId _ aCartId.
 	
+	paymentResponse _ ''.
 	creditCardNumber _ ''.
 	creditCardExpirationMonth _ ''.
 	creditCardExpirationYear _ ''.
@@ -1006,7 +1029,7 @@ initialize
 
 	self initializeServices! !
 
-!TLServer methodsFor: 'initialization' stamp: 'AB 7/9/2019 12:34:20'!
+!TLServer methodsFor: 'initialization' stamp: 'AB 7/10/2019 16:37:44'!
 initializeServices
 
 	webServer _ WebServer new listenOn: self port.
@@ -1057,7 +1080,7 @@ initializeServices
 
 	self createEndPointName: '/checkOutCart' executing: [ :request |
 		| cartId creditCardNumber expiration owner |
-		cartId _ (request fields at:'cartId') asInteger.	
+		cartId _ (request fields at:'cartId') asInteger.
 		creditCardNumber _ (request fields at:'ccn').
 		expiration _ (request fields at:'cced').
 		owner _ (request fields at:'cco').
@@ -1088,6 +1111,20 @@ addToCart: aCartId book: aBook
 	| response |
 
 	response _ WebClient htmlSubmit: (self url,'/addToCart') fields: { 'cartId' -> aCartId . 'bookIsbn' -> aBook . 'bookQuantity' -> 1 }.
+
+	^ WebUtils jsonDecode: ((response content) readStream)! !
+
+!TLWebClient methodsFor: 'sending requests' stamp: 'AB 7/10/2019 16:39:09'!
+checkOut: aCartId chargingToACreditCardNumbered: aCreditCardNumber expiringOn: aMonthOfYear ownedBy: anOwnerName
+
+	| response |
+
+	response _ WebClient htmlSubmit: (self url,'/checkOutCart') fields: { 
+		'cartId' -> aCartId. 
+		'ccn' -> aCreditCardNumber.
+		'cced' -> aMonthOfYear.
+		'cco' -> anOwnerName.
+	}.
 
 	^ WebUtils jsonDecode: ((response content) readStream)! !
 
