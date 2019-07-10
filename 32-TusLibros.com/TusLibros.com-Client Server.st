@@ -10,7 +10,7 @@ defaultExtent
 
 	^ 500 @ 450! !
 
-!TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 11:04:05'!
+!TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 11:47:26'!
 initializeFor: aClientId using: aPassword
 
 	self titleMorph showButtonsNamed: #( close collapse ).
@@ -26,6 +26,8 @@ initializeFor: aClientId using: aPassword
 
 	self model when: #catalogArrived send: #refreshCatalogList to: self.
 	self model when: #cartUpdated send: #refreshCartContents to: self.
+	
+	self model when: #proceedToCheckOut send: #proceedToCheckOut to: self.
 
 	self model when: #noBooksSelected send: #noBooksSelected to: self.
 	self model when: #noBooksInCart send: #noBooksInCart to: self.! !
@@ -53,6 +55,12 @@ noBooksInCart
 noBooksSelected
 
 	cartStatus contents: 'Needs to select an item from catalog'! !
+
+!TLCartWindow methodsFor: 'events' stamp: 'AB 7/10/2019 11:46:56'!
+proceedToCheckOut
+
+	TLDashboardWindow openFor: clientId using: password.
+	self delete! !
 
 !TLCartWindow methodsFor: 'events' stamp: 'AB 7/9/2019 15:18:36'!
 refreshCartContents
@@ -509,7 +517,7 @@ initializeFor: aClient using: aPassword
 	self sendCatalogRequest.! !
 
 
-!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 11:03:31'!
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 11:43:15'!
 addSelectedBookToCart
 
 	(selectedIndex = 0)
@@ -518,22 +526,36 @@ addSelectedBookToCart
 		self triggerEvent: #noBooksSelected with: self
 	]
 	ifFalse: [
-		| book fromCatalog |
+		| book fromCatalog response |
 
 		fromCatalog _ catalog at: selectedIndex.
 		book _ fromCatalog substrings at: 1.
 
 		webClient addToCart: self cartId book: book.
 
-		cartContents _ webClient listCart: self cartId.
-		
-		self triggerEvent: #cartUpdated with: self.
+		response _ webClient listCart: self cartId.
+
+		((response copyFrom: 1 to: 2) = '0|')
+			ifTrue: [
+				cartContents _ response copyFrom: 3 to: response size.
+				self triggerEvent: #cartUpdated with: self.
+			]
 	]! !
 
-!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 11:03:42'!
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 11:49:07'!
 checkOutCart
+	
+	| response |
 
-	self triggerEvent: #noBooksInCart with: self! !
+	response _ webClient listCart: self cartId.
+
+	((response copyFrom: 1 to: 2) = '0|' and: (response copyFrom: 1 to: response size) size > 2)
+		ifTrue: [
+			self triggerEvent: #proceedToCheckOut with: self
+		]
+		ifFalse: [
+			self triggerEvent: #noBooksInCart with: self
+		]! !
 
 !TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/9/2019 15:09:19'!
 sendCatalogRequest
