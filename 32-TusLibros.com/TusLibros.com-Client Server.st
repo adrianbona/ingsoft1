@@ -239,8 +239,21 @@ initializeFor: aClient using: aPassword with: aCartId from: aPanel
 	self initializeFor: aClient using: aPassword with: aCartId! !
 
 
-!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 13:07:49'!
+!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 19:17:58'!
 build1stRow
+
+	| rowLayout |
+
+	rowLayout _ LayoutMorph newRow.
+
+	rowLayout separation: 15;
+	addMorph: (StringMorph contents: 'Enter your credit card details');
+	padding: #left.
+	
+	^ rowLayout! !
+
+!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 19:17:07'!
+build2ndRow
 
 	| rowLayout |
 	
@@ -257,8 +270,8 @@ build1stRow
 
 	^ rowLayout! !
 
-!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 13:07:18'!
-build2ndRow
+!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 19:16:59'!
+build3rdRow
 
 	| rowLayout |
 	
@@ -275,8 +288,8 @@ build2ndRow
 
 	^ rowLayout! !
 
-!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 16:40:13'!
-build3rdRow
+!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 19:16:50'!
+build4thRow
 
 	| rowLayout |
 	
@@ -293,8 +306,8 @@ build3rdRow
 
 	^ rowLayout! !
 
-!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 13:07:36'!
-build4thRow
+!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 19:16:40'!
+build5thRow
 
 	| rowLayout |
 	
@@ -311,21 +324,23 @@ build4thRow
 
 	^ rowLayout! !
 
-!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 12:27:09'!
-buildBeginRow
+!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 19:17:51'!
+build6thRow
 
 	| rowLayout |
 
 	rowLayout _ LayoutMorph newRow.
 
+	paymentStatus _ StringMorph contents: ''.
+
 	rowLayout separation: 15;
-	addMorph: (StringMorph contents: 'Enter your credit card details');
-	padding: #center.
+	addMorph: paymentStatus;
+	padding: #left.
 	
 	^ rowLayout! !
 
-!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 17:50:18'!
-buildEndRow
+!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 19:17:42'!
+build7thRow
 
 	| rowLayout |
 
@@ -335,28 +350,26 @@ buildEndRow
 
 	goBackButton _ PluggableButtonMorph model: self stateGetter: nil action: #closeButtonClicked label: 'Back to cart'.
 
-	paymentStatus _ StringMorph contents: ''.
-
 	rowLayout separation: 15;
  	addMorph: processPaymentButton;
 	addMorph: goBackButton;
-	addMorph: paymentStatus;
 	padding: #left.
 	
 	^ rowLayout! !
 
-!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 12:27:22'!
+!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 19:18:38'!
 buildMorphicWindow
 
 	self layoutMorph beColumn;
 	padding: #left;
 
-	addMorph: self buildBeginRow;
 	addMorph: self build1stRow;
 	addMorph: self build2ndRow;
 	addMorph: self build3rdRow;
 	addMorph: self build4thRow;
-	addMorph: self buildEndRow! !
+	addMorph: self build5thRow;
+	addMorph: self build6thRow;
+	addMorph: self build7thRow! !
 
 !TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 17:44:53'!
 defaultExtent
@@ -377,13 +390,13 @@ openFor: aClient using: aPassword with: aCartId
 
 !classDefinition: #TLDashboardWindow category: #'TusLibros.com-Client Server'!
 Panel subclass: #TLDashboardWindow
-	instanceVariableNames: 'listPurchasesButton createCartButton client password'
+	instanceVariableNames: 'listPurchasesButton createCartButton password clientId'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
 
-!TLDashboardWindow methodsFor: 'initialization' stamp: 'AB 7/8/2019 16:23:22'!
-initializeFor: aClient using: aPassword
+!TLDashboardWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 19:06:46'!
+initializeFor: aClientId using: aPassword
 
 	self titleMorph showButtonsNamed: #(close collapse).
 	self setLabel: 'Dashboard'.
@@ -392,63 +405,77 @@ initializeFor: aClient using: aPassword
 	self openInWorld.
 	self yourself.
 	
-	client _ aClient.
+	clientId _ aClientId.
 	password _ aPassword! !
 
 
-!TLDashboardWindow methodsFor: 'events' stamp: 'AB 7/10/2019 17:04:41'!
+!TLDashboardWindow methodsFor: 'events' stamp: 'AB 7/10/2019 19:06:46'!
 createCart
 
-	TLCartWindow openFor: client using: password.
+	TLCartWindow openFor: clientId using: password.
 	
 	self delete! !
 
-!TLDashboardWindow methodsFor: 'events' stamp: 'AB 7/10/2019 17:04:38'!
+!TLDashboardWindow methodsFor: 'events' stamp: 'AB 7/10/2019 19:06:46'!
 listPurchases
 
-	TLPurchasesWindow openFor: client using: password.
+	TLPurchasesWindow openFor: clientId using: password.
 	
 	self delete! !
 
 
-!TLDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 11:00:41'!
+!TLDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 19:14:01'!
 build1stRow
 
-	| firstRowLayout |
+	| rowLayout |
 
-	firstRowLayout _ LayoutMorph newRow.
+	rowLayout _ LayoutMorph newRow.
+
+	rowLayout separation: 15;
+	addMorph: (StringMorph contents: 'Welcome to Tus Libros App');
+	padding: #center.
+	
+	^ rowLayout! !
+
+!TLDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 19:07:55'!
+build2ndRow
+
+	| rowLayout |
+
+	rowLayout _ LayoutMorph newRow.
 
 	createCartButton _ PluggableButtonMorph model: self stateGetter: nil action: #createCart label: 'Start Shopping'.
 
-	firstRowLayout separation: 15;
+	rowLayout separation: 15;
  	addMorph: createCartButton;
 	padding: #center.
 	
-	^ firstRowLayout! !
+	^ rowLayout! !
 
-!TLDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 11:00:35'!
-build2ndRow
+!TLDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 19:07:35'!
+build3rdRow
 
-	| secondRowLayout |
+	| rowLayout |
 
-	secondRowLayout _ LayoutMorph newRow.
+	rowLayout _ LayoutMorph newRow.
 
 	listPurchasesButton _ PluggableButtonMorph model: self stateGetter: nil action: #listPurchases label: 'List Purchases'.
 
-	secondRowLayout separation: 15;
+	rowLayout separation: 15;
  	addMorph: listPurchasesButton;
 	padding: #center.
 	
-	^ secondRowLayout! !
+	^ rowLayout! !
 
-!TLDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 11:00:50'!
+!TLDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 19:09:07'!
 buildMorphicWindow
 
 	self layoutMorph beColumn;
 	padding: #center;
 
 	addMorph: self build1stRow;
-	addMorph: self build2ndRow! !
+	addMorph: self build2ndRow;
+	addMorph: self build3rdRow! !
 
 !TLDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 11:00:17'!
 defaultExtent
@@ -461,10 +488,10 @@ defaultExtent
 TLDashboardWindow class
 	instanceVariableNames: ''!
 
-!TLDashboardWindow class methodsFor: 'instance creation' stamp: 'AB 7/8/2019 14:10:37'!
-openFor: aClient using: aPassword
+!TLDashboardWindow class methodsFor: 'instance creation' stamp: 'AB 7/10/2019 19:10:21'!
+openFor: aClientId using: aPassword
 	
-	^ self new initializeFor: aClient using: aPassword! !
+	^ self new initializeFor: aClientId using: aPassword! !
 
 
 !classDefinition: #TLLoginWindow category: #'TusLibros.com-Client Server'!
@@ -521,59 +548,62 @@ initialize
 	self model when: #wrongCredentials send: #wrongCredentials to: self! !
 
 
-!TLLoginWindow methodsFor: 'graphic user interface' stamp: 'AB 7/7/2019 19:20:28'!
+!TLLoginWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 19:23:12'!
 build1stRow
 
-	| firstRowLayout |
+	| rowLayout |
 	
-	firstRowLayout _ LayoutMorph newRow.
+	rowLayout _ LayoutMorph newRow.
 	
 	clientIdTextBox _ TextModelMorph textProvider: self model textGetter: #clientId textSetter: #clientId:.
 	clientIdTextBox textMorph setProperty: #keyStroke: toValue: [ :key | clientIdTextBox textMorph acceptContents ].
 	clientIdTextBox  borderWidth: 1; borderColor: Color skyBlue; morphExtent: 250@30; emptyTextDisplayMessage: 'Client ID'.
 
-	firstRowLayout separation: 25;
-	addMorph: (StringMorph contents:'Enter Client ID');
+	rowLayout separation: 25;
+	addMorph: (StringMorph contents: 'Enter Client ID');
 	addMorph: clientIdTextBox;
 	padding: #left.
 
-	^ firstRowLayout! !
+	^ rowLayout! !
 
-!TLLoginWindow methodsFor: 'graphic user interface' stamp: 'AB 7/7/2019 19:20:25'!
+!TLLoginWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 19:22:58'!
 build2ndRow
 
-	| secondRowLayout |
+	| rowLayout |
 	
-	secondRowLayout _ LayoutMorph newRow.
+	rowLayout _ LayoutMorph newRow.
 	
 	passwordTextBox _ TextModelMorph textProvider: self model textGetter: #password textSetter: #password:. 
 	passwordTextBox textMorph setProperty: #keyStroke: toValue: [ :key | passwordTextBox textMorph acceptContents ].
 	passwordTextBox  borderWidth: 1; borderColor: Color skyBlue; morphExtent: 250@30; emptyTextDisplayMessage: 'Password'.
 	
-	secondRowLayout separation: 25;
+	rowLayout separation: 25;
 	addMorph: (StringMorph contents:'Enter Password');
 	addMorph: passwordTextBox;
 	padding: #left.
 
-	^ secondRowLayout! !
+	^ rowLayout! !
 
-!TLLoginWindow methodsFor: 'graphic user interface' stamp: 'AB 7/7/2019 19:19:42'!
+!TLLoginWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 19:22:50'!
 build3rdRow
 
-	| thirdRowLayout |
+	| rowLayout closeButton |
 
-	thirdRowLayout _ LayoutMorph newRow.
+	rowLayout _ LayoutMorph newRow.
 
 	submitButton _ PluggableButtonMorph model: self model stateGetter: nil action: #submitLogIn label: 'Login'.
 
+	closeButton _ PluggableButtonMorph model: self stateGetter: nil action: #closeButtonClicked label: 'Exit'.
+
 	resultLabel _ StringMorph contents: ''.
 
-	thirdRowLayout separation: 25;
- 	addMorph: submitButton;
+	rowLayout separation: 25;
+	addMorph: submitButton;
+	addMorph: closeButton;
 	addMorph: resultLabel;
 	padding: #left.
 	
-	^ thirdRowLayout! !
+	^ rowLayout! !
 
 !TLLoginWindow methodsFor: 'graphic user interface' stamp: 'AB 7/7/2019 17:01:44'!
 buildMorphicWindow
@@ -1055,14 +1085,14 @@ createEndPointName: endPoint executing: anActionBlock
 	webServer addService: endPoint action: [ :request | self resolveWithDefaultErrorResponseFor: anActionBlock using: request ]
 ! !
 
-!TLServer methodsFor: 'initialization' stamp: 'AB 7/6/2019 16:31:05'!
+!TLServer methodsFor: 'initialization' stamp: 'AB 7/10/2019 19:26:37'!
 initialize
 
 	kerberos _ [ :aClientId :aPassword | ].
 
 	merchantProcessor _ [ :anAmount :aCreditCard | ].
 
-	priceList _ StoreTestObjectsFactory new twoItemsPriceList.
+	priceList _ StoreTestObjectsFactory new threeItemsPriceList.
 
 	restInterface _ RestInterfaceExternal new initializewithCatalogue: priceList processingThrough: self signInUsersWith: self.
 

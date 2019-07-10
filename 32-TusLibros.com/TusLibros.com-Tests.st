@@ -1543,6 +1543,11 @@ existingISBN
 
 	^ #book1! !
 
+!StoreTestObjectsFactory methodsFor: 'items' stamp: 'AB 7/10/2019 19:27:54'!
+extraExistingISBN
+
+	^ #book3! !
+
 !StoreTestObjectsFactory methodsFor: 'items' stamp: 'AB 6/17/2019 16:43:50'!
 oneItemPriceList
 
@@ -1581,6 +1586,16 @@ oneNegativeItemPriceList
 	priceList _ self emptyPriceList.
 	priceList at: self existingISBN put: -100 * peso.
 	
+	^ priceList! !
+
+!StoreTestObjectsFactory methodsFor: 'items' stamp: 'AB 7/10/2019 19:27:43'!
+threeItemsPriceList
+
+	| priceList |
+
+	priceList _ self twoItemsPriceList.
+	priceList at: self extraExistingISBN put: 300 * peso.
+
 	^ priceList! !
 
 !StoreTestObjectsFactory methodsFor: 'items' stamp: 'AB 6/17/2019 16:45:02'!
