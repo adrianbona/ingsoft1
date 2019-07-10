@@ -1,14 +1,9 @@
 !classDefinition: #TLCartWindow category: #'TusLibros.com-Client Server'!
 Panel subclass: #TLCartWindow
-	instanceVariableNames: 'catalog client password cartStatus fromPanel clientId'
+	instanceVariableNames: 'catalog client password cartStatus fromPanel clientId cartId'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
-
-!TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 11:02:59'!
-defaultExtent
-
-	^ 500 @ 450! !
 
 !TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 11:47:26'!
 initializeFor: aClientId using: aPassword
@@ -32,12 +27,12 @@ initializeFor: aClientId using: aPassword
 	self model when: #noBooksSelected send: #noBooksSelected to: self.
 	self model when: #noBooksInCart send: #noBooksInCart to: self.! !
 
-!TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 09:42:07'!
-initializeFor: aClient using: aPassword from: aPanel
+!TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 13:03:15'!
+initializeFor: aClientId using: aPassword from: aPanel
 
 	aPanel closeButtonClicked.
 	
-	self initializeFor: aClient using: aPassword! !
+	self initializeFor: aClientId using: aPassword! !
 
 
 !TLCartWindow methodsFor: 'events' stamp: 'AB 7/10/2019 10:28:51'!
@@ -56,10 +51,10 @@ noBooksSelected
 
 	cartStatus contents: 'Needs to select an item from catalog'! !
 
-!TLCartWindow methodsFor: 'events' stamp: 'AB 7/10/2019 11:46:56'!
+!TLCartWindow methodsFor: 'events' stamp: 'AB 7/10/2019 12:48:25'!
 proceedToCheckOut
 
-	TLDashboardWindow openFor: clientId using: password.
+	TLCheckOutWindow openFor: clientId using: password with: self model cartId.
 	self delete! !
 
 !TLCartWindow methodsFor: 'events' stamp: 'AB 7/9/2019 15:18:36'!
@@ -142,6 +137,11 @@ buildMorphicWindow
 	addMorph: self build3rdRow;
 	addMorph: self build4thRow.! !
 
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 11:02:59'!
+defaultExtent
+
+	^ 500 @ 450! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'TLCartWindow class' category: #'TusLibros.com-Client Server'!
@@ -159,17 +159,215 @@ openFor: aClient using: aPassword from: aPanel
 	^ self new initializeFor: aClient using: aPassword from: aPanel! !
 
 
+!classDefinition: #TLCheckOutWindow category: #'TusLibros.com-Client Server'!
+Panel subclass: #TLCheckOutWindow
+	instanceVariableNames: 'resultLabel creditCardNumberTextBox expirationMonthTextBox expirationYearTextBox ownersNameTextBox clientId cartId password'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com-Client Server'!
+
+!TLCheckOutWindow methodsFor: 'events' stamp: 'AB 7/10/2019 12:45:03'!
+closeButtonClicked
+
+	TLDashboardWindow openFor: clientId using: password.
+	self delete! !
+
+!TLCheckOutWindow methodsFor: 'events' stamp: 'AB 7/10/2019 12:21:23'!
+updateLogIn
+
+	resultLabel contents: model loginResponse.
+	creditCardNumberTextBox disableEditing; borderColor: Color green.
+	expirationMonthTextBox disableEditing; borderColor: Color green.
+
+	submitButton model: self model stateGetter: nil action: #submitLogOut  label: 'Logout'.
+	
+	openDashboard _ TLDashboardWindow openFor: self model clientId using: self model password! !
+
+!TLCheckOutWindow methodsFor: 'events' stamp: 'AB 7/10/2019 12:21:23'!
+updateLogOut
+
+	resultLabel contents: ''.
+	creditCardNumberTextBox enableEditing; borderColor: Color skyBlue.
+	expirationMonthTextBox enableEditing; borderColor: Color skyBlue.
+	
+	submitButton model: self model stateGetter: nil action: #submitLogIn  label: 'Login'.
+	openDashboard ifNotNil: [ openDashboard closeButtonClicked ]! !
+
+!TLCheckOutWindow methodsFor: 'events' stamp: 'AB 7/10/2019 12:21:23'!
+wrongCredentials
+
+	resultLabel contents: model loginResponse.
+	creditCardNumberTextBox borderColor: Color red.
+	expirationMonthTextBox borderColor: Color red! !
+
+
+!TLCheckOutWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 13:01:58'!
+initializeFor: aClientId using: aPassword with: aCartId
+
+	self titleMorph showButtonsNamed: #(close collapse).
+	self setLabel: 'Shopping Cart Check Out'.
+	self model: (TLCheckOutWindowModel for: aClientId using: aPassword with: aCartId).
+	self morphExtent: (self defaultExtent).
+	self buildMorphicWindow.
+	self openInWorld.
+	self yourself.
+	
+	clientId _ aClientId.
+	password _ aPassword.
+	cartId _ aCartId! !
+
+!TLCheckOutWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 12:41:28'!
+initializeFor: aClient using: aPassword with: aCartId from: aPanel
+
+	aPanel closeButtonClicked.
+	
+	self initializeFor: aClient using: aPassword with: aCartId! !
+
+
+!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 13:07:49'!
+build1stRow
+
+	| rowLayout |
+	
+	rowLayout _ LayoutMorph newRow.
+	
+	creditCardNumberTextBox _ TextModelMorph textProvider: self model textGetter: #creditCardNumber textSetter: #creditCardNumber:.
+	creditCardNumberTextBox textMorph setProperty: #keyStroke: toValue: [ :key | creditCardNumberTextBox textMorph acceptContents ].
+	creditCardNumberTextBox  borderWidth: 1; borderColor: Color skyBlue; morphExtent: 250@30; emptyTextDisplayMessage: '16 digits number'.
+
+	rowLayout separation: 15;
+	addMorph: (StringMorph contents:'Enter number');
+	addMorph: creditCardNumberTextBox;
+	padding: #left.
+
+	^ rowLayout! !
+
+!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 13:07:18'!
+build2ndRow
+
+	| rowLayout |
+	
+	rowLayout _ LayoutMorph newRow.
+	
+	expirationMonthTextBox _ TextModelMorph textProvider: self model textGetter: #creditCardExpirationMonth textSetter: #creditCardExpirationMonth:. 
+	expirationMonthTextBox textMorph setProperty: #keyStroke: toValue: [ :key | expirationMonthTextBox textMorph acceptContents ].
+	expirationMonthTextBox  borderWidth: 1; borderColor: Color skyBlue; morphExtent: 250@30; emptyTextDisplayMessage: 'Two digits for month'.
+	
+	rowLayout separation: 15;
+	addMorph: (StringMorph contents:'Enter expiration month');
+	addMorph: expirationMonthTextBox;
+	padding: #left.
+
+	^ rowLayout! !
+
+!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 13:07:24'!
+build3rdRow
+
+	| rowLayout |
+	
+	rowLayout _ LayoutMorph newRow.
+	
+	expirationYearTextBox _ TextModelMorph textProvider: self model textGetter: #creditCardExpirationYear textSetter: #creditCardExpirationYear:. 
+	expirationYearTextBox textMorph setProperty: #keyStroke: toValue: [ :key | expirationYearTextBox textMorph acceptContents ].
+	expirationYearTextBox  borderWidth: 1; borderColor: Color skyBlue; morphExtent: 250@30; emptyTextDisplayMessage: 'Four digits for year'.
+	
+	rowLayout separation: 15;
+	addMorph: (StringMorph contents:'Enter expiration month');
+	addMorph: expirationYearTextBox;
+	padding: #left.
+
+	^ rowLayout! !
+
+!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 13:07:36'!
+build4thRow
+
+	| rowLayout |
+	
+	rowLayout _ LayoutMorph newRow.
+	
+	ownersNameTextBox _ TextModelMorph textProvider: self model textGetter: #creditCardOwnerName textSetter: #creditCardOwnerName:. 
+	ownersNameTextBox textMorph setProperty: #keyStroke: toValue: [ :key | ownersNameTextBox textMorph acceptContents ].
+	ownersNameTextBox  borderWidth: 1; borderColor: Color skyBlue; morphExtent: 250@30; emptyTextDisplayMessage: 'Owner name'.
+	
+	rowLayout separation: 15;
+	addMorph: (StringMorph contents:'Enter name');
+	addMorph: ownersNameTextBox;
+	padding: #left.
+
+	^ rowLayout! !
+
+!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 12:27:09'!
+buildBeginRow
+
+	| rowLayout |
+
+	rowLayout _ LayoutMorph newRow.
+
+	rowLayout separation: 15;
+	addMorph: (StringMorph contents: 'Enter your credit card details');
+	padding: #center.
+	
+	^ rowLayout! !
+
+!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 12:27:22'!
+buildEndRow
+
+	| rowLayout processPaymentButton |
+
+	rowLayout _ LayoutMorph newRow.
+
+	processPaymentButton _ PluggableButtonMorph model: self model stateGetter: nil action: #processPayment label: 'Process Payment'.
+
+	resultLabel _ StringMorph contents: ''.
+
+	rowLayout separation: 15;
+ 	addMorph: processPaymentButton;
+	addMorph: resultLabel;
+	padding: #left.
+	
+	^ rowLayout! !
+
+!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 12:27:22'!
+buildMorphicWindow
+
+	self layoutMorph beColumn;
+	padding: #left;
+
+	addMorph: self buildBeginRow;
+	addMorph: self build1stRow;
+	addMorph: self build2ndRow;
+	addMorph: self build3rdRow;
+	addMorph: self build4thRow;
+	addMorph: self buildEndRow! !
+
+!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 13:13:26'!
+defaultExtent
+
+	^ 500 @ 400! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TLCheckOutWindow class' category: #'TusLibros.com-Client Server'!
+TLCheckOutWindow class
+	instanceVariableNames: ''!
+
+!TLCheckOutWindow class methodsFor: 'instance creation' stamp: 'AB 7/10/2019 12:40:12'!
+openFor: aClient using: aPassword with: aCartId
+
+	^ self new initializeFor: aClient using: aPassword with: aCartId! !
+
+!TLCheckOutWindow class methodsFor: 'instance creation' stamp: 'AB 7/10/2019 12:39:54'!
+openFor: aClient using: aPassword with: aCartId from: aPanel
+	
+	^ self new initializeFor: aClient using: aPassword with: aCartId from: aPanel! !
+
+
 !classDefinition: #TLDashboardWindow category: #'TusLibros.com-Client Server'!
 Panel subclass: #TLDashboardWindow
 	instanceVariableNames: 'listPurchasesButton createCartButton client password'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
-
-!TLDashboardWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 11:00:17'!
-defaultExtent
-
-	^ 250 @ 250! !
 
 !TLDashboardWindow methodsFor: 'initialization' stamp: 'AB 7/8/2019 16:23:22'!
 initializeFor: aClient using: aPassword
@@ -235,6 +433,11 @@ buildMorphicWindow
 	addMorph: self build1stRow;
 	addMorph: self build2ndRow! !
 
+!TLDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 11:00:17'!
+defaultExtent
+
+	^ 250 @ 250! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'TLDashboardWindow class' category: #'TusLibros.com-Client Server'!
@@ -282,11 +485,6 @@ wrongCredentials
 	clientIdTextBox borderColor: Color red.
 	passwordTextBox borderColor: Color red! !
 
-
-!TLLoginWindow methodsFor: 'initialization' stamp: 'AB 7/7/2019 17:00:46'!
-defaultExtent
-
-	^ 450 @ 250! !
 
 !TLLoginWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 09:27:41'!
 initialize
@@ -370,6 +568,11 @@ buildMorphicWindow
 	addMorph: self build2ndRow;
 	addMorph: self build3rdRow! !
 
+!TLLoginWindow methodsFor: 'graphic user interface' stamp: 'AB 7/7/2019 17:00:46'!
+defaultExtent
+
+	^ 450 @ 250! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'TLLoginWindow class' category: #'TusLibros.com-Client Server'!
@@ -388,11 +591,6 @@ Panel subclass: #TLPurchasesWindow
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
-
-!TLPurchasesWindow methodsFor: 'initialization' stamp: 'JR 7/7/2019 23:25:51'!
-defaultExtent
-
-	^ 350 @ 350! !
 
 !TLPurchasesWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 10:32:26'!
 initializeFor: aClientId using: aPassword
@@ -438,6 +636,11 @@ buildMorphicWindow
 	padding: #left;
 
 	addMorph: self build1stRow! !
+
+!TLPurchasesWindow methodsFor: 'graphic user interface' stamp: 'JR 7/7/2019 23:25:51'!
+defaultExtent
+
+	^ 350 @ 350! !
 
 
 !TLPurchasesWindow methodsFor: 'events' stamp: 'AB 7/10/2019 10:31:42'!
@@ -575,6 +778,80 @@ TLCartWindowModel class
 for: aClient using: aPassword
 
 	^ self new initializeFor: aClient using: aPassword! !
+
+
+!classDefinition: #TLCheckOutWindowModel category: #'TusLibros.com-Client Server'!
+Object subclass: #TLCheckOutWindowModel
+	instanceVariableNames: 'creditCardNumber clientId password cartId creditCardExpirationMonth creditCardExpirationYear creditCardOwnerName webClient'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com-Client Server'!
+
+!TLCheckOutWindowModel methodsFor: 'accessing' stamp: 'AB 7/10/2019 12:55:48'!
+creditCardExpirationMonth
+
+	^ creditCardExpirationMonth! !
+
+!TLCheckOutWindowModel methodsFor: 'accessing' stamp: 'AB 7/10/2019 12:55:38'!
+creditCardExpirationMonth: aCreditCardExpirationMonth
+
+	creditCardExpirationMonth _ aCreditCardExpirationMonth! !
+
+!TLCheckOutWindowModel methodsFor: 'accessing' stamp: 'AB 7/10/2019 12:56:52'!
+creditCardExpirationYear
+
+	^ creditCardExpirationYear! !
+
+!TLCheckOutWindowModel methodsFor: 'accessing' stamp: 'AB 7/10/2019 12:57:12'!
+creditCardExpirationYear: aCreditCardExpirationYear
+
+	creditCardExpirationYear _ aCreditCardExpirationYear! !
+
+!TLCheckOutWindowModel methodsFor: 'accessing' stamp: 'AB 7/10/2019 12:49:37'!
+creditCardNumber
+
+	^ creditCardNumber! !
+
+!TLCheckOutWindowModel methodsFor: 'accessing' stamp: 'AB 7/10/2019 12:49:53'!
+creditCardNumber: aCreditCardNumber
+
+	creditCardNumber _ aCreditCardNumber! !
+
+!TLCheckOutWindowModel methodsFor: 'accessing' stamp: 'AB 7/10/2019 12:56:40'!
+creditCardOwnerName
+
+	^ creditCardOwnerName! !
+
+!TLCheckOutWindowModel methodsFor: 'accessing' stamp: 'AB 7/10/2019 12:56:31'!
+creditCardOwnerName: aCreditCardOwnerName
+
+	creditCardOwnerName _ aCreditCardOwnerName! !
+
+
+!TLCheckOutWindowModel methodsFor: 'initialization' stamp: 'AB 7/10/2019 12:54:44'!
+initializeFor: aClientId using: aPassword with: aCartId
+
+	clientId _ aClientId.
+	password _ aPassword.
+	cartId _ aCartId.
+	
+	creditCardNumber _ ''.
+	creditCardExpirationMonth _ ''.
+	creditCardExpirationYear _ ''.
+	creditCardOwnerName _ ''.
+	
+	webClient _ TLWebClient new.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TLCheckOutWindowModel class' category: #'TusLibros.com-Client Server'!
+TLCheckOutWindowModel class
+	instanceVariableNames: ''!
+
+!TLCheckOutWindowModel class methodsFor: 'instance creation' stamp: 'AB 7/10/2019 13:02:45'!
+for: aClientId using: aPassword with: aCartId
+
+	^ self new initializeFor: aClientId using: aPassword with: aCartId! !
 
 
 !classDefinition: #TLLoginWindowModel category: #'TusLibros.com-Client Server'!
