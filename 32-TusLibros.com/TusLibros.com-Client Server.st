@@ -5,12 +5,11 @@ Panel subclass: #TLCartWindow
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
 
-!TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 11:47:26'!
-initializeFor: aClientId using: aPassword
+!TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 17:39:30'!
+initializeAfterChoosingModelFor: aClientId using: aPassword
 
 	self titleMorph showButtonsNamed: #( close collapse ).
-	self model: (TLCartWindowModel for: aClientId using: aPassword).
-	self setLabel: 'Add books to shopping cart #' , model cartId.
+	self setLabel: 'Add books to shopping cart #' , model cartId printString.
 	self morphExtent: (self defaultExtent).
 	self buildMorphicWindow.
 	self openInWorld.
@@ -25,20 +24,30 @@ initializeFor: aClientId using: aPassword
 	self model when: #proceedToCheckOut send: #proceedToCheckOut to: self.
 
 	self model when: #noBooksSelected send: #noBooksSelected to: self.
-	self model when: #noBooksInCart send: #noBooksInCart to: self.! !
-
-!TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 13:03:15'!
-initializeFor: aClientId using: aPassword from: aPanel
-
-	aPanel closeButtonClicked.
+	self model when: #noBooksInCart send: #noBooksInCart to: self.
 	
-	self initializeFor: aClientId using: aPassword! !
+	self refreshCartContents.! !
+
+!TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 17:04:04'!
+initializeFor: aClientId using: aPassword
+
+	self model: (TLCartWindowModel for: aClientId using: aPassword).
+
+	self initializeAfterChoosingModelFor: aClientId using: aPassword! !
+
+!TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 17:03:44'!
+initializeFor: aClientId using: aPassword with: aCartId
+
+	self model: (TLCartWindowModel for: aClientId using: aPassword with: aCartId).
+
+	self initializeAfterChoosingModelFor: aClientId using: aPassword! !
 
 
-!TLCartWindow methodsFor: 'events' stamp: 'AB 7/10/2019 10:28:51'!
+!TLCartWindow methodsFor: 'events' stamp: 'AB 7/10/2019 16:53:15'!
 closeButtonClicked
 
 	TLDashboardWindow openFor: clientId using: password.
+	
 	self delete! !
 
 !TLCartWindow methodsFor: 'events' stamp: 'AB 7/10/2019 11:04:17'!
@@ -51,10 +60,11 @@ noBooksSelected
 
 	cartStatus contents: 'Needs to select an item from catalog'! !
 
-!TLCartWindow methodsFor: 'events' stamp: 'AB 7/10/2019 12:48:25'!
+!TLCartWindow methodsFor: 'events' stamp: 'AB 7/10/2019 16:53:32'!
 proceedToCheckOut
 
 	TLCheckOutWindow openFor: clientId using: password with: self model cartId.
+
 	self delete! !
 
 !TLCartWindow methodsFor: 'events' stamp: 'AB 7/9/2019 15:18:36'!
@@ -99,12 +109,12 @@ build2ndRow
 
 	^ rowLayout! !
 
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 11:02:12'!
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 17:38:03'!
 build3rdRow
 
 	| rowLayout |
 
-	cartStatus _ StringMorph contents: 'Shopping cart is Empty'.
+	cartStatus _ StringMorph contents: ''.
 
 	rowLayout _ LayoutMorph newRow.
 	rowLayout padding: #center;
@@ -153,27 +163,34 @@ openFor: aClient using: aPassword
 	
 	^ self new initializeFor: aClient using: aPassword! !
 
-!TLCartWindow class methodsFor: 'instance creation' stamp: 'AB 7/10/2019 09:39:21'!
-openFor: aClient using: aPassword from: aPanel
+!TLCartWindow class methodsFor: 'instance creation' stamp: 'AB 7/10/2019 16:58:59'!
+openFor: aClient using: aPassword with: aCartId
 	
-	^ self new initializeFor: aClient using: aPassword from: aPanel! !
+	^ self new initializeFor: aClient using: aPassword with: aCartId! !
 
 
 !classDefinition: #TLCheckOutWindow category: #'TusLibros.com-Client Server'!
 Panel subclass: #TLCheckOutWindow
-	instanceVariableNames: 'creditCardNumberTextBox expirationMonthTextBox expirationYearTextBox ownersNameTextBox clientId cartId password paymentStatus processPaymentButton'
+	instanceVariableNames: 'creditCardNumberTextBox expirationMonthTextBox expirationYearTextBox ownersNameTextBox clientId cartId password paymentStatus processPaymentButton goBackButton'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
 
-!TLCheckOutWindow methodsFor: 'events' stamp: 'AB 7/10/2019 16:34:37'!
-closeButtonClicked
+!TLCheckOutWindow methodsFor: 'events' stamp: 'AB 7/10/2019 16:56:58'!
+backToDashboard
 
 	TLDashboardWindow openFor: clientId using: password.
 
 	self delete! !
 
-!TLCheckOutWindow methodsFor: 'events' stamp: 'AB 7/10/2019 16:45:21'!
+!TLCheckOutWindow methodsFor: 'events' stamp: 'AB 7/10/2019 16:57:34'!
+closeButtonClicked
+
+	TLCartWindow openFor: clientId using: password with: cartId.
+
+	self delete! !
+
+!TLCheckOutWindow methodsFor: 'events' stamp: 'AB 7/10/2019 17:50:34'!
 paymentDone
 
 	paymentStatus contents: model paymentResponse.
@@ -182,7 +199,8 @@ paymentDone
 	expirationYearTextBox disableEditing; borderColor: Color green.
 	ownersNameTextBox disableEditing; borderColor: Color green.
 
-	processPaymentButton model: self stateGetter: nil action: #closeButtonClicked label: 'Go back to dashboard'.! !
+	processPaymentButton model: self stateGetter: nil action: #backToDashboard label: 'Go back to dashboard'.
+	goBackButton delete.! !
 
 !TLCheckOutWindow methodsFor: 'events' stamp: 'AB 7/10/2019 16:32:14'!
 showPaymentStatus
@@ -306,7 +324,7 @@ buildBeginRow
 	
 	^ rowLayout! !
 
-!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 16:33:48'!
+!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 17:50:18'!
 buildEndRow
 
 	| rowLayout |
@@ -315,10 +333,13 @@ buildEndRow
 
 	processPaymentButton _ PluggableButtonMorph model: self model stateGetter: nil action: #processPayment label: 'Process Payment'.
 
+	goBackButton _ PluggableButtonMorph model: self stateGetter: nil action: #closeButtonClicked label: 'Back to cart'.
+
 	paymentStatus _ StringMorph contents: ''.
 
 	rowLayout separation: 15;
  	addMorph: processPaymentButton;
+	addMorph: goBackButton;
 	addMorph: paymentStatus;
 	padding: #left.
 	
@@ -337,10 +358,10 @@ buildMorphicWindow
 	addMorph: self build4thRow;
 	addMorph: self buildEndRow! !
 
-!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 16:46:04'!
+!TLCheckOutWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 17:44:53'!
 defaultExtent
 
-	^ 650 @ 400! !
+	^ 700 @ 400! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -352,11 +373,6 @@ TLCheckOutWindow class
 openFor: aClient using: aPassword with: aCartId
 
 	^ self new initializeFor: aClient using: aPassword with: aCartId! !
-
-!TLCheckOutWindow class methodsFor: 'instance creation' stamp: 'AB 7/10/2019 12:39:54'!
-openFor: aClient using: aPassword with: aCartId from: aPanel
-	
-	^ self new initializeFor: aClient using: aPassword with: aCartId from: aPanel! !
 
 
 !classDefinition: #TLDashboardWindow category: #'TusLibros.com-Client Server'!
@@ -380,15 +396,19 @@ initializeFor: aClient using: aPassword
 	password _ aPassword! !
 
 
-!TLDashboardWindow methodsFor: 'events' stamp: 'AB 7/10/2019 09:38:53'!
+!TLDashboardWindow methodsFor: 'events' stamp: 'AB 7/10/2019 17:04:41'!
 createCart
 
-	TLCartWindow openFor: client using: password from: self! !
+	TLCartWindow openFor: client using: password.
+	
+	self delete! !
 
-!TLDashboardWindow methodsFor: 'events' stamp: 'AB 7/10/2019 09:45:39'!
+!TLDashboardWindow methodsFor: 'events' stamp: 'AB 7/10/2019 17:04:38'!
 listPurchases
 
-	TLPurchasesWindow openFor: client using: password from: self! !
+	TLPurchasesWindow openFor: client using: password.
+	
+	self delete! !
 
 
 !TLDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 11:00:41'!
@@ -454,14 +474,14 @@ Panel subclass: #TLLoginWindow
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
 
-!TLLoginWindow methodsFor: 'events' stamp: 'AB 7/10/2019 09:27:54'!
+!TLLoginWindow methodsFor: 'events' stamp: 'AB 7/10/2019 17:54:15'!
 updateLogIn
 
 	resultLabel contents: model loginResponse.
 	clientIdTextBox disableEditing; borderColor: Color green.
 	passwordTextBox disableEditing; borderColor: Color green.
 
-	submitButton model: self model stateGetter: nil action: #submitLogOut  label: 'Logout'.
+	submitButton model: self model stateGetter: nil action: #submitLogOut  label: 'Log out'.
 	
 	openDashboard _ TLDashboardWindow openFor: self model clientId using: self model password! !
 
@@ -657,11 +677,6 @@ openFor: aClient using: aPassword
 	
 	^ self new initializeFor: aClient using: aPassword! !
 
-!TLPurchasesWindow class methodsFor: 'instance creation' stamp: 'AB 7/10/2019 09:45:56'!
-openFor: aClient using: aPassword from: aPanel
-
-	^ self new initializeFor: aClient using: aPassword from: aPanel! !
-
 
 !classDefinition: #TLCartWindowModel category: #'TusLibros.com-Client Server'!
 Object subclass: #TLCartWindowModel
@@ -680,12 +695,12 @@ cartId
 
 	^ cartId! !
 
-!TLCartWindowModel methodsFor: 'accessing' stamp: 'AB 7/8/2019 17:42:02'!
-cartIdFor: aClient protectedWith: aPassword
+!TLCartWindowModel methodsFor: 'accessing' stamp: 'AB 7/10/2019 17:09:12'!
+cartIdFor: aClientId protectedWith: aPassword
 
 	| response |
 	
-	response _ webClient createCartFor: aClient  protectedWith: aPassword.
+	response _ webClient createCartFor: aClientId  protectedWith: aPassword.
 	
 	^  response copyFrom: 3 to: response size! !
 
@@ -706,18 +721,31 @@ catalogIndex: anIndex
 	selectedIndex _ anIndex! !
 
 
-!TLCartWindowModel methodsFor: 'initialization' stamp: 'AB 7/9/2019 13:17:22'!
+!TLCartWindowModel methodsFor: 'initialization' stamp: 'AB 7/10/2019 17:37:25'!
 initializeFor: aClient using: aPassword
 
 	selectedIndex _ 0.
 	catalog _ OrderedCollection new.
 	webClient _ TLWebClient new.
 	cartId _ self cartIdFor: aClient protectedWith: aPassword.
-	
+	cartContents _ 'Shopping cart is empty'.
+
 	self sendCatalogRequest.! !
 
+!TLCartWindowModel methodsFor: 'initialization' stamp: 'AB 7/10/2019 17:33:10'!
+initializeFor: aClient using: aPassword with: aCartId
 
-!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 11:43:15'!
+	selectedIndex _ 0.
+	catalog _ OrderedCollection new.
+	webClient _ TLWebClient new.
+	cartId _ aCartId.
+
+	self updateCartStatus.
+	self sendCatalogRequest.
+! !
+
+
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 17:27:24'!
 addSelectedBookToCart
 
 	(selectedIndex = 0)
@@ -726,43 +754,49 @@ addSelectedBookToCart
 		self triggerEvent: #noBooksSelected with: self
 	]
 	ifFalse: [
-		| book fromCatalog response |
+		| book fromCatalog |
 
 		fromCatalog _ catalog at: selectedIndex.
+
 		book _ fromCatalog substrings at: 1.
 
 		webClient addToCart: self cartId book: book.
 
-		response _ webClient listCart: self cartId.
-
-		((response copyFrom: 1 to: 2) = '0|')
-			ifTrue: [
-				cartContents _ response copyFrom: 3 to: response size.
-				self triggerEvent: #cartUpdated with: self.
-			]
+		self updateCartStatus
 	]! !
 
-!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 11:49:07'!
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 17:28:32'!
 checkOutCart
 	
 	| response |
 
-	response _ webClient listCart: self cartId.
+	response _ webClient listCart: cartId.
 
 	((response copyFrom: 1 to: 2) = '0|' and: (response copyFrom: 1 to: response size) size > 2)
-		ifTrue: [
-			self triggerEvent: #proceedToCheckOut with: self
-		]
-		ifFalse: [
-			self triggerEvent: #noBooksInCart with: self
-		]! !
+	
+		ifTrue: [ self triggerEvent: #proceedToCheckOut with: self ]
 
-!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/9/2019 15:09:19'!
+		ifFalse: [ self triggerEvent: #noBooksInCart with: self ]! !
+
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 17:28:40'!
 sendCatalogRequest
 		
 	catalog _ webClient getCatalog.
 	
-	self triggerEvent: #catalogArrived with: self.
+	self triggerEvent: #catalogArrived with: self! !
+
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 17:36:40'!
+updateCartStatus
+
+	| response |
+
+	response _ webClient listCart: cartId.
+
+	((response copyFrom: 1 to: 2) = '0|')
+		ifTrue: [
+			cartContents _ response copyFrom: 3 to: response size.
+			self triggerEvent: #cartUpdated with: self.
+		]
 ! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
@@ -771,10 +805,15 @@ sendCatalogRequest
 TLCartWindowModel class
 	instanceVariableNames: ''!
 
-!TLCartWindowModel class methodsFor: 'instance creation' stamp: 'AB 7/8/2019 17:25:47'!
-for: aClient using: aPassword
+!TLCartWindowModel class methodsFor: 'instance creation' stamp: 'AB 7/10/2019 17:08:56'!
+for: aClientId using: aPassword
 
-	^ self new initializeFor: aClient using: aPassword! !
+	^ self new initializeFor: aClientId using: aPassword! !
+
+!TLCartWindowModel class methodsFor: 'instance creation' stamp: 'AB 7/10/2019 16:50:33'!
+for: aClient using: aPassword with: aCartId
+
+	^ self new initializeFor: aClient using: aPassword with: aCartId! !
 
 
 !classDefinition: #TLCheckOutWindowModel category: #'TusLibros.com-Client Server'!
