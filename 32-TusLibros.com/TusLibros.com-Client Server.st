@@ -1,28 +1,34 @@
 !classDefinition: #TLCartWindow category: #'TusLibros.com-Client Server'!
 Panel subclass: #TLCartWindow
-	instanceVariableNames: 'catalog client password cartStatus fromPanel'
+	instanceVariableNames: 'catalog client password cartStatus fromPanel clientId'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
 
-!TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/9/2019 15:27:36'!
+!TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 11:02:59'!
 defaultExtent
 
-	^ 500 @ 350! !
+	^ 500 @ 450! !
 
-!TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/9/2019 15:14:22'!
-initializeFor: aClient using: aPassword
+!TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 11:04:05'!
+initializeFor: aClientId using: aPassword
 
 	self titleMorph showButtonsNamed: #( close collapse ).
-	self model: (TLCartWindowModel for: aClient using: aPassword).
+	self model: (TLCartWindowModel for: aClientId using: aPassword).
 	self setLabel: 'Add books to shopping cart #' , model cartId.
 	self morphExtent: (self defaultExtent).
 	self buildMorphicWindow.
 	self openInWorld.
 	self yourself.
 
+	clientId _ aClientId.
+	password _ aPassword.
+
 	self model when: #catalogArrived send: #refreshCatalogList to: self.
-	self model when: #cartUpdated send: #refreshCartContents to: self.! !
+	self model when: #cartUpdated send: #refreshCartContents to: self.
+
+	self model when: #noBooksSelected send: #noBooksSelected to: self.
+	self model when: #noBooksInCart send: #noBooksInCart to: self.! !
 
 !TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 09:42:07'!
 initializeFor: aClient using: aPassword from: aPanel
@@ -32,31 +38,46 @@ initializeFor: aClient using: aPassword from: aPanel
 	self initializeFor: aClient using: aPassword! !
 
 
-!TLCartWindow methodsFor: 'access' stamp: 'AB 7/9/2019 15:18:36'!
+!TLCartWindow methodsFor: 'events' stamp: 'AB 7/10/2019 10:28:51'!
+closeButtonClicked
+
+	TLDashboardWindow openFor: clientId using: password.
+	self delete! !
+
+!TLCartWindow methodsFor: 'events' stamp: 'AB 7/10/2019 11:04:17'!
+noBooksInCart
+
+	cartStatus contents: 'Can not check out with an empty shopping cart'! !
+
+!TLCartWindow methodsFor: 'events' stamp: 'AB 7/10/2019 11:04:54'!
+noBooksSelected
+
+	cartStatus contents: 'Needs to select an item from catalog'! !
+
+!TLCartWindow methodsFor: 'events' stamp: 'AB 7/9/2019 15:18:36'!
 refreshCartContents
 
 	cartStatus contents: self model cartContents! !
 
-!TLCartWindow methodsFor: 'access' stamp: 'AB 7/9/2019 15:15:05'!
+!TLCartWindow methodsFor: 'events' stamp: 'AB 7/9/2019 15:15:05'!
 refreshCatalogList
 
 	catalog updateList.
 	catalog setSelectionIndex: 0! !
 
 
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/9/2019 15:27:16'!
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 11:01:34'!
 build1stRow
 
 	| rowLayout |
 
 	rowLayout _ LayoutMorph newRow.
-	rowLayout separation: 15;
-	padding: #center;
+	rowLayout padding: #center;
 	addMorph: (StringMorph contents: 'Select and item from Catalog').
 
 	^ rowLayout! !
 
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/9/2019 15:30:02'!
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 11:01:55'!
 build2ndRow
 
 	| rowLayout addToCartButton |
@@ -68,40 +89,50 @@ build2ndRow
 
 	rowLayout _ LayoutMorph newRow.
 	rowLayout separation: 15;
-	padding: #left;
+	padding: #center;
 	addMorph: (StringMorph contents:'Catalog');
 	addMorph: catalog;
 	addMorph: addToCartButton.
 
 	^ rowLayout! !
 
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/9/2019 15:31:04'!
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 11:02:12'!
 build3rdRow
+
+	| rowLayout |
+
+	cartStatus _ StringMorph contents: 'Shopping cart is Empty'.
+
+	rowLayout _ LayoutMorph newRow.
+	rowLayout padding: #center;
+	addMorph: cartStatus.
+
+	^ rowLayout! !
+
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 11:02:25'!
+build4thRow
 
 	| rowLayout addToCartButton |
 
 	addToCartButton _ PluggableButtonMorph model: self model stateGetter: nil action: #checkOutCart label: 'Check out'.
 
-	cartStatus _ StringMorph contents: 'Shopping cart is Empty'.
-
 	rowLayout _ LayoutMorph newRow.
-	rowLayout separation: 15;
-	padding: #center;
-	addMorph: cartStatus;
+	rowLayout padding: #center;
 	addMorph: addToCartButton.
 
 	^ rowLayout! !
 
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/9/2019 15:22:11'!
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 11:01:16'!
 buildMorphicWindow
 		
 	self layoutMorph beColumn;
 	separation: 15;
-	padding: #left;
+	padding: #center;
 
 	addMorph: self build1stRow;
 	addMorph: self build2ndRow;
-	addMorph: self build3rdRow.! !
+	addMorph: self build3rdRow;
+	addMorph: self build4thRow.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -127,10 +158,10 @@ Panel subclass: #TLDashboardWindow
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
 
-!TLDashboardWindow methodsFor: 'initialization' stamp: 'AB 7/9/2019 13:38:45'!
+!TLDashboardWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 11:00:17'!
 defaultExtent
 
-	^ 250 @ 350! !
+	^ 250 @ 250! !
 
 !TLDashboardWindow methodsFor: 'initialization' stamp: 'AB 7/8/2019 16:23:22'!
 initializeFor: aClient using: aPassword
@@ -157,7 +188,7 @@ listPurchases
 	TLPurchasesWindow openFor: client using: password from: self! !
 
 
-!TLDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/9/2019 13:44:22'!
+!TLDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 11:00:41'!
 build1stRow
 
 	| firstRowLayout |
@@ -166,13 +197,13 @@ build1stRow
 
 	createCartButton _ PluggableButtonMorph model: self stateGetter: nil action: #createCart label: 'Start Shopping'.
 
-	firstRowLayout separation: 25;
+	firstRowLayout separation: 15;
  	addMorph: createCartButton;
 	padding: #center.
 	
 	^ firstRowLayout! !
 
-!TLDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/8/2019 16:15:53'!
+!TLDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 11:00:35'!
 build2ndRow
 
 	| secondRowLayout |
@@ -181,17 +212,17 @@ build2ndRow
 
 	listPurchasesButton _ PluggableButtonMorph model: self stateGetter: nil action: #listPurchases label: 'List Purchases'.
 
-	secondRowLayout separation: 25;
+	secondRowLayout separation: 15;
  	addMorph: listPurchasesButton;
 	padding: #center.
 	
 	^ secondRowLayout! !
 
-!TLDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/7/2019 19:25:55'!
+!TLDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 11:00:50'!
 buildMorphicWindow
 
 	self layoutMorph beColumn;
-	padding: #left;
+	padding: #center;
 
 	addMorph: self build1stRow;
 	addMorph: self build2ndRow! !
@@ -345,7 +376,7 @@ open
 
 !classDefinition: #TLPurchasesWindow category: #'TusLibros.com-Client Server'!
 Panel subclass: #TLPurchasesWindow
-	instanceVariableNames: 'purchasesList'
+	instanceVariableNames: 'purchasesList clientId password'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
@@ -355,21 +386,25 @@ defaultExtent
 
 	^ 350 @ 350! !
 
-!TLPurchasesWindow methodsFor: 'initialization' stamp: 'AB 7/9/2019 13:37:29'!
-initializeFor: aClient using: aPassword
+!TLPurchasesWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 10:32:26'!
+initializeFor: aClientId using: aPassword
 
 	self titleMorph showButtonsNamed: #(close collapse).
 	self setLabel: 'Client Purchases'.
-	self model: (TLPurchasesWindowModel for: aClient using: aPassword).
+	self model: (TLPurchasesWindowModel for: aClientId using: aPassword).
 	self morphExtent: (self defaultExtent).
 	self buildMorphicWindow.
 	self openInWorld.
-	self yourself.! !
+	self yourself.
+	
+	clientId _ aClientId.
+	password _ aPassword.! !
 
-!TLPurchasesWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 09:46:33'!
+!TLPurchasesWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 10:31:57'!
 initializeFor: aClient using: aPassword from: aPanel
 
 	aPanel closeButtonClicked.
+
 	self initializeFor: aClient using: aPassword! !
 
 
@@ -395,6 +430,13 @@ buildMorphicWindow
 	padding: #left;
 
 	addMorph: self build1stRow! !
+
+
+!TLPurchasesWindow methodsFor: 'events' stamp: 'AB 7/10/2019 10:31:42'!
+closeButtonClicked
+
+	TLDashboardWindow openFor: clientId using: password.
+	self delete! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -467,10 +509,15 @@ initializeFor: aClient using: aPassword
 	self sendCatalogRequest.! !
 
 
-!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/9/2019 15:10:02'!
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 11:03:31'!
 addSelectedBookToCart
 
-	(selectedIndex = 0) ifFalse: [
+	(selectedIndex = 0)
+
+	ifTrue: [
+		self triggerEvent: #noBooksSelected with: self
+	]
+	ifFalse: [
 		| book fromCatalog |
 
 		fromCatalog _ catalog at: selectedIndex.
@@ -482,6 +529,11 @@ addSelectedBookToCart
 		
 		self triggerEvent: #cartUpdated with: self.
 	]! !
+
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 11:03:42'!
+checkOutCart
+
+	self triggerEvent: #noBooksInCart with: self! !
 
 !TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/9/2019 15:09:19'!
 sendCatalogRequest
