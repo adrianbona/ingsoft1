@@ -1,6 +1,6 @@
 !classDefinition: #TLCartWindow category: #'TusLibros.com-Client Server'!
 Panel subclass: #TLCartWindow
-	instanceVariableNames: 'catalog client password cartStatus'
+	instanceVariableNames: 'catalog client password cartStatus fromPanel'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
@@ -23,6 +23,13 @@ initializeFor: aClient using: aPassword
 
 	self model when: #catalogArrived send: #refreshCatalogList to: self.
 	self model when: #cartUpdated send: #refreshCartContents to: self.! !
+
+!TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 09:42:07'!
+initializeFor: aClient using: aPassword from: aPanel
+
+	aPanel closeButtonClicked.
+	
+	self initializeFor: aClient using: aPassword! !
 
 
 !TLCartWindow methodsFor: 'access' stamp: 'AB 7/9/2019 15:18:36'!
@@ -107,6 +114,11 @@ openFor: aClient using: aPassword
 	
 	^ self new initializeFor: aClient using: aPassword! !
 
+!TLCartWindow class methodsFor: 'instance creation' stamp: 'AB 7/10/2019 09:39:21'!
+openFor: aClient using: aPassword from: aPanel
+	
+	^ self new initializeFor: aClient using: aPassword from: aPanel! !
+
 
 !classDefinition: #TLDashboardWindow category: #'TusLibros.com-Client Server'!
 Panel subclass: #TLDashboardWindow
@@ -134,15 +146,15 @@ initializeFor: aClient using: aPassword
 	password _ aPassword! !
 
 
-!TLDashboardWindow methodsFor: 'events' stamp: 'AB 7/8/2019 17:28:55'!
+!TLDashboardWindow methodsFor: 'events' stamp: 'AB 7/10/2019 09:38:53'!
 createCart
 
-	TLCartWindow openFor: client using: password! !
+	TLCartWindow openFor: client using: password from: self! !
 
-!TLDashboardWindow methodsFor: 'events' stamp: 'AB 7/8/2019 16:25:28'!
+!TLDashboardWindow methodsFor: 'events' stamp: 'AB 7/10/2019 09:45:39'!
 listPurchases
 
-	TLPurchasesWindow openFor: client using: password! !
+	TLPurchasesWindow openFor: client using: password from: self! !
 
 
 !TLDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/9/2019 13:44:22'!
@@ -354,6 +366,12 @@ initializeFor: aClient using: aPassword
 	self openInWorld.
 	self yourself.! !
 
+!TLPurchasesWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 09:46:33'!
+initializeFor: aClient using: aPassword from: aPanel
+
+	aPanel closeButtonClicked.
+	self initializeFor: aClient using: aPassword! !
+
 
 !TLPurchasesWindow methodsFor: 'graphic user interface' stamp: 'JR 7/8/2019 00:02:22'!
 build1stRow
@@ -388,6 +406,11 @@ TLPurchasesWindow class
 openFor: aClient using: aPassword
 	
 	^ self new initializeFor: aClient using: aPassword! !
+
+!TLPurchasesWindow class methodsFor: 'instance creation' stamp: 'AB 7/10/2019 09:45:56'!
+openFor: aClient using: aPassword from: aPanel
+
+	^ self new initializeFor: aClient using: aPassword from: aPanel! !
 
 
 !classDefinition: #TLCartWindowModel category: #'TusLibros.com-Client Server'!
