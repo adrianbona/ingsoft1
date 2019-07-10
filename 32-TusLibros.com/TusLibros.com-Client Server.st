@@ -198,12 +198,12 @@ openFor: aClient using: aPassword
 
 !classDefinition: #TLLoginWindow category: #'TusLibros.com-Client Server'!
 Panel subclass: #TLLoginWindow
-	instanceVariableNames: 'clientIdTextBox passwordTextBox resultLabel submitButton'
+	instanceVariableNames: 'clientIdTextBox passwordTextBox resultLabel submitButton openDashboard'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
 
-!TLLoginWindow methodsFor: 'events' stamp: 'AB 7/8/2019 16:02:36'!
+!TLLoginWindow methodsFor: 'events' stamp: 'AB 7/10/2019 09:27:54'!
 updateLogIn
 
 	resultLabel contents: model loginResponse.
@@ -212,16 +212,17 @@ updateLogIn
 
 	submitButton model: self model stateGetter: nil action: #submitLogOut  label: 'Logout'.
 	
-	TLDashboardWindow openFor: self model clientId using: self model password! !
+	openDashboard _ TLDashboardWindow openFor: self model clientId using: self model password! !
 
-!TLLoginWindow methodsFor: 'events' stamp: 'AB 7/9/2019 14:51:22'!
+!TLLoginWindow methodsFor: 'events' stamp: 'AB 7/10/2019 09:29:05'!
 updateLogOut
 
 	resultLabel contents: ''.
 	clientIdTextBox enableEditing; borderColor: Color skyBlue.
 	passwordTextBox enableEditing; borderColor: Color skyBlue.
 	
-	submitButton model: self model stateGetter: nil action: #submitLogIn  label: 'Login'! !
+	submitButton model: self model stateGetter: nil action: #submitLogIn  label: 'Login'.
+	openDashboard ifNotNil: [ openDashboard closeButtonClicked ]! !
 
 !TLLoginWindow methodsFor: 'events' stamp: 'AB 7/7/2019 19:12:43'!
 wrongCredentials
@@ -236,7 +237,7 @@ defaultExtent
 
 	^ 450 @ 250! !
 
-!TLLoginWindow methodsFor: 'initialization' stamp: 'AB 7/8/2019 16:02:58'!
+!TLLoginWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 09:27:41'!
 initialize
 
 	super initialize.
@@ -251,8 +252,7 @@ initialize
 
 	self model when: #credentialsReceived send: #updateLogIn to: self.
 	self model when: #credentialsRemoved send: #updateLogOut to: self.
-	self model when: #wrongCredentials send: #wrongCredentials to: self.
-! !
+	self model when: #wrongCredentials send: #wrongCredentials to: self! !
 
 
 !TLLoginWindow methodsFor: 'graphic user interface' stamp: 'AB 7/7/2019 19:20:28'!
