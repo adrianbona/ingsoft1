@@ -1,11 +1,11 @@
 !classDefinition: #TLCartWindow category: #'TusLibros.com-Client Server'!
 Panel subclass: #TLCartWindow
-	instanceVariableNames: 'catalog client password cartStatus clientId cartId'
+	instanceVariableNames: 'catalog client password cartStatus clientId cartId booksAmountTextBox'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
 
-!TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 17:39:30'!
+!TLCartWindow methodsFor: 'initialization' stamp: 'AB 7/11/2019 09:18:22'!
 initializeAfterChoosingModelFor: aClientId using: aPassword
 
 	self titleMorph showButtonsNamed: #( close collapse ).
@@ -22,6 +22,7 @@ initializeAfterChoosingModelFor: aClientId using: aPassword
 	self model when: #cartUpdated send: #refreshCartContents to: self.
 	
 	self model when: #proceedToCheckOut send: #proceedToCheckOut to: self.
+	self model when: #updateBooksAmount send: #updateBooksAmount to: self.
 
 	self model when: #noBooksSelected send: #noBooksSelected to: self.
 	self model when: #noBooksInCart send: #noBooksInCart to: self.
@@ -79,6 +80,11 @@ refreshCatalogList
 
 	catalog setSelectionIndex: 0! !
 
+!TLCartWindow methodsFor: 'events' stamp: 'AB 7/11/2019 09:25:17'!
+updateBooksAmount
+
+	booksAmountTextBox editor actualContents: self model booksAmount! !
+
 
 !TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/11/2019 00:04:45'!
 build1stRow
@@ -91,10 +97,10 @@ build1stRow
 
 	^ rowLayout! !
 
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/11/2019 08:47:50'!
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/11/2019 09:20:26'!
 build2ndRow
 
-	| rowLayout booksAmountTextBox |
+	| rowLayout increaseBooksAmount decreaseBooksAmount |
 
 	catalog _ PluggableListMorph model: self model listGetter: #catalog indexGetter: #catalogIndex indexSetter: #catalogIndex:.
 	catalog  borderColor: Color skyBlue; morphExtent: 165@70; borderWidth: 1.
@@ -103,22 +109,27 @@ build2ndRow
 	booksAmountTextBox textMorph setProperty: #keyStroke: toValue: [ :key | booksAmountTextBox textMorph acceptContents ].
 	booksAmountTextBox  borderWidth: 1; borderColor: Color skyBlue; morphExtent: 30@30; emptyTextDisplayMessage: ''.
 
+	increaseBooksAmount _ PluggableButtonMorph model: self model stateGetter: nil action: #increaseBooksAmount label: '+'.
+	decreaseBooksAmount _ PluggableButtonMorph model: self model stateGetter: nil action: #decreaseBooksAmount label: '-'.
+
 	rowLayout _ LayoutMorph newRow.
 	rowLayout separation: 15;
 	padding: #center;
 	addMorph: (StringMorph contents: 'Catalog');
 	addMorph: catalog;
 	addMorph: (StringMorph contents: 'Amount');
-	addMorph: booksAmountTextBox.
+	addMorph: booksAmountTextBox;
+	addMorph: increaseBooksAmount;
+	addMorph: decreaseBooksAmount.
 
 	^ rowLayout! !
 
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/11/2019 08:16:50'!
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/11/2019 09:36:34'!
 build3rdRow
 
 	| rowLayout addToCartButton |
 
-	addToCartButton _ PluggableButtonMorph model: self model stateGetter: nil action: #addSelectedBookToCart label: 'Add To Cart'.
+	addToCartButton _ PluggableButtonMorph model: self model stateGetter: nil action: #addSelectedBookToCart label: 'Add to Shopping Cart'.
 
 	rowLayout _ LayoutMorph newRow.
 	rowLayout separation: 15;
@@ -759,15 +770,6 @@ cartId
 
 	^ cartId! !
 
-!TLCartWindowModel methodsFor: 'accessing' stamp: 'AB 7/10/2019 23:52:15'!
-cartIdFor: aClientId protectedWith: aPassword
-
-	| response |
-
-	response _ TLFuture of: [ webClient createCartFor: aClientId  protectedWith: aPassword ].
-
-	^  response value content! !
-
 !TLCartWindowModel methodsFor: 'accessing' stamp: 'AB 7/10/2019 23:51:22'!
 catalog
 	
@@ -784,11 +786,11 @@ catalogIndex: anIndex
 	selectedIndex _ anIndex! !
 
 
-!TLCartWindowModel methodsFor: 'initialization' stamp: 'AB 7/11/2019 08:47:11'!
+!TLCartWindowModel methodsFor: 'initialization' stamp: 'AB 7/11/2019 09:16:04'!
 initializeFor: aClient using: aPassword
 
 	selectedIndex _ 0.
-	booksAmount _ ''.
+	booksAmount _ '1'.
 	catalog _ OrderedCollection new.
 	webClient _ TLWebClient new.
 	cartId _ self cartIdFor: aClient protectedWith: aPassword.
@@ -796,10 +798,11 @@ initializeFor: aClient using: aPassword
 
 	self sendCatalogRequest.! !
 
-!TLCartWindowModel methodsFor: 'initialization' stamp: 'AB 7/10/2019 17:33:10'!
+!TLCartWindowModel methodsFor: 'initialization' stamp: 'AB 7/11/2019 09:15:53'!
 initializeFor: aClient using: aPassword with: aCartId
 
 	selectedIndex _ 0.
+	booksAmount _ '1'.
 	catalog _ OrderedCollection new.
 	webClient _ TLWebClient new.
 	cartId _ aCartId.
@@ -829,6 +832,23 @@ addSelectedBookToCart
 		]
 	]! !
 
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 23:52:15'!
+cartIdFor: aClientId protectedWith: aPassword
+
+	| response |
+
+	response _ TLFuture of: [ webClient createCartFor: aClientId  protectedWith: aPassword ].
+
+	^  response value content! !
+
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/11/2019 09:32:52'!
+changeBooksAmountBy: aBlock
+
+	aBlock on: Error do: [
+		booksAmount _ 1 printString.
+		self triggerEvent: #updateBooksAmount with: self
+	]! !
+
 !TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 21:06:21'!
 checkOutCart
 	
@@ -841,6 +861,24 @@ checkOutCart
 		ifTrue: [ self triggerEvent: #proceedToCheckOut with: self ]
 
 		ifFalse: [ self triggerEvent: #noBooksInCart with: self ]! !
+
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/11/2019 09:35:00'!
+decreaseBooksAmount
+
+	self changeBooksAmountBy: [
+		(booksAmount asNumber > 1) ifTrue: [
+			booksAmount _ (booksAmount asNumber - 1) printString.
+			self triggerEvent: #updateBooksAmount with: self
+		]
+	]! !
+
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/11/2019 09:33:17'!
+increaseBooksAmount
+
+	self changeBooksAmountBy: [
+		booksAmount _ (booksAmount asNumber + 1) printString.
+		self triggerEvent: #updateBooksAmount with: self
+	]! !
 
 !TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/11/2019 00:22:24'!
 sendCatalogRequest
