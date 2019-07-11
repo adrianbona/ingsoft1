@@ -725,20 +725,19 @@ cartId
 
 	^ cartId! !
 
-!TLCartWindowModel methodsFor: 'accessing' stamp: 'AB 7/10/2019 20:53:27'!
+!TLCartWindowModel methodsFor: 'accessing' stamp: 'AB 7/10/2019 23:52:15'!
 cartIdFor: aClientId protectedWith: aPassword
 
 	| response |
-	
-	response _ webClient createCartFor: aClientId  protectedWith: aPassword.
-	
-	^  response content! !
 
-!TLCartWindowModel methodsFor: 'accessing' stamp: 'JR 7/8/2019 00:27:17'!
+	response _ TLFuture of: [ webClient createCartFor: aClientId  protectedWith: aPassword ].
+
+	^  response value content! !
+
+!TLCartWindowModel methodsFor: 'accessing' stamp: 'AB 7/10/2019 23:51:22'!
 catalog
 	
-	^ catalog
-! !
+	^ catalog value! !
 
 !TLCartWindowModel methodsFor: 'accessing' stamp: 'AB 7/8/2019 16:27:43'!
 catalogIndex
@@ -775,7 +774,7 @@ initializeFor: aClient using: aPassword with: aCartId
 ! !
 
 
-!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 17:27:24'!
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 23:50:31'!
 addSelectedBookToCart
 
 	(selectedIndex = 0)
@@ -790,7 +789,7 @@ addSelectedBookToCart
 
 		book _ fromCatalog substrings at: 1.
 
-		webClient addToCart: self cartId book: book.
+		TLFuture of: [ webClient addToCart: self cartId book: book ].
 
 		self updateCartStatus
 	]! !
@@ -808,24 +807,24 @@ checkOutCart
 
 		ifFalse: [ self triggerEvent: #noBooksInCart with: self ]! !
 
-!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 17:28:40'!
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 23:51:10'!
 sendCatalogRequest
 		
-	catalog _ webClient getCatalog.
+	catalog _ TLFuture of: [ webClient getCatalog ] .
 	
 	self triggerEvent: #catalogArrived with: self! !
 
-!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 21:06:59'!
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 23:50:56'!
 updateCartStatus
 
 	| response |
 
-	response _ webClient listCart: cartId.
+	response _ TLFuture of: [ webClient listCart: cartId ].
 
-	(response isCorrect)
+	(response value isCorrect)
 		ifTrue: [
-			cartContents _ response content.
-			self triggerEvent: #cartUpdated with: self.
+			cartContents _ response value content.
+			self triggerEvent: #cartUpdated with: self
 		]
 ! !
 
@@ -899,22 +898,22 @@ paymentResponse
 	^ paymentResponse! !
 
 
-!TLCheckOutWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 21:10:12'!
+!TLCheckOutWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 23:50:01'!
 processPayment
 
 	| response |
 
-	response _ webClient checkOut: cartId 
+	response _ TLFuture of: [ webClient checkOut: cartId 
 		chargingToACreditCardNumbered: creditCardNumber 
 		expiringOn: (creditCardExpirationMonth , creditCardExpirationYear) 
-		ownedBy: creditCardOwnerName.
+		ownedBy: creditCardOwnerName ].
 
-	(response isCorrect)
+	(response value isCorrect)
 		ifTrue: [
 			paymentResponse _ 'Payment was correctly processed'.
 			self triggerEvent: #paymentDone with: self
 		] ifFalse: [
-			paymentResponse _ response content.
+			paymentResponse _ response value content.
 			self triggerEvent: #paymentRevoked with: self		
 		]! !
 
@@ -966,19 +965,19 @@ loginResponse
 
 	^ loginResponse! !
 
-!TLLoginWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 21:12:51'!
+!TLLoginWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 23:47:29'!
 submitLogIn
 		
 	| response |
 	
-	response _ webClient signIn: clientId with: password.
-	
-	(response isCorrect)
+	response _ TLFuture of: [ webClient signIn: clientId with: password ].
+
+	(response value isCorrect)
 		ifTrue: [
 			loginResponse _ 'Access granted'.
 			self triggerEvent: #credentialsReceived with: self
 		] ifFalse: [
-			loginResponse _ response content.
+			loginResponse _ response value content.
 			self triggerEvent: #wrongCredentials with: self		
 		]! !
 
@@ -1022,18 +1021,17 @@ Object subclass: #TLPurchasesWindowModel
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
 
-!TLPurchasesWindowModel methodsFor: 'initialization' stamp: 'AB 7/8/2019 16:27:16'!
+!TLPurchasesWindowModel methodsFor: 'initialization' stamp: 'AB 7/10/2019 23:48:40'!
 initializeFor: aClient using: aPassword
 
 	webClient _ TLWebClient new.
-	purchasesList _ webClient listPurchasesFor: aClient with: aPassword! !
+	purchasesList _ TLFuture of: [ webClient listPurchasesFor: aClient with: aPassword ]! !
 
 
-!TLPurchasesWindowModel methodsFor: 'accessing' stamp: 'JR 7/7/2019 23:42:57'!
+!TLPurchasesWindowModel methodsFor: 'accessing' stamp: 'AB 7/10/2019 23:48:48'!
 purchasesList
 	
-	^ purchasesList
-! !
+	^ purchasesList value! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1260,6 +1258,82 @@ url
 correctlyEncodeSpacesForUrlRequestParameter: aParameter
 	
 	^ aParameter copyReplaceAll: ' ' with: '%20'. ! !
+
+
+!classDefinition: #TLFuture category: #'TusLibros.com-Client Server'!
+ProtoObject subclass: #TLFuture
+	instanceVariableNames: 'readySemaphore value ready'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com-Client Server'!
+
+!TLFuture methodsFor: 'initialization' stamp: 'AB 7/10/2019 23:31:35'!
+initializeOf: aBlock
+
+	readySemaphore _ Semaphore new.
+	ready _ false.
+	
+	[ value _ aBlock value.
+	ready _ true.
+	readySemaphore signal ] fork! !
+
+
+!TLFuture methodsFor: 'evaluating' stamp: 'AB 7/10/2019 23:31:48'!
+value
+
+	ready ifFalse: [ readySemaphore wait ].
+
+	^ value! !
+
+
+!TLFuture methodsFor: 'message forwarding' stamp: 'AB 7/10/2019 23:31:12'!
+doesNotUnderstand: aMessage
+
+	^ aMessage sendTo: self value! !
+
+
+!TLFuture methodsFor: 'object protocol' stamp: 'HAW 8/13/2017 18:12:56'!
+inspectorClass
+	"Answer the class of the inspector to be used on the receiver.  Called by inspect; 
+	use basicInspect to get a normal (less useful) type of inspector."
+
+	^ Inspector! !
+
+!TLFuture methodsFor: 'object protocol' stamp: 'HAW 5/12/2019 19:41:48'!
+instVarAt: index
+	"Primitive. Answer a fixed variable in an object. The numbering of the variables
+	 corresponds to the named instance variables, followed by the indexed instance
+	 variables. Fail if the index is not an Integer or is not the index of a fixed variable.
+	 Essential. See Object documentation whatIsAPrimitive."
+
+	<primitive: 173 error: ec>
+	"The classic InterpreterVMs don't support primitives 173 and 174.
+	See http://forum.world.st/Some-test-where-Spur-more-slow-than-Cog-td4867810.html#a4867888
+	Use primitives 73 and 74 in such case."
+	Smalltalk isRunningCog ifFalse: [
+		^ self instVarAtPrim73: index ].
+	self primitiveFailed! !
+
+!TLFuture methodsFor: 'object protocol' stamp: 'HAW 8/13/2017 18:12:37'!
+instVarAt: index put: anObject
+	"Primitive. Store a value into a fixed variable in an object. The numbering of the
+	 variables corresponds to the named instance variables, followed by the indexed
+	 instance variables. Fail if the index is not an Integer or is not the index of a fixed
+	 variable. Essential. See Object documentation whatIsAPrimitive."
+
+	<primitive: 174 error: ec>
+	self primitiveFailed! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TLFuture class' category: #'TusLibros.com-Client Server'!
+TLFuture class
+	instanceVariableNames: ''!
+
+!TLFuture class methodsFor: 'instance creation' stamp: 'HAW 5/12/2019 19:37:15'!
+of: aBlock
+
+	 ^self new initializeOf: aBlock! !
 
 
 !classDefinition: #TLResponse category: #'TusLibros.com-Client Server'!
