@@ -1,6 +1,6 @@
 !classDefinition: #TLCartWindow category: #'TusLibros.com-Client Server'!
 Panel subclass: #TLCartWindow
-	instanceVariableNames: 'catalog client password cartStatus fromPanel clientId cartId'
+	instanceVariableNames: 'catalog client password cartStatus clientId cartId'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
@@ -55,10 +55,10 @@ noBooksInCart
 
 	cartStatus contents: 'Can not check out with an empty shopping cart'! !
 
-!TLCartWindow methodsFor: 'events' stamp: 'AB 7/10/2019 11:04:54'!
+!TLCartWindow methodsFor: 'events' stamp: 'AB 7/11/2019 08:55:44'!
 noBooksSelected
 
-	cartStatus contents: 'Needs to select an item from catalog'! !
+	cartStatus contents: 'Needs to select an item from catalog with a positive amount'! !
 
 !TLCartWindow methodsFor: 'events' stamp: 'AB 7/10/2019 16:53:32'!
 proceedToCheckOut
@@ -72,10 +72,11 @@ refreshCartContents
 
 	cartStatus contents: self model cartContents! !
 
-!TLCartWindow methodsFor: 'events' stamp: 'AB 7/9/2019 15:15:05'!
+!TLCartWindow methodsFor: 'events' stamp: 'AB 7/11/2019 08:45:33'!
 refreshCatalogList
 
 	catalog updateList.
+
 	catalog setSelectionIndex: 0! !
 
 
@@ -90,27 +91,44 @@ build1stRow
 
 	^ rowLayout! !
 
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/11/2019 00:04:02'!
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/11/2019 08:47:50'!
 build2ndRow
 
-	| rowLayout addToCartButton |
-
-	addToCartButton _ PluggableButtonMorph model: self model stateGetter: nil action: #addSelectedBookToCart label: 'Add To Cart'.
+	| rowLayout booksAmountTextBox |
 
 	catalog _ PluggableListMorph model: self model listGetter: #catalog indexGetter: #catalogIndex indexSetter: #catalogIndex:.
-	catalog  borderColor: Color skyBlue; borderWidth: 1.
+	catalog  borderColor: Color skyBlue; morphExtent: 165@70; borderWidth: 1.
+
+	booksAmountTextBox _ TextModelMorph textProvider: self model textGetter: #booksAmount textSetter: #booksAmount:.
+	booksAmountTextBox textMorph setProperty: #keyStroke: toValue: [ :key | booksAmountTextBox textMorph acceptContents ].
+	booksAmountTextBox  borderWidth: 1; borderColor: Color skyBlue; morphExtent: 30@30; emptyTextDisplayMessage: ''.
 
 	rowLayout _ LayoutMorph newRow.
 	rowLayout separation: 15;
 	padding: #center;
 	addMorph: (StringMorph contents: 'Catalog');
 	addMorph: catalog;
+	addMorph: (StringMorph contents: 'Amount');
+	addMorph: booksAmountTextBox.
+
+	^ rowLayout! !
+
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/11/2019 08:16:50'!
+build3rdRow
+
+	| rowLayout addToCartButton |
+
+	addToCartButton _ PluggableButtonMorph model: self model stateGetter: nil action: #addSelectedBookToCart label: 'Add To Cart'.
+
+	rowLayout _ LayoutMorph newRow.
+	rowLayout separation: 15;
+	padding: #center;
 	addMorph: addToCartButton.
 
 	^ rowLayout! !
 
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 17:38:03'!
-build3rdRow
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/11/2019 08:14:45'!
+build4thRow
 
 	| rowLayout |
 
@@ -122,13 +140,13 @@ build3rdRow
 
 	^ rowLayout! !
 
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/11/2019 00:06:18'!
-build4thRow
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/11/2019 08:49:08'!
+build5thRow
 
 	| rowLayout addToCartButton goBackButton |
 
-	addToCartButton _ PluggableButtonMorph model: self model stateGetter: nil action: #checkOutCart label: 'Check out'.
-	goBackButton _ PluggableButtonMorph model: self stateGetter: nil action: #closeButtonClicked label: 'Go back'.
+	addToCartButton _ PluggableButtonMorph model: self model stateGetter: nil action: #checkOutCart label: 'Proceed to Check out'.
+	goBackButton _ PluggableButtonMorph model: self stateGetter: nil action: #closeButtonClicked label: 'Go Back'.
 
 	rowLayout _ LayoutMorph newRow.
 	rowLayout separation: 15;
@@ -138,7 +156,7 @@ build4thRow
 
 	^ rowLayout! !
 
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 11:01:16'!
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/11/2019 08:15:45'!
 buildMorphicWindow
 		
 	self layoutMorph beColumn;
@@ -148,12 +166,13 @@ buildMorphicWindow
 	addMorph: self build1stRow;
 	addMorph: self build2ndRow;
 	addMorph: self build3rdRow;
-	addMorph: self build4thRow.! !
+	addMorph: self build4thRow;
+	addMorph: self build5thRow.! !
 
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/11/2019 01:03:52'!
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/11/2019 08:17:04'!
 defaultExtent
 
-	^ 550 @ 450! !
+	^ 650 @ 450! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -193,7 +212,7 @@ closeButtonClicked
 
 	self delete! !
 
-!TLCheckOutWindow methodsFor: 'events' stamp: 'AB 7/10/2019 17:50:34'!
+!TLCheckOutWindow methodsFor: 'events' stamp: 'AB 7/11/2019 01:21:10'!
 paymentDone
 
 	paymentStatus contents: model paymentResponse.
@@ -201,6 +220,8 @@ paymentDone
 	expirationMonthTextBox disableEditing; borderColor: Color green.
 	expirationYearTextBox disableEditing; borderColor: Color green.
 	ownersNameTextBox disableEditing; borderColor: Color green.
+
+	TLPurchasesWindow openFor: clientId using: password.
 
 	processPaymentButton model: self stateGetter: nil action: #backToDashboard label: 'Go back to dashboard'.
 	goBackButton delete.! !
@@ -713,10 +734,20 @@ openFor: aClient using: aPassword
 
 !classDefinition: #TLCartWindowModel category: #'TusLibros.com-Client Server'!
 Object subclass: #TLCartWindowModel
-	instanceVariableNames: 'selectedIndex webClient catalog cartId cartContents'
+	instanceVariableNames: 'selectedIndex webClient catalog cartId cartContents booksAmount'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
+
+!TLCartWindowModel methodsFor: 'accessing' stamp: 'AB 7/11/2019 08:30:38'!
+booksAmount
+
+	^ booksAmount! !
+
+!TLCartWindowModel methodsFor: 'accessing' stamp: 'AB 7/11/2019 08:30:25'!
+booksAmount: anAmount
+
+	booksAmount _ anAmount! !
 
 !TLCartWindowModel methodsFor: 'accessing' stamp: 'AB 7/9/2019 15:10:15'!
 cartContents
@@ -753,10 +784,11 @@ catalogIndex: anIndex
 	selectedIndex _ anIndex! !
 
 
-!TLCartWindowModel methodsFor: 'initialization' stamp: 'AB 7/10/2019 17:37:25'!
+!TLCartWindowModel methodsFor: 'initialization' stamp: 'AB 7/11/2019 08:47:11'!
 initializeFor: aClient using: aPassword
 
 	selectedIndex _ 0.
+	booksAmount _ ''.
 	catalog _ OrderedCollection new.
 	webClient _ TLWebClient new.
 	cartId _ self cartIdFor: aClient protectedWith: aPassword.
@@ -777,7 +809,7 @@ initializeFor: aClient using: aPassword with: aCartId
 ! !
 
 
-!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/11/2019 00:23:13'!
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/11/2019 08:53:16'!
 addSelectedBookToCart
 
 	(selectedIndex = 0)
@@ -792,7 +824,7 @@ addSelectedBookToCart
 		book _ fromCatalog substrings at: 1.
 
 		TLFuture of: [
-			webClient addToCart: self cartId book: book.
+			webClient addToCart: self cartId book: book quantity: booksAmount.
 			self updateCartStatus
 		]
 	]! !
@@ -818,14 +850,22 @@ sendCatalogRequest
 		self triggerEvent: #catalogArrived with: self		
 	]! !
 
-!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/11/2019 01:07:15'!
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/11/2019 08:55:17'!
 updateCartStatus
 
 	TLFuture of: [
 		| response |
 		response _ webClient listCart: cartId.
-		cartContents _ response asCartContent.
-		self triggerEvent: #cartUpdated with: self
+
+		(response isCorrectAndNotEmpty)
+
+		ifTrue: [
+			cartContents _ response asCartContent.
+			self triggerEvent: #cartUpdated with: self
+		]
+		ifFalse: [
+			self triggerEvent: #noBooksSelected with: self
+		].
 	]! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
@@ -1182,6 +1222,15 @@ addToCart: aCartId book: aBook
 	| response |
 
 	response _ WebClient htmlSubmit: (self url,'/addToCart') fields: { 'cartId' -> aCartId . 'bookIsbn' -> aBook . 'bookQuantity' -> 1 }.
+
+	^ TLResponse wrapping: (WebUtils jsonDecode: ((response content) readStream))! !
+
+!TLWebClient methodsFor: 'sending requests' stamp: 'AB 7/11/2019 08:52:45'!
+addToCart: aCartId book: aBook quantity: amount
+
+	| response |
+
+	response _ WebClient htmlSubmit: (self url,'/addToCart') fields: { 'cartId' -> aCartId . 'bookIsbn' -> aBook . 'bookQuantity' -> amount }.
 
 	^ TLResponse wrapping: (WebUtils jsonDecode: ((response content) readStream))! !
 
