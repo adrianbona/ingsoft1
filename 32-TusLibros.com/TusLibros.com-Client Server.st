@@ -223,7 +223,7 @@ closeButtonClicked
 
 	self delete! !
 
-!TLCheckOutWindow methodsFor: 'events' stamp: 'AB 7/11/2019 01:21:10'!
+!TLCheckOutWindow methodsFor: 'events' stamp: 'AB 7/11/2019 11:10:16'!
 paymentDone
 
 	paymentStatus contents: model paymentResponse.
@@ -235,7 +235,10 @@ paymentDone
 	TLPurchasesWindow openFor: clientId using: password.
 
 	processPaymentButton model: self stateGetter: nil action: #backToDashboard label: 'Go back to dashboard'.
-	goBackButton delete.! !
+	
+	goBackButton delete.
+	
+	self delete.! !
 
 !TLCheckOutWindow methodsFor: 'events' stamp: 'AB 7/10/2019 16:32:14'!
 showPaymentStatus
@@ -672,12 +675,12 @@ open
 
 !classDefinition: #TLPurchasesWindow category: #'TusLibros.com-Client Server'!
 Panel subclass: #TLPurchasesWindow
-	instanceVariableNames: 'purchasesList clientId password'
+	instanceVariableNames: 'clientId password mainRow'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
 
-!TLPurchasesWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 10:32:26'!
+!TLPurchasesWindow methodsFor: 'initialization' stamp: 'AB 7/11/2019 10:18:25'!
 initializeFor: aClientId using: aPassword
 
 	self titleMorph showButtonsNamed: #(close collapse).
@@ -689,42 +692,59 @@ initializeFor: aClientId using: aPassword
 	self yourself.
 	
 	clientId _ aClientId.
-	password _ aPassword.! !
-
-!TLPurchasesWindow methodsFor: 'initialization' stamp: 'AB 7/10/2019 10:31:57'!
-initializeFor: aClient using: aPassword from: aPanel
-
-	aPanel closeButtonClicked.
-
-	self initializeFor: aClient using: aPassword! !
+	password _ aPassword.
+	
+	self model when: #purchasesUpdated send: #updatePurchases to: self.
+	self model when: #noPurchasesWereMade send: #noPurchasesWereMade to: self.
+! !
 
 
-!TLPurchasesWindow methodsFor: 'graphic user interface' stamp: 'JR 7/8/2019 00:02:22'!
+!TLPurchasesWindow methodsFor: 'graphic user interface' stamp: 'AB 7/11/2019 09:48:35'!
 build1stRow
 
-	| firstRowLayout |
+	| rowLayout |
 
-	purchasesList _ TextModelMorph withText: self model purchasesList.
+	rowLayout _ LayoutMorph newRow.
+	rowLayout padding: #center;
+	addMorph: (StringMorph contents: 'List Purchases for: ' , self model clientId).
 
-	firstRowLayout _ LayoutMorph newRow.
+	^ rowLayout! !
 
-	firstRowLayout separation: 25;
- 	addMorph: purchasesList;
+!TLPurchasesWindow methodsFor: 'graphic user interface' stamp: 'AB 7/11/2019 10:52:13'!
+build2ndRow
+
+	mainRow _ LayoutMorph newRow.
+
+	^ mainRow! !
+
+!TLPurchasesWindow methodsFor: 'graphic user interface' stamp: 'AB 7/11/2019 10:27:38'!
+build3rdRow
+
+	| rowLayout goBackButton |
+
+	goBackButton _ PluggableButtonMorph model: self stateGetter: nil action: #closeButtonClicked label: 'Back to Dashboard'.
+
+	rowLayout _ LayoutMorph newRow.
+
+	rowLayout separation: 15;
+ 	addMorph: goBackButton;
 	padding: #center.
 	
-	^ firstRowLayout! !
+	^ rowLayout! !
 
-!TLPurchasesWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 21:13:35'!
+!TLPurchasesWindow methodsFor: 'graphic user interface' stamp: 'AB 7/11/2019 10:27:54'!
 buildMorphicWindow
 
 	self layoutMorph beColumn;
 	padding: #left;
-	addMorph: self build1stRow! !
+	addMorph: self build1stRow;
+	addMorph: self build2ndRow;
+	addMorph: self build3rdRow.! !
 
-!TLPurchasesWindow methodsFor: 'graphic user interface' stamp: 'JR 7/7/2019 23:25:51'!
+!TLPurchasesWindow methodsFor: 'graphic user interface' stamp: 'AB 7/11/2019 11:08:15'!
 defaultExtent
 
-	^ 350 @ 350! !
+	^ 950 @ 300! !
 
 
 !TLPurchasesWindow methodsFor: 'events' stamp: 'AB 7/10/2019 21:13:41'!
@@ -734,16 +754,51 @@ closeButtonClicked
 
 	self delete! !
 
+!TLPurchasesWindow methodsFor: 'events' stamp: 'AB 7/11/2019 11:01:25'!
+noPurchasesWereMade
+
+	| purchases rowLayout |
+
+	purchases _ StringMorph contents: 'No purchases were found for client'.
+	rowLayout _ LayoutMorph newRow.
+	rowLayout addMorph: purchases; padding: #center; separation: 15.
+
+	mainRow addMorph: rowLayout! !
+
+!TLPurchasesWindow methodsFor: 'events' stamp: 'AB 7/11/2019 11:07:09'!
+updatePurchases
+
+	| purchasesList lastRow |
+
+	purchasesList _ self model purchasesList.
+
+	1 to: purchasesList size by: 2 do: [ :position |
+		| quantity book rowLayout |
+
+		book _ StringMorph contents: ('ISBN: ' , (purchasesList at: position)).
+		quantity _ StringMorph contents: ((purchasesList at: (position + 1)) printString, ' times').
+		rowLayout _ LayoutMorph newRow.
+		rowLayout addMorph: book; addMorph: quantity; padding: #center; separation: 15.
+
+		mainRow addMorph: rowLayout
+	].
+
+	lastRow _ LayoutMorph newRow.
+	lastRow addMorph: (StringMorph contents: ('Total Spent: ')); addMorph: (StringMorph contents: self model totalAmount); padding: #center; separation: 15.
+
+	mainRow addMorph: lastRow
+! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'TLPurchasesWindow class' category: #'TusLibros.com-Client Server'!
 TLPurchasesWindow class
 	instanceVariableNames: ''!
 
-!TLPurchasesWindow class methodsFor: 'instance creation' stamp: 'AB 7/8/2019 16:25:47'!
-openFor: aClient using: aPassword
+!TLPurchasesWindow class methodsFor: 'instance creation' stamp: 'AB 7/11/2019 09:46:19'!
+openFor: aClientId using: aPassword
 	
-	^ self new initializeFor: aClient using: aPassword! !
+	^ self new initializeFor: aClientId using: aPassword! !
 
 
 !classDefinition: #TLCartWindowModel category: #'TusLibros.com-Client Server'!
@@ -1099,22 +1154,59 @@ password: aPassword
 
 !classDefinition: #TLPurchasesWindowModel category: #'TusLibros.com-Client Server'!
 Object subclass: #TLPurchasesWindowModel
-	instanceVariableNames: 'webClient purchasesList'
+	instanceVariableNames: 'webClient purchasesList clientId password totalAmount'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
 
-!TLPurchasesWindowModel methodsFor: 'initialization' stamp: 'AB 7/10/2019 23:48:40'!
-initializeFor: aClient using: aPassword
+!TLPurchasesWindowModel methodsFor: 'initialization' stamp: 'AB 7/11/2019 10:36:23'!
+initializeFor: aClientId using: aPassword
 
+	clientId _ aClientId.
+	password _ aPassword.
+	purchasesList _ ''.
+	totalAmount _ ''.
 	webClient _ TLWebClient new.
-	purchasesList _ TLFuture of: [ webClient listPurchasesFor: aClient with: aPassword ]! !
+
+	self listPurchasesForClient! !
+
+!TLPurchasesWindowModel methodsFor: 'initialization' stamp: 'AB 7/11/2019 10:46:21'!
+listPurchasesForClient
+
+	TLFuture of: [
+		| response |
+		response _ webClient listPurchasesFor: clientId with: password.
+
+		(response isCorrectAndNotEmpty)
+
+		ifTrue: [
+			| responseList |
+			responseList _ response asCartContentCollection.
+			totalAmount _ responseList removeLast.
+			purchasesList _ responseList.
+			self triggerEvent: #purchasesUpdated with: self
+		]
+		ifFalse: [
+			self triggerEvent: #noPurchasesWereMade with: self
+		].
+	].
+! !
 
 
-!TLPurchasesWindowModel methodsFor: 'accessing' stamp: 'AB 7/10/2019 23:48:48'!
+!TLPurchasesWindowModel methodsFor: 'accessing' stamp: 'AB 7/11/2019 09:51:03'!
+clientId
+	
+	^ clientId ! !
+
+!TLPurchasesWindowModel methodsFor: 'accessing' stamp: 'AB 7/11/2019 10:24:49'!
 purchasesList
 	
-	^ purchasesList value! !
+	^ purchasesList! !
+
+!TLPurchasesWindowModel methodsFor: 'accessing' stamp: 'AB 7/11/2019 11:07:21'!
+totalAmount
+	
+	^ totalAmount! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1298,14 +1390,14 @@ createCartFor: aClientId protectedWith: aPassword
 
 	^ TLResponse wrapping: ((WebUtils jsonDecode: ((response content) readStream)))! !
 
-!TLWebClient methodsFor: 'sending requests' stamp: 'AB 7/10/2019 20:49:47'!
+!TLWebClient methodsFor: 'sending requests' stamp: 'AB 7/11/2019 10:05:04'!
 getCatalog
 
 	| response |
 
 	response _ WebClient htmlSubmit: (self url,'/catalog') fields: {}.
 	
-	^ TLResponse wrapping: ((WebUtils jsonDecode: ((response content) readStream)) asOrderedCollection)! !
+	^ TLResponse wrapping: (WebUtils jsonDecode: ((response content) readStream))! !
 
 !TLWebClient methodsFor: 'sending requests' stamp: 'AB 7/10/2019 20:49:41'!
 listCart: cartId
@@ -1447,12 +1539,28 @@ doesNotUnderstand: aMessage
 	^aMessage sendTo: response! !
 
 
-!TLResponse methodsFor: 'accessing' stamp: 'AB 7/11/2019 01:13:52'!
+!TLResponse methodsFor: 'defaults' stamp: 'AB 7/11/2019 09:58:54'!
+errorValue
+
+	^ '1'! !
+
+!TLResponse methodsFor: 'defaults' stamp: 'AB 7/11/2019 09:58:50'!
+okValue
+
+	^ '0'! !
+
+!TLResponse methodsFor: 'defaults' stamp: 'AB 7/11/2019 09:58:43'!
+separator
+
+	^ '|'! !
+
+
+!TLResponse methodsFor: 'accessing' stamp: 'AB 7/11/2019 10:01:18'!
 asCartContent
 
 	| contentAsCollection parsedContent |
 
-	contentAsCollection _ self content findBetweenSubStrs: '|'.
+	contentAsCollection _ self asCartContentCollection.
 
 	parsedContent _ ''.
 
@@ -1463,20 +1571,25 @@ asCartContent
 	
 	^ parsedContent! !
 
+!TLResponse methodsFor: 'accessing' stamp: 'AB 7/11/2019 10:01:03'!
+asCartContentCollection
+
+	^ self content findBetweenSubStrs: self separator! !
+
 !TLResponse methodsFor: 'accessing' stamp: 'AB 7/10/2019 20:54:44'!
 content
 
 	^ response copyFrom: 3 to: response size! !
 
-!TLResponse methodsFor: 'accessing' stamp: 'AB 7/10/2019 21:04:01'!
+!TLResponse methodsFor: 'accessing' stamp: 'AB 7/11/2019 09:59:39'!
 correctPrefix
 
-	^ '0|'! !
+	^ self okValue , self separator! !
 
-!TLResponse methodsFor: 'accessing' stamp: 'AB 7/10/2019 21:05:38'!
+!TLResponse methodsFor: 'accessing' stamp: 'AB 7/11/2019 09:59:52'!
 errorPrefix
 
-	^ '1|'! !
+	^ self errorValue , self separator! !
 
 !TLResponse methodsFor: 'accessing' stamp: 'AB 7/10/2019 21:03:54'!
 isCorrect

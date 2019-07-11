@@ -417,15 +417,14 @@ test10WhenAddingAnItemToShoppingCartListingContainsElementAndQuantity
 
 	self assert: (interface listCart: shoppingCartId) equals: interface okResponsePrefix, testObjects existingISBN, '|2|'! !
 
-!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 18:11:12'!
+!RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/11/2019 10:13:15'!
 test11ListingPurchasesWhenNoCheckOutHasBeenDoneReturnsAnOkEmptyResponse
 
 	| interface |
 
 	interface _ aRestInterfaceWithAnEmptyPriceList.
 
-	self assert: (interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword) 
-		equals: interface okResponsePrefix, '0'.! !
+	self assert: (interface listPurchasesFor: testObjects aValidClienId protectedBy: testObjects aValidClientPassword) equals: interface okResponsePrefix.! !
 
 !RestInterfaceExternalTest methodsFor: 'testing' stamp: 'AB 7/1/2019 18:36:18'!
 test12ListingPurchasesForInvalidClientIdReturnsErrorResponse

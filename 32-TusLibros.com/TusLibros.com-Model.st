@@ -362,7 +362,7 @@ listCart: aShoppingCartId
 	]
 ! !
 
-!RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/1/2019 18:20:37'!
+!RestInterfaceExternal methodsFor: 'initialization' stamp: 'AB 7/11/2019 10:12:17'!
 listPurchasesFor: aClientId protectedBy: aPassword
 
 	^ self try:
@@ -371,7 +371,7 @@ listPurchasesFor: aClientId protectedBy: aPassword
 		
 		purchase _ (restInterfaceInternal listPurchasesFor: aClientId protectedBy: aPassword).
 		
-		purchase items isEmpty ifTrue: [ ^ self okResponsePrefix, purchase totalAmount printString ].
+		purchase items isEmpty ifTrue: [ ^ self okResponsePrefix ].
 
 		^ self purchaseToString: purchase
 	]! !
