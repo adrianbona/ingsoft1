@@ -536,25 +536,28 @@ Panel subclass: #TLLoginWindow
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
 
-!TLLoginWindow methodsFor: 'events' stamp: 'AB 7/10/2019 17:54:15'!
+!TLLoginWindow methodsFor: 'events' stamp: 'AB 7/11/2019 09:41:24'!
 updateLogIn
 
 	resultLabel contents: model loginResponse.
 	clientIdTextBox disableEditing; borderColor: Color green.
 	passwordTextBox disableEditing; borderColor: Color green.
 
-	submitButton model: self model stateGetter: nil action: #submitLogOut  label: 'Log out'.
+	submitButton model: self model stateGetter: nil action: #submitLogOut label: 'Log out'.
 	
 	openDashboard _ TLDashboardWindow openFor: self model clientId using: self model password! !
 
-!TLLoginWindow methodsFor: 'events' stamp: 'AB 7/10/2019 09:29:05'!
+!TLLoginWindow methodsFor: 'events' stamp: 'AB 7/11/2019 09:41:18'!
 updateLogOut
 
 	resultLabel contents: ''.
 	clientIdTextBox enableEditing; borderColor: Color skyBlue.
+	clientIdTextBox editor actualContents: ''.
+
 	passwordTextBox enableEditing; borderColor: Color skyBlue.
+	passwordTextBox editor actualContents: ''.
 	
-	submitButton model: self model stateGetter: nil action: #submitLogIn  label: 'Login'.
+	submitButton model: self model stateGetter: nil action: #submitLogIn label: 'Login'.
 	openDashboard ifNotNil: [ openDashboard closeButtonClicked ]! !
 
 !TLLoginWindow methodsFor: 'events' stamp: 'AB 7/7/2019 19:12:43'!
