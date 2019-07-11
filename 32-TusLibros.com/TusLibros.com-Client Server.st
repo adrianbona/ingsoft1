@@ -67,7 +67,7 @@ proceedToCheckOut
 
 	self delete! !
 
-!TLCartWindow methodsFor: 'events' stamp: 'AB 7/9/2019 15:18:36'!
+!TLCartWindow methodsFor: 'events' stamp: 'AB 7/11/2019 00:32:04'!
 refreshCartContents
 
 	cartStatus contents: self model cartContents! !
@@ -79,18 +79,18 @@ refreshCatalogList
 	catalog setSelectionIndex: 0! !
 
 
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 11:01:34'!
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/11/2019 00:04:45'!
 build1stRow
 
 	| rowLayout |
 
 	rowLayout _ LayoutMorph newRow.
 	rowLayout padding: #center;
-	addMorph: (StringMorph contents: 'Select and item from Catalog').
+	addMorph: (StringMorph contents: 'Select items from catalog').
 
 	^ rowLayout! !
 
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 11:01:55'!
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/11/2019 00:04:02'!
 build2ndRow
 
 	| rowLayout addToCartButton |
@@ -103,7 +103,7 @@ build2ndRow
 	rowLayout _ LayoutMorph newRow.
 	rowLayout separation: 15;
 	padding: #center;
-	addMorph: (StringMorph contents:'Catalog');
+	addMorph: (StringMorph contents: 'Catalog');
 	addMorph: catalog;
 	addMorph: addToCartButton.
 
@@ -122,16 +122,19 @@ build3rdRow
 
 	^ rowLayout! !
 
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 11:02:25'!
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/11/2019 00:06:18'!
 build4thRow
 
-	| rowLayout addToCartButton |
+	| rowLayout addToCartButton goBackButton |
 
 	addToCartButton _ PluggableButtonMorph model: self model stateGetter: nil action: #checkOutCart label: 'Check out'.
+	goBackButton _ PluggableButtonMorph model: self stateGetter: nil action: #closeButtonClicked label: 'Go back'.
 
 	rowLayout _ LayoutMorph newRow.
-	rowLayout padding: #center;
-	addMorph: addToCartButton.
+	rowLayout separation: 15;
+	padding: #center;
+	addMorph: addToCartButton;
+	addMorph: goBackButton.
 
 	^ rowLayout! !
 
@@ -147,10 +150,10 @@ buildMorphicWindow
 	addMorph: self build3rdRow;
 	addMorph: self build4thRow.! !
 
-!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 11:02:59'!
+!TLCartWindow methodsFor: 'graphic user interface' stamp: 'AB 7/11/2019 01:03:52'!
 defaultExtent
 
-	^ 500 @ 450! !
+	^ 550 @ 450! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -774,7 +777,7 @@ initializeFor: aClient using: aPassword with: aCartId
 ! !
 
 
-!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 23:50:31'!
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/11/2019 00:23:13'!
 addSelectedBookToCart
 
 	(selectedIndex = 0)
@@ -786,12 +789,12 @@ addSelectedBookToCart
 		| book fromCatalog |
 
 		fromCatalog _ catalog at: selectedIndex.
-
 		book _ fromCatalog substrings at: 1.
 
-		TLFuture of: [ webClient addToCart: self cartId book: book ].
-
-		self updateCartStatus
+		TLFuture of: [
+			webClient addToCart: self cartId book: book.
+			self updateCartStatus
+		]
 	]! !
 
 !TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 21:06:21'!
@@ -807,26 +810,23 @@ checkOutCart
 
 		ifFalse: [ self triggerEvent: #noBooksInCart with: self ]! !
 
-!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 23:51:10'!
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/11/2019 00:22:24'!
 sendCatalogRequest
-		
-	catalog _ TLFuture of: [ webClient getCatalog ] .
-	
-	self triggerEvent: #catalogArrived with: self! !
 
-!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 23:50:56'!
+	TLFuture of: [
+		catalog _ webClient getCatalog.
+		self triggerEvent: #catalogArrived with: self		
+	]! !
+
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/11/2019 01:07:15'!
 updateCartStatus
 
-	| response |
-
-	response _ TLFuture of: [ webClient listCart: cartId ].
-
-	(response value isCorrect)
-		ifTrue: [
-			cartContents _ response value content.
-			self triggerEvent: #cartUpdated with: self
-		]
-! !
+	TLFuture of: [
+		| response |
+		response _ webClient listCart: cartId.
+		cartContents _ response asCartContent.
+		self triggerEvent: #cartUpdated with: self
+	]! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -898,24 +898,25 @@ paymentResponse
 	^ paymentResponse! !
 
 
-!TLCheckOutWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 23:50:01'!
+!TLCheckOutWindowModel methodsFor: 'events' stamp: 'AB 7/11/2019 00:25:51'!
 processPayment
 
-	| response |
-
-	response _ TLFuture of: [ webClient checkOut: cartId 
+	TLFuture of: [
+		| response |
+		response _ webClient checkOut: cartId 
 		chargingToACreditCardNumbered: creditCardNumber 
 		expiringOn: (creditCardExpirationMonth , creditCardExpirationYear) 
-		ownedBy: creditCardOwnerName ].
+		ownedBy: creditCardOwnerName.
 
-	(response value isCorrect)
-		ifTrue: [
-			paymentResponse _ 'Payment was correctly processed'.
-			self triggerEvent: #paymentDone with: self
-		] ifFalse: [
-			paymentResponse _ response value content.
-			self triggerEvent: #paymentRevoked with: self		
-		]! !
+		(response isCorrect)
+			ifTrue: [
+				paymentResponse _ 'Payment was correctly processed'.
+				self triggerEvent: #paymentDone with: self
+			] ifFalse: [
+				paymentResponse _ response content.
+				self triggerEvent: #paymentRevoked with: self		
+			]
+	]! !
 
 
 !TLCheckOutWindowModel methodsFor: 'initialization' stamp: 'AB 7/10/2019 16:26:34'!
@@ -965,21 +966,22 @@ loginResponse
 
 	^ loginResponse! !
 
-!TLLoginWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 23:47:29'!
+!TLLoginWindowModel methodsFor: 'events' stamp: 'AB 7/11/2019 00:26:55'!
 submitLogIn
-		
-	| response |
-	
-	response _ TLFuture of: [ webClient signIn: clientId with: password ].
 
-	(response value isCorrect)
-		ifTrue: [
-			loginResponse _ 'Access granted'.
-			self triggerEvent: #credentialsReceived with: self
-		] ifFalse: [
-			loginResponse _ response value content.
-			self triggerEvent: #wrongCredentials with: self		
-		]! !
+	TLFuture of: [
+		| response |
+		response _ webClient signIn: clientId with: password.
+
+		(response isCorrect)
+			ifTrue: [
+				loginResponse _ 'Access granted'.
+				self triggerEvent: #credentialsReceived with: self
+			] ifFalse: [
+				loginResponse _ response content.
+				self triggerEvent: #wrongCredentials with: self		
+			]
+	]! !
 
 !TLLoginWindowModel methodsFor: 'events' stamp: 'AB 7/7/2019 18:54:07'!
 submitLogOut
@@ -1354,6 +1356,22 @@ doesNotUnderstand: aMessage
 
 	^aMessage sendTo: response! !
 
+
+!TLResponse methodsFor: 'accessing' stamp: 'AB 7/11/2019 01:13:52'!
+asCartContent
+
+	| contentAsCollection parsedContent |
+
+	contentAsCollection _ self content findBetweenSubStrs: '|'.
+
+	parsedContent _ ''.
+
+	1 to: contentAsCollection size by: 2 do: [ :position | 
+		parsedContent _ parsedContent , (contentAsCollection at: position + 1) , ' copies of: ' , (contentAsCollection at: position).
+		(position + 1 = contentAsCollection size) ifFalse: [ parsedContent _ parsedContent , ' / ' ] 
+	].
+	
+	^ parsedContent! !
 
 !TLResponse methodsFor: 'accessing' stamp: 'AB 7/10/2019 20:54:44'!
 content
