@@ -424,7 +424,7 @@ listPurchases
 	self delete! !
 
 
-!TLDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 19:14:01'!
+!TLDashboardWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 20:18:31'!
 build1stRow
 
 	| rowLayout |
@@ -676,12 +676,11 @@ build1stRow
 	
 	^ firstRowLayout! !
 
-!TLPurchasesWindow methodsFor: 'graphic user interface' stamp: 'JR 7/7/2019 23:36:13'!
+!TLPurchasesWindow methodsFor: 'graphic user interface' stamp: 'AB 7/10/2019 21:13:35'!
 buildMorphicWindow
 
 	self layoutMorph beColumn;
 	padding: #left;
-
 	addMorph: self build1stRow! !
 
 !TLPurchasesWindow methodsFor: 'graphic user interface' stamp: 'JR 7/7/2019 23:25:51'!
@@ -690,10 +689,11 @@ defaultExtent
 	^ 350 @ 350! !
 
 
-!TLPurchasesWindow methodsFor: 'events' stamp: 'AB 7/10/2019 10:31:42'!
+!TLPurchasesWindow methodsFor: 'events' stamp: 'AB 7/10/2019 21:13:41'!
 closeButtonClicked
 
 	TLDashboardWindow openFor: clientId using: password.
+
 	self delete! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
@@ -725,14 +725,14 @@ cartId
 
 	^ cartId! !
 
-!TLCartWindowModel methodsFor: 'accessing' stamp: 'AB 7/10/2019 17:09:12'!
+!TLCartWindowModel methodsFor: 'accessing' stamp: 'AB 7/10/2019 20:53:27'!
 cartIdFor: aClientId protectedWith: aPassword
 
 	| response |
 	
 	response _ webClient createCartFor: aClientId  protectedWith: aPassword.
 	
-	^  response copyFrom: 3 to: response size! !
+	^  response content! !
 
 !TLCartWindowModel methodsFor: 'accessing' stamp: 'JR 7/8/2019 00:27:17'!
 catalog
@@ -795,14 +795,14 @@ addSelectedBookToCart
 		self updateCartStatus
 	]! !
 
-!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 17:28:32'!
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 21:06:21'!
 checkOutCart
 	
 	| response |
 
 	response _ webClient listCart: cartId.
 
-	((response copyFrom: 1 to: 2) = '0|' and: (response copyFrom: 1 to: response size) size > 2)
+	(response isCorrectAndNotEmpty)
 	
 		ifTrue: [ self triggerEvent: #proceedToCheckOut with: self ]
 
@@ -815,16 +815,16 @@ sendCatalogRequest
 	
 	self triggerEvent: #catalogArrived with: self! !
 
-!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 17:36:40'!
+!TLCartWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 21:06:59'!
 updateCartStatus
 
 	| response |
 
 	response _ webClient listCart: cartId.
 
-	((response copyFrom: 1 to: 2) = '0|')
+	(response isCorrect)
 		ifTrue: [
-			cartContents _ response copyFrom: 3 to: response size.
+			cartContents _ response content.
 			self triggerEvent: #cartUpdated with: self.
 		]
 ! !
@@ -899,7 +899,7 @@ paymentResponse
 	^ paymentResponse! !
 
 
-!TLCheckOutWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 16:26:34'!
+!TLCheckOutWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 21:10:12'!
 processPayment
 
 	| response |
@@ -909,12 +909,12 @@ processPayment
 		expiringOn: (creditCardExpirationMonth , creditCardExpirationYear) 
 		ownedBy: creditCardOwnerName.
 
-	(response = '0|OK')
+	(response isCorrect)
 		ifTrue: [
 			paymentResponse _ 'Payment was correctly processed'.
 			self triggerEvent: #paymentDone with: self
 		] ifFalse: [
-			paymentResponse _ response copyFrom: 3 to: response size.
+			paymentResponse _ response content.
 			self triggerEvent: #paymentRevoked with: self		
 		]! !
 
@@ -953,12 +953,12 @@ Object subclass: #TLLoginWindowModel
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
 
-!TLLoginWindowModel methodsFor: 'initialization' stamp: 'AB 7/8/2019 16:01:22'!
+!TLLoginWindowModel methodsFor: 'initialization' stamp: 'AB 7/10/2019 21:12:19'!
 initialize
 
 	webClient _ TLWebClient new.
 	clientId _ ''.
-	password _ ''.! !
+	password _ ''! !
 
 
 !TLLoginWindowModel methodsFor: 'events' stamp: 'AB 7/7/2019 18:02:37'!
@@ -966,19 +966,19 @@ loginResponse
 
 	^ loginResponse! !
 
-!TLLoginWindowModel methodsFor: 'events' stamp: 'AB 7/7/2019 19:16:55'!
+!TLLoginWindowModel methodsFor: 'events' stamp: 'AB 7/10/2019 21:12:51'!
 submitLogIn
 		
 	| response |
 	
 	response _ webClient signIn: clientId with: password.
 	
-	(response = '0|OK')
+	(response isCorrect)
 		ifTrue: [
 			loginResponse _ 'Access granted'.
 			self triggerEvent: #credentialsReceived with: self
 		] ifFalse: [
-			loginResponse _ response copyFrom: 3 to: response size.
+			loginResponse _ response content.
 			self triggerEvent: #wrongCredentials with: self		
 		]! !
 
@@ -995,10 +995,11 @@ clientId
 
 	^ clientId! !
 
-!TLLoginWindowModel methodsFor: 'accessing' stamp: 'AB 7/7/2019 19:16:27'!
+!TLLoginWindowModel methodsFor: 'accessing' stamp: 'AB 7/10/2019 21:12:00'!
 clientId: aClientId
 
 	clientId _ aClientId.
+
 	^ true! !
 
 !TLLoginWindowModel methodsFor: 'accessing' stamp: 'AB 7/7/2019 15:34:06'!
@@ -1006,10 +1007,11 @@ password
 
 	^ password! !
 
-!TLLoginWindowModel methodsFor: 'accessing' stamp: 'AB 7/7/2019 19:16:16'!
+!TLLoginWindowModel methodsFor: 'accessing' stamp: 'AB 7/10/2019 21:12:26'!
 password: aPassword
 
 	password _ aPassword.
+
 	^ true! !
 
 
@@ -1174,16 +1176,16 @@ Object subclass: #TLWebClient
 	poolDictionaries: ''
 	category: 'TusLibros.com-Client Server'!
 
-!TLWebClient methodsFor: 'sending requests' stamp: 'JR 7/8/2019 00:36:07'!
+!TLWebClient methodsFor: 'sending requests' stamp: 'AB 7/10/2019 20:50:09'!
 addToCart: aCartId book: aBook
 
 	| response |
 
 	response _ WebClient htmlSubmit: (self url,'/addToCart') fields: { 'cartId' -> aCartId . 'bookIsbn' -> aBook . 'bookQuantity' -> 1 }.
 
-	^ WebUtils jsonDecode: ((response content) readStream)! !
+	^ TLResponse wrapping: (WebUtils jsonDecode: ((response content) readStream))! !
 
-!TLWebClient methodsFor: 'sending requests' stamp: 'AB 7/10/2019 16:39:09'!
+!TLWebClient methodsFor: 'sending requests' stamp: 'AB 7/10/2019 20:50:03'!
 checkOut: aCartId chargingToACreditCardNumbered: aCreditCardNumber expiringOn: aMonthOfYear ownedBy: anOwnerName
 
 	| response |
@@ -1195,52 +1197,52 @@ checkOut: aCartId chargingToACreditCardNumbered: aCreditCardNumber expiringOn: a
 		'cco' -> anOwnerName.
 	}.
 
-	^ WebUtils jsonDecode: ((response content) readStream)! !
+	^ TLResponse wrapping: (WebUtils jsonDecode: ((response content) readStream))! !
 
-!TLWebClient methodsFor: 'sending requests' stamp: 'AB 7/8/2019 17:32:45'!
+!TLWebClient methodsFor: 'sending requests' stamp: 'AB 7/10/2019 20:49:58'!
 createCartFor: aClientId protectedWith: aPassword
 
 	| response |
 
 	response _ WebClient htmlSubmit: (self url,'/createCart') fields: { 'clientId' -> aClientId. 'password' -> aPassword }.
 
-	^ WebUtils jsonDecode: ((response content) readStream)! !
+	^ TLResponse wrapping: ((WebUtils jsonDecode: ((response content) readStream)))! !
 
-!TLWebClient methodsFor: 'sending requests' stamp: 'AB 7/9/2019 11:04:24'!
+!TLWebClient methodsFor: 'sending requests' stamp: 'AB 7/10/2019 20:49:47'!
 getCatalog
 
 	| response |
 
 	response _ WebClient htmlSubmit: (self url,'/catalog') fields: {}.
 	
-	^ (WebUtils jsonDecode: ((response content) readStream)) asOrderedCollection! !
+	^ TLResponse wrapping: ((WebUtils jsonDecode: ((response content) readStream)) asOrderedCollection)! !
 
-!TLWebClient methodsFor: 'sending requests' stamp: 'JR 7/8/2019 00:42:49'!
+!TLWebClient methodsFor: 'sending requests' stamp: 'AB 7/10/2019 20:49:41'!
 listCart: cartId
 
 	| response |
 
 	response _ WebClient htmlSubmit: (self url,'/listCart') fields: { 'cartId' -> cartId }.
 
-	^ WebUtils jsonDecode: ((response content) readStream)! !
+	^ TLResponse wrapping: (WebUtils jsonDecode: ((response content) readStream))! !
 
-!TLWebClient methodsFor: 'sending requests' stamp: 'JR 7/7/2019 23:54:35'!
+!TLWebClient methodsFor: 'sending requests' stamp: 'AB 7/10/2019 20:49:35'!
 listPurchasesFor: aClientId with: aPassword
 
 	| response |
 
 	response _ WebClient htmlSubmit: (self url,'/listPurchases') fields: { 'clientId' -> aClientId. 'password' -> aPassword }.
 
-	^ WebUtils jsonDecode: ((response content) readStream)! !
+	^ TLResponse wrapping: (WebUtils jsonDecode: ((response content) readStream))! !
 
-!TLWebClient methodsFor: 'sending requests' stamp: 'AB 7/7/2019 19:15:00'!
+!TLWebClient methodsFor: 'sending requests' stamp: 'AB 7/10/2019 20:47:01'!
 signIn: aClientId with: aPassword
 
 	| response |
 
 	response _ WebClient htmlSubmit: (self url,'/logInClient') fields: { 'clientId' -> aClientId. 'password' -> aPassword }.
 
-	^ WebUtils jsonDecode: ((response content) readStream)! !
+	^ TLResponse wrapping: (WebUtils jsonDecode: ((response content) readStream))! !
 
 
 !TLWebClient methodsFor: 'initialization' stamp: 'AB 7/6/2019 19:34:17'!
@@ -1258,3 +1260,82 @@ url
 correctlyEncodeSpacesForUrlRequestParameter: aParameter
 	
 	^ aParameter copyReplaceAll: ' ' with: '%20'. ! !
+
+
+!classDefinition: #TLResponse category: #'TusLibros.com-Client Server'!
+ProtoObject subclass: #TLResponse
+	instanceVariableNames: 'response'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros.com-Client Server'!
+
+!TLResponse methodsFor: 'initialization' stamp: 'AB 7/10/2019 20:44:24'!
+initializeWrapping: aWebUtilsResponse
+
+	response _ aWebUtilsResponse! !
+
+
+!TLResponse methodsFor: 'message handling' stamp: 'AB 7/10/2019 20:47:58'!
+doesNotUnderstand: aMessage
+
+	^aMessage sendTo: response! !
+
+
+!TLResponse methodsFor: 'accessing' stamp: 'AB 7/10/2019 20:54:44'!
+content
+
+	^ response copyFrom: 3 to: response size! !
+
+!TLResponse methodsFor: 'accessing' stamp: 'AB 7/10/2019 21:04:01'!
+correctPrefix
+
+	^ '0|'! !
+
+!TLResponse methodsFor: 'accessing' stamp: 'AB 7/10/2019 21:05:38'!
+errorPrefix
+
+	^ '1|'! !
+
+!TLResponse methodsFor: 'accessing' stamp: 'AB 7/10/2019 21:03:54'!
+isCorrect
+
+	^ (response copyFrom: 1 to: 2) = self correctPrefix! !
+
+!TLResponse methodsFor: 'accessing' stamp: 'AB 7/10/2019 21:05:14'!
+isCorrectAndNotEmpty
+
+	^ self isCorrect and: self isEmpty not! !
+
+!TLResponse methodsFor: 'accessing' stamp: 'AB 7/10/2019 21:05:01'!
+isEmpty
+
+	^ (response copyFrom: 1 to: response size) size = 2! !
+
+
+!TLResponse methodsFor: 'inspecting' stamp: 'HAW 10/19/2017 16:44:49'!
+inspectorClass
+	"Answer the class of the inspector to be used on the receiver.  Called by inspect; 
+	use basicInspect to get a normal (less useful) type of inspector."
+
+	^ Inspector! !
+
+!TLResponse methodsFor: 'inspecting' stamp: 'HAW 10/19/2017 16:45:07'!
+instVarAt: index put: anObject
+	"Primitive. Store a value into a fixed variable in an object. The numbering of the
+	 variables corresponds to the named instance variables, followed by the indexed
+	 instance variables. Fail if the index is not an Integer or is not the index of a fixed
+	 variable. Essential. See Object documentation whatIsAPrimitive."
+
+	<primitive: 174 error: ec>
+	self primitiveFailed! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TLResponse class' category: #'TusLibros.com-Client Server'!
+TLResponse class
+	instanceVariableNames: ''!
+
+!TLResponse class methodsFor: 'instance creation' stamp: 'AB 7/10/2019 20:43:52'!
+wrapping: aWebUtilsResponse
+
+	^ self new initializeWrapping: aWebUtilsResponse.! !
